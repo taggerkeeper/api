@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "The Tagger Keeper API",
   "main": "index.js",
+  "type": "module",
   "repository": {
     "type": "git",
     "url": "git+https://github.com/taggerkeeper/api.git"
