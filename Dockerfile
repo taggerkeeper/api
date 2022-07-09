@@ -4,6 +4,7 @@
 FROM node:18-alpine
 ENV NODE_ENV production
 RUN addgroup api && adduser -S -G api api
+RUN apk add dumb-init
 USER api
 WORKDIR /api
 COPY package*.json ./
@@ -12,4 +13,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["npm", "start"]
+CMD ["dumb-init", "node", "server.js"]
