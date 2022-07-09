@@ -15,7 +15,7 @@ const server = api.listen(PORT, () => {
 const closeGracefully = signal => {
   console.log(`Recieved signal to terminate: ${signal}`)
   server.close(() => {
-    console.log('HTTP server closed'
+    console.log('HTTP server closed')
     process.exit(0)
   })
 }
