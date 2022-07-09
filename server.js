@@ -11,3 +11,14 @@ api.get('/', (req, res) => {
 const server = api.listen(PORT, () => {
   console.log(`Tagger Keeper API is now running at port ${PORT}`)
 })
+
+const closeGracefully = signal => {
+  console.log(`Recieved signal to terminate: ${signal}`)
+  server.close(() => {
+    console.log('HTTP server closed'
+    process.exit(0)
+  })
+}
+
+process.on('SIGINT', closeGracefully)
+process.on('SIGTERM', closeGracefully)
