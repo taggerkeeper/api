@@ -1,0 +1,29 @@
+{
+  "name": "@taggerkeeper/api",
+  "version": "1.0.0",
+  "description": "The Tagger Keeper API",
+  "main": "index.js",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/taggerkeeper/api.git"
+  },
+  "author": {
+    "name": "Tagger Keeper",
+    "email": "api@taggerkeeper.com"
+  },
+  "contributors": [
+    {
+      "name": "Jason Godesky",
+      "email": "jason@taggerkeeper.com"
+    }
+  ],
+  "license": "CC-BY-SA-4.0",
+  "bugs": {
+    "email": "api@taggerkeeper.com",
+    "url": "https://github.com/taggerkeeper/api/issues"
+  },
+  "homepage": "https://github.com/taggerkeeper/api#readme",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}
