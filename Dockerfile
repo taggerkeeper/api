@@ -5,6 +5,7 @@
 
 FROM node:18-alpine
 ENV NODE_ENV=production
+ENV CONNECTIONSTRING=mongodb://mongodb:27017/taggerkeeper
 RUN addgroup api && adduser -S -G api api
 RUN apk add dumb-init
 USER api
@@ -15,4 +16,4 @@ COPY . .
 
 EXPOSE 8080
 
-CMD ["dumb-init", "node", "server.js"]
+CMD ["dumb-init", "node", "dist/server.js"]
