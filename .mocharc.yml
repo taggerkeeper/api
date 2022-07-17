@@ -1,0 +1,9 @@
+exit: true
+extension: ['ts']
+loader: 'ts-node/esm'
+reporter: 'nyan'
+recursive: true
+require:
+  - 'ts-node/register'
+  - 'env-test'
+spec: './src/**/*.spec.ts'
