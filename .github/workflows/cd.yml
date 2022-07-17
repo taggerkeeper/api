@@ -91,9 +91,11 @@ jobs:
         run: ssh ${{secrets.DIGITALOCEAN_SSH_USER}}@${{secrets.DIGITALOCEAN_SSH_HOST}} "docker pull ${{env.REGISTRY}}/${{env.REPO}}:latest"
 
       - name: Stop old container
+        continue-on-error: true
         run: ssh ${{secrets.DIGITALOCEAN_SSH_USER}}@${{secrets.DIGITALOCEAN_SSH_HOST}} "docker stop ${{env.CONTAINER}}"
 
       - name: Remove old container
+        continue-on-error: true
         run: ssh ${{secrets.DIGITALOCEAN_SSH_USER}}@${{secrets.DIGITALOCEAN_SSH_HOST}} "docker rm ${{env.CONTAINER}}"
 
       - name: Start latest container
