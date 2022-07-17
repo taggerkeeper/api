@@ -80,11 +80,9 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Set up SSH connection
-        uses: appleboy/ssh-action@master
+        uses: webfactory/ssh-agent@v0.5.4
         with:
-          host: ${{ secrets.DIGITALOCEAN_SSH_HOST }}
-          username: ${{ secrets.DIGITALOCEAN_SSH_USER }}
-          password: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
+          ssh-private-key: ${{ secrets.DIGITALOCEAN_SSH_KEY }}
 
       - name: Add to known hosts
         run: ssh-keyscan -H ${{ secrets.DIGITALOCEAN_SSH_HOST }} >> ~/.ssh/known_hosts
