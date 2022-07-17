@@ -3,17 +3,32 @@
 # Installation ################################################################
 # Set up our environment and install our dependencies.
 
-FROM node:18-alpine
-ENV NODE_ENV=production
-ENV CONNECTIONSTRING=mongodb://mongodb:27017/taggerkeeper
+FROM node:18-alpine AS installation
 RUN addgroup api && adduser -S -G api api
 RUN apk add dumb-init
 USER api
 WORKDIR /api
 COPY package*.json ./
+
+# Test ########################################################################
+# Run test
+
+FROM installation AS test
+ENV NODE_ENV=test
+ENV CONNECTIONSTRING=mongodb://mongodb:27017/taggerkeeper_test
+RUN npm ci
+RUN pwd
+RUN ls node_modules
+COPY . .
+RUN npm test
+
+# Production ##################################################################
+# Run API
+
+FROM installation AS production
+ENV NODE_ENV=production
+ENV CONNECTIONSTRING=mongodb://mongodb:27017/taggerkeeper
 RUN npm ci --only=production
 COPY . .
-
 EXPOSE 8080
-
 CMD ["dumb-init", "node", "dist/server.js"]
