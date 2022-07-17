@@ -1,4 +1,4 @@
-name: Tagger Keeper API CD
+name: Publish new version to Docker Hub
 
 on:
   push:
