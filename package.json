@@ -25,6 +25,7 @@
   },
   "homepage": "https://github.com/taggerkeeper/api#readme",
   "scripts": {
+    "test": "mocha --require ts-node/register",
     "build": "tsc --project ./",
     "dev:start": "npm-run-all build dev:server",
     "dev:server": "nodemon src/index.ts"
