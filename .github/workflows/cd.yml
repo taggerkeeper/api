@@ -41,9 +41,6 @@ jobs:
       - name: Check out repo
         uses: actions/checkout@v3
 
-      - name: Build Typescript
-        run: npm run build
-
       - name: Cache Docker layers
         uses: actions/cache@v2
         with:

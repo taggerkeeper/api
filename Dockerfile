@@ -29,6 +29,6 @@ FROM installation AS production
 ENV NODE_ENV=production
 ENV CONNECTIONSTRING=mongodb://mongodb:27017/taggerkeeper
 RUN npm ci --only=production
-COPY . .
+COPY dist ./dist
 EXPOSE 8080
 CMD ["dumb-init", "node", "dist/server.js"]
