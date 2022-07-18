@@ -67,7 +67,7 @@ jobs:
           file: ./Dockerfile
           builder: ${{ steps.buildx.outputs.name }}
           push: true
-          tags: ghcr.io/${{ secrets.DOCKERHUB_USERNAME }}/api:latest
+          tags: ${{ env.REGISTRY }}/${{ env.REPO }}:latest
           target: production
           cache-from: type=local,src=/tmp/.buildx-cache
           cache-to: type=local,dest=/tmp/.buildx-cache
@@ -89,18 +89,18 @@ jobs:
         run: ssh-keyscan -H ${{ secrets.DIGITALOCEAN_SSH_HOST }} >> ~/.ssh/known_hosts
 
       - name: Pull latest container
-        run: ssh ${{secrets.DIGITALOCEAN_SSH_USER}}@${{secrets.DIGITALOCEAN_SSH_HOST}} "docker pull ${{env.REGISTRY}}/${{env.REPO}}:latest"
+        run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker pull ${{ env.REGISTRY }}/${{ env.REPO }}:latest"
 
       - name: Stop old container
         continue-on-error: true
-        run: ssh ${{secrets.DIGITALOCEAN_SSH_USER}}@${{secrets.DIGITALOCEAN_SSH_HOST}} "docker stop ${{env.CONTAINER}}"
+        run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker stop ${{ env.CONTAINER }}"
 
       - name: Remove old container
         continue-on-error: true
-        run: ssh ${{secrets.DIGITALOCEAN_SSH_USER}}@${{secrets.DIGITALOCEAN_SSH_HOST}} "docker rm ${{env.CONTAINER}}"
+        run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker rm ${{ env.CONTAINER }}"
 
       - name: Start latest container
-        run: ssh ${{secrets.DIGITALOCEAN_SSH_USER}}@${{secrets.DIGITALOCEAN_SSH_HOST}} "docker run --network api -p 8080:8080 -d --restart unless-stopped --name=${{env.CONTAINER}} ${{env.REGISTRY}}/${{env.REPO}}:latest"
+        run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker run --network api -p 8080:8080 -d --restart unless-stopped --name=${{ env.CONTAINER }} ${{ env.REGISTRY }}/${{ env.REPO }}:latest"
 
       - name: Log out from the GitHub Container Registry
-        run: ssh ${{secrets.DIGITALOCEAN_SSH_USER}}@${{secrets.DIGITALOCEAN_SSH_HOST}} "docker logout ${{env.REGISTRY}}"
+        run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker logout ${{ env.REGISTRY }}"
