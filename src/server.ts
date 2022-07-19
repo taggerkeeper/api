@@ -3,8 +3,8 @@ import mongoose from 'mongoose'
 
 // Parse environment variables into something useful
 const { PORT, CONNECTIONSTRING } = process.env
-const port: number = PORT ? parseInt(PORT) : 8080
-const connectionString: string = CONNECTIONSTRING || 'mongodb://localhost/taggerkeeper'
+const port: number = PORT !== undefined ? parseInt(PORT) : 8080
+const connectionString: string = CONNECTIONSTRING !== undefined || 'mongodb://localhost/taggerkeeper'
 
 // Connect to MongoDB
 await mongoose.connect(connectionString)
@@ -13,7 +13,7 @@ const api = express()
 
 // GET /
 api.get('/', (req, res) => {
-  res.send({ message: 'Hello, world! '})
+  res.send({ message: 'Hello, world! ' })
 })
 
 // Start server
@@ -26,13 +26,19 @@ const server = api.listen(port, () => {
  * @param {*} signal - The signal passed from the process.
  */
 
-const closeGracefully = (signal: any) => {
-  console.log(`Recieved signal to terminate: ${signal}`)
-  server.close(async () => {
-    await mongoose.disconnect()
-    console.log('Database connections closed')
-    console.log('HTTP server closed')
-    process.exit(0)
+const closeGracefully = (signal: any): void => {
+  console.log(`Recieved signal to terminate: ${signal as string}`)
+  server.close(() => {
+    mongoose.disconnect()
+      .then(() => {
+        console.log('Database connections closed')
+        console.log('HTTP server closed')
+        process.exit(0)
+      })
+      .catch(err => {
+        console.error(err)
+        process.exit(0)
+      })
   })
 }
 
