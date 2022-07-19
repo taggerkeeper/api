@@ -4,7 +4,7 @@ import mongoose from 'mongoose'
 // Parse environment variables into something useful
 const { PORT, CONNECTIONSTRING } = process.env
 const port: number = PORT !== undefined ? parseInt(PORT) : 8080
-const connectionString: string = CONNECTIONSTRING !== undefined || 'mongodb://localhost/taggerkeeper'
+const connectionString: string = CONNECTIONSTRING !== undefined ? CONNECTIONSTRING : 'mongodb://localhost/taggerkeeper'
 
 // Connect to MongoDB
 await mongoose.connect(connectionString)
