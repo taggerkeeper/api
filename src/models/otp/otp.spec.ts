@@ -1,4 +1,5 @@
 import { expect } from 'chai'
+import validDataUrl from 'valid-data-url'
 import OTP from './otp.js'
 
 describe('OTP', () => {
@@ -34,6 +35,35 @@ describe('OTP', () => {
         const otp = new OTP()
         const val = otp.enable(secret)
         expect(val).to.equal(true)
+      })
+    })
+  })
+
+  describe('Static methods', () => {
+    describe('generate', () => {
+      it('returns the secret in ASCII plain text', async () => {
+        const { ascii } = await OTP.generate()
+        expect(ascii).not.to.equal(undefined)
+      })
+
+      it('returns the secret in hexadecimal', async () => {
+        const { hex } = await OTP.generate()
+        expect(hex).not.to.equal(undefined)
+      })
+
+      it('returns the secret in base32', async () => {
+        const { base32 } = await OTP.generate()
+        expect(base32).not.to.equal(undefined)
+      })
+
+      it('returns the secret in a handy URL format', async () => {
+        const secret = await OTP.generate()
+        expect(secret.otpauth_url).not.to.equal(undefined)
+      })
+
+      it('returns a data URL for the QR code', async () => {
+        const { qr } = await OTP.generate()
+        expect(validDataUrl(qr)).to.equal(true)
       })
     })
   })
