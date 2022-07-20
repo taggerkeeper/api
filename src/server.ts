@@ -1,10 +1,12 @@
 import express from 'express'
 import mongoose from 'mongoose'
 
+import getValOrDefault from './utils/get-val-or-default.js'
+
 // Parse environment variables into something useful
 const { PORT, CONNECTIONSTRING } = process.env
-const port: number = PORT !== undefined ? parseInt(PORT) : 8080
-const connectionString: string = CONNECTIONSTRING !== undefined ? CONNECTIONSTRING : 'mongodb://localhost/taggerkeeper'
+const port: number = getValOrDefault(PORT, 8080)
+const connectionString: string = getValOrDefault(CONNECTIONSTRING, 'mongodb://localhost/taggerkeeper')
 
 // Connect to MongoDB
 await mongoose.connect(connectionString)
