@@ -38,6 +38,31 @@ describe('OTP', () => {
         expect(val).to.equal(true)
       })
     })
+
+    describe('verify', () => {
+      it('always returns true if OTP is not enabled', async () => {
+        const otp = new OTP()
+        const actual = await otp.verify(secret)
+        expect(actual).to.equal(true)
+      })
+
+      it('returns true if given a valid token', async () => {
+        const otp = new OTP()
+        otp.enable(secret)
+        const token = speakeasy.totp({ secret, encoding: 'base32' })
+        const actual = await otp.verify(token)
+        expect(actual).to.equal(true)
+      })
+
+      it('returns false if enabled but not given a valid token', async () => {
+        const otp = new OTP()
+        otp.enable(secret)
+        const valid = speakeasy.totp({ secret, encoding: 'base32' })
+        const invalid = valid === '111111' ? '222222' : '111111'
+        const actual = await otp.verify(invalid)
+        expect(actual).to.equal(false)
+      })
+    })
   })
 
   describe('Static methods', () => {

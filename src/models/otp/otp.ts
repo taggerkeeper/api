@@ -19,6 +19,11 @@ class OTP {
     return this.enabled
   }
 
+  async verify (token: string): Promise<boolean> {
+    if (!this.enabled) return true
+    return OTP.verify(this.secret as string, token)
+  }
+
   static async generate (): Promise<OTPSecret> {
     const secret = speakeasy.generateSecret()
     const qr = secret?.otpauth_url !== undefined ? await QRCode.toDataURL(secret.otpauth_url) : ''
