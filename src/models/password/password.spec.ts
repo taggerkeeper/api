@@ -10,6 +10,25 @@ describe('Password', () => {
     })
   })
 
+  describe('Instance methods', () => {
+    describe('change', () => {
+      it('changes the password', () => {
+        const pwd = new Password('password')
+        const before = pwd.hash
+        pwd.change('new password')
+        expect(before).not.to.equal(pwd.hash)
+      })
+
+      it('encrypts the new password', () => {
+        const newPassword = 'new password'
+        const pwd = new Password('password')
+        const before = pwd.hash
+        pwd.change(newPassword)
+        expect(before).not.to.equal(newPassword)
+      })
+    })
+  })
+
   describe('Static methods', () => {
     describe('encrypt', () => {
       it('hashes the password', () => {
