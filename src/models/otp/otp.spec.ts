@@ -16,23 +16,25 @@ describe('OTP', () => {
     })
   })
 
-  describe('enable', () => {
-    it('sets the secret', () => {
-      const otp = new OTP()
-      otp.enable(secret)
-      expect(otp.secret).to.equal(secret)
-    })
+  describe('Instance methods', () => {
+    describe('enable', () => {
+      it('sets the secret', () => {
+        const otp = new OTP()
+        otp.enable(secret)
+        expect(otp.secret).to.equal(secret)
+      })
 
-    it('sets that the OTP is enabled', () => {
-      const otp = new OTP()
-      otp.enable('shhhhh')
-      expect(otp.enabled).to.equal(true)
-    })
+      it('sets that the OTP is enabled', () => {
+        const otp = new OTP()
+        otp.enable('shhhhh')
+        expect(otp.enabled).to.equal(true)
+      })
 
-    it('returns true', () => {
-      const otp = new OTP()
-      const val = otp.enable(secret)
-      expect(val).to.equal(true)
+      it('returns true', () => {
+        const otp = new OTP()
+        const val = otp.enable(secret)
+        expect(val).to.equal(true)
+      })
     })
   })
 })
