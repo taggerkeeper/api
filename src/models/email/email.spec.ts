@@ -35,4 +35,24 @@ describe('Email', () => {
       expect(email.code).to.equal(code)
     })
   })
+
+  describe('generateVerificationCode', () => {
+    it('returns a string', () => {
+      const email = new Email()
+      const code = email.generateVerificationCode()
+      expect(typeof code).to.equal('string')
+    })
+
+    it('returns a 10-character string', () => {
+      const email = new Email()
+      const code = email.generateVerificationCode()
+      expect(code).to.have.lengthOf(10)
+    })
+
+    it('saves the code', () => {
+      const email = new Email()
+      const code = email.generateVerificationCode()
+      expect(code).to.equal(email.code)
+    })
+  })
 })
