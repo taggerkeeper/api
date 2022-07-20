@@ -55,4 +55,62 @@ describe('Email', () => {
       expect(code).to.equal(email.code)
     })
   })
+
+  describe('verify', () => {
+    it('returns false if the code is wrong', () => {
+      const email = new Email('tester@testing.com')
+      email.generateVerificationCode()
+      const res = email.verify('lolnope')
+      expect(res).to.equal(false)
+    })
+
+    it('doesn\'t verify the email if the code is wrong', () => {
+      const email = new Email('tester@testing.com')
+      email.generateVerificationCode()
+      email.verify('lolnope')
+      expect(email.verified).to.equal(false)
+    })
+
+    it('doesn\'t verify the email if it has no address', () => {
+      const email = new Email()
+      const code = email.generateVerificationCode()
+      email.verify(code)
+      expect(email.verified).to.equal(false)
+    })
+
+    it('doesn\'t verify the email if the address is a null string', () => {
+      const email = new Email('')
+      const code = email.generateVerificationCode()
+      email.verify(code)
+      expect(email.verified).to.equal(false)
+    })
+
+    it('returns true if the code is correct', () => {
+      const email = new Email('tester@testing.com')
+      const code = email.generateVerificationCode()
+      const res = email.verify(code)
+      expect(res).to.equal(true)
+    })
+
+    it('verifies the email if the code is correct', () => {
+      const email = new Email('tester@testing.com')
+      const code = email.generateVerificationCode()
+      email.verify(code)
+      expect(email.verified).to.equal(true)
+    })
+
+    it('returns true if you supply an incorrect code to an already-verified email', () => {
+      const email = new Email('tester@testing.com', true)
+      email.generateVerificationCode()
+      const res = email.verify('lolnope')
+      expect(res).to.equal(true)
+    })
+
+    it('returns true if you supply the correct code to an already-verified email', () => {
+      const email = new Email('tester@testing.com', true)
+      const code = email.generateVerificationCode()
+      const res = email.verify(code)
+      expect(res).to.equal(true)
+    })
+  })
 })

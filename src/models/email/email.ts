@@ -1,4 +1,5 @@
 import cryptoRandomString from 'crypto-random-string'
+import exists from '../../utils/exists.js'
 
 class Email {
   addr?: string
@@ -14,6 +15,12 @@ class Email {
   generateVerificationCode (): string {
     this.code = cryptoRandomString({ length: 10 })
     return this.code
+  }
+
+  verify (code: string): boolean {
+    if (!exists(this.addr)) return false
+    if (code === this.code) this.verified = true
+    return this.verified
   }
 }
 
