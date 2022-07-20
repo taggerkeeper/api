@@ -1,11 +1,13 @@
 import bcrypt from 'bcryptjs'
+import cryptoRandomString from 'crypto-random-string'
+import getValOrDefault from '../../utils/get-val-or-default.js'
 const { genSaltSync, hashSync } = bcrypt
 
 class Password {
   hash: string = ''
 
   constructor (plaintext?: string) {
-    this.hash = plaintext === undefined ? '' : plaintext
+    this.change(getValOrDefault(plaintext, cryptoRandomString({ length: 64, type: 'distinguishable' })))
   }
 
   change (plaintext: string): void {

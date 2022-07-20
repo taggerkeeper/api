@@ -3,10 +3,15 @@ import Password from './password.js'
 
 describe('Password', () => {
   describe('constructor', () => {
-    it('creates a password', () => {
+    it('hashes the password', () => {
       const plaintext = 'password'
       const pwd = new Password(plaintext)
-      expect(pwd.hash).to.equal(plaintext)
+      expect(pwd.hash).not.to.equal(plaintext)
+    })
+
+    it('generates a random password if you don\'t provide one', () => {
+      const pwd = new Password()
+      expect(pwd.hash).not.to.equal(undefined)
     })
   })
 
