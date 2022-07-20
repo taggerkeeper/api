@@ -24,6 +24,10 @@ class OTP {
     const qr = secret?.otpauth_url !== undefined ? await QRCode.toDataURL(secret.otpauth_url) : ''
     return Object.assign({}, secret, { qr })
   }
+
+  static verify (secret: string, token: string): boolean {
+    return speakeasy.totp.verify({ secret, encoding: 'base32', token, window: 2 })
+  }
 }
 
 export default OTP
