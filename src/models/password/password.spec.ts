@@ -32,6 +32,19 @@ describe('Password', () => {
         expect(before).not.to.equal(newPassword)
       })
     })
+
+    describe('verify', () => {
+      it('returns true if you provide the right password', () => {
+        const plaintext = 'password'
+        const pwd = new Password(plaintext)
+        expect(pwd.verify(plaintext)).to.equal(true)
+      })
+
+      it('returns false if you provide the wrong password', () => {
+        const pwd = new Password('password')
+        expect(pwd.verify('lolnope')).to.equal(false)
+      })
+    })
   })
 
   describe('Static methods', () => {

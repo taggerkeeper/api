@@ -1,7 +1,7 @@
 import bcrypt from 'bcryptjs'
 import cryptoRandomString from 'crypto-random-string'
 import getValOrDefault from '../../utils/get-val-or-default.js'
-const { genSaltSync, hashSync } = bcrypt
+const { genSaltSync, hashSync, compareSync } = bcrypt
 
 class Password {
   hash: string = ''
@@ -12,6 +12,10 @@ class Password {
 
   change (plaintext: string): void {
     this.hash = Password.encrypt(plaintext)
+  }
+
+  verify (plaintext: string): boolean {
+    return compareSync(plaintext, this.hash)
   }
 
   static encrypt (plaintext: string, saltRounds: number = 10): string {
