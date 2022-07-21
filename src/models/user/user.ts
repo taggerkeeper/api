@@ -1,3 +1,4 @@
+import UserModel from './model.js'
 import Password from '../password/password.js'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
@@ -48,6 +49,15 @@ class User {
         enabled: this.otp.enabled,
         secret: this.otp.secret
       }
+    }
+  }
+
+  async save (): Promise<void> {
+    if (this.id === undefined) {
+      const record = await UserModel.create(this.getObj())
+      this.id = record._id?.toString()
+    } else {
+      await UserModel.findOneAndUpdate({ _id: this.id }, this.getObj())
     }
   }
 }
