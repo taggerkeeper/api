@@ -9,6 +9,18 @@ interface UserConstructorOptions {
   password?: string
 }
 
+interface UserObject {
+  id?: string
+  active: boolean
+  admin: boolean
+  password?: string
+  emails: Email[]
+  otp: {
+    enabled: boolean
+    secret?: string
+  }
+}
+
 class User {
   id?: string
   active: boolean
@@ -23,6 +35,20 @@ class User {
     this.password = new Password(options?.password)
     this.emails = []
     this.otp = new OTP()
+  }
+
+  getObj (): UserObject {
+    return {
+      id: this.id,
+      active: this.active,
+      admin: this.admin,
+      password: this.password.hash,
+      emails: this.emails,
+      otp: {
+        enabled: this.otp.enabled,
+        secret: this.otp.secret
+      }
+    }
   }
 }
 
