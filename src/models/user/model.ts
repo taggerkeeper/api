@@ -31,7 +31,16 @@ const schema = new Schema<IUser>({
     }
   ],
   otp: {
-    enabled: { type: Boolean, default: false },
+    enabled: {
+      type: Boolean,
+      default: false,
+      validate: {
+        validator: function (val: boolean) {
+          return val === false || (this as any).otp.secret !== undefined
+        },
+        message: () => 'You must have a secret before you can enable OTP.'
+      }
+    },
     secret: { type: String }
   }
 })

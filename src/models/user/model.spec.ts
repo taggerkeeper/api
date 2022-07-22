@@ -83,5 +83,11 @@ describe('UserModel', () => {
       const actual = new UserModel({ otp: { secret } })
       expect(actual.otp.secret).to.equal(secret)
     })
+
+    it('won\'t let you enable OTP without a secret', () => {
+      const actual = new UserModel({ otp: { enabled: true } })
+      const errors = actual.validateSync()
+      expect(errors?.errors['otp.enabled']).not.to.equal(undefined)
+    })
   })
 })
