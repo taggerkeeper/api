@@ -1,7 +1,9 @@
 import { expect } from 'chai'
+import * as sinon from 'sinon'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
 import Password from '../password/password.js'
+import UserModel, { IUser } from './model.js'
 import User from './user.js'
 
 describe('User', () => {
@@ -125,6 +127,40 @@ describe('User', () => {
         user.otp = otp
         const actual = user.getObj()
         expect(actual.otp.secret).to.equal(secret)
+      })
+    })
+
+    describe('save', () => {
+      const _id = 'abc123'
+      const create = sinon.stub(UserModel, 'create').callsFake(() => {
+        return new Promise(resolve => resolve({ _id }))
+      })
+      const findOneAndUpdate = sinon.stub(UserModel, 'findOneAndUpdate')
+
+      it('creates a new record if the model doesn\'t have an ID', async () => {
+        const user = new User()
+        await user.save()
+        expect(create.callCount).to.equal(1)
+      })
+
+      it('sets the new ID if it didn\'t have one before', async () => {
+        const user = new User()
+        await user.save()
+        expect(user.id).to.equal(_id)
+      })
+
+      it('updates the record if the model already has an ID', async () => {
+        const user = new User()
+        user.id = _id
+        await user.save()
+        expect(findOneAndUpdate.callCount).to.equal(1)
+      })
+
+      it('keeps the existing ID if it already has one', async () => {
+        const user = new User()
+        user.id = _id
+        await user.save()
+        expect(user.id).to.equal(_id)
       })
     })
   })
