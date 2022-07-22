@@ -137,6 +137,8 @@ describe('User', () => {
       })
       const findOneAndUpdate = sinon.stub(UserModel, 'findOneAndUpdate')
 
+      afterEach(() => sinon.resetHistory())
+
       it('creates a new record if the model doesn\'t have an ID', async () => {
         const user = new User()
         await user.save()
