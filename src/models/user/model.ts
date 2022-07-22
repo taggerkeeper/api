@@ -1,18 +1,19 @@
 import mongoose from 'mongoose'
+import Email from '../email/email.js'
 const { Schema, model } = mongoose
+
+interface IEmail {
+  addr?: string
+  verified: boolean
+  code?: string
+}
 
 interface IUser {
   _id?: string
   active: boolean
   admin: boolean
   password?: string
-  emails: [
-    {
-      addr?: string
-      verified: boolean
-      code?: string
-    }
-  ]
+  emails: IEmail[],
   otp: {
     enabled: boolean
     secret?: string
