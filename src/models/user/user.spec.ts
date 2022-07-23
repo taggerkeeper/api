@@ -3,7 +3,7 @@ import * as sinon from 'sinon'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
 import Password from '../password/password.js'
-import UserModel, { IUser } from './model.js'
+import UserModel from './model.js'
 import User from './user.js'
 
 describe('User', () => {
@@ -136,7 +136,7 @@ describe('User', () => {
       afterEach(() => sinon.restore())
 
       it('creates a new record if the model doesn\'t have an ID', async () => {
-        const create = sinon.stub(UserModel, 'create').callsFake(() => {
+        const create = sinon.stub(UserModel, 'create').callsFake((): any => {
           return new Promise(resolve => resolve({ _id }))
         })
         const user = new User()
@@ -145,7 +145,7 @@ describe('User', () => {
       })
 
       it('sets the new ID if it didn\'t have one before', async () => {
-        sinon.stub(UserModel, 'create').callsFake(() => {
+        sinon.stub(UserModel, 'create').callsFake((): any => {
           return new Promise(resolve => resolve({ _id }))
         })
         const user = new User()

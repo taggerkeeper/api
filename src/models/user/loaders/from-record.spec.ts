@@ -1,8 +1,6 @@
 import { expect } from 'chai'
-import * as sinon from 'sinon'
 import User from '../user.js'
 import { IUser } from '../model.js'
-import Email from '../../email/email.js'
 import OTP from '../../otp/otp.js'
 import Password from '../../password/password.js'
 import loadUserFromRecord from './from-record.js'

@@ -1,5 +1,4 @@
 import mongoose from 'mongoose'
-import Email from '../email/email.js'
 const { Schema, model } = mongoose
 
 interface IEmail {
@@ -13,7 +12,7 @@ interface IUser {
   active: boolean
   admin: boolean
   password?: string
-  emails: IEmail[],
+  emails: IEmail[]
   otp: {
     enabled: boolean
     secret?: string
@@ -37,7 +36,7 @@ const schema = new Schema<IUser>({
       default: false,
       validate: {
         validator: function (val: boolean) {
-          return val === false || (this as any).otp.secret !== undefined
+          return !val || (this as any).otp.secret !== undefined
         },
         message: () => 'You must have a secret before you can enable OTP.'
       }
