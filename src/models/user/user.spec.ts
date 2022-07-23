@@ -132,26 +132,29 @@ describe('User', () => {
 
     describe('save', () => {
       const _id = 'abc123'
-      const create = sinon.stub(UserModel, 'create').callsFake(() => {
-        return new Promise(resolve => resolve({ _id }))
-      })
-      const findOneAndUpdate = sinon.stub(UserModel, 'findOneAndUpdate')
 
-      afterEach(() => sinon.resetHistory())
+      afterEach(() => sinon.restore())
 
       it('creates a new record if the model doesn\'t have an ID', async () => {
+        const create = sinon.stub(UserModel, 'create').callsFake(() => {
+          return new Promise(resolve => resolve({ _id }))
+        })
         const user = new User()
         await user.save()
         expect(create.callCount).to.equal(1)
       })
 
       it('sets the new ID if it didn\'t have one before', async () => {
+        sinon.stub(UserModel, 'create').callsFake(() => {
+          return new Promise(resolve => resolve({ _id }))
+        })
         const user = new User()
         await user.save()
         expect(user.id).to.equal(_id)
       })
 
       it('updates the record if the model already has an ID', async () => {
+        const findOneAndUpdate = sinon.stub(UserModel, 'findOneAndUpdate')
         const user = new User()
         user.id = _id
         await user.save()
@@ -159,6 +162,7 @@ describe('User', () => {
       })
 
       it('keeps the existing ID if it already has one', async () => {
+        sinon.stub(UserModel, 'findOneAndUpdate')
         const user = new User()
         user.id = _id
         await user.save()
