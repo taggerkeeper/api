@@ -1,17 +1,15 @@
 import { expect } from 'chai'
 import * as sinon from 'sinon'
-import { Query } from 'mongoose'
 import UserModel from '../model.js'
 import loadUsersByEmail from './by-email.js'
 
 describe('loadUsersByEmail', () => {
   const addr = 'test1@testing.com'
-  const stub = sinon.stub(UserModel, 'find')
 
-  afterEach(() => sinon.resetHistory())
+  afterEach(() => sinon.restore())
 
   it('returns an array', async () => {
-    stub.callsFake((): any => {
+    sinon.stub(UserModel, 'find').callsFake((): any => {
       return new Promise(resolve => resolve([]))
     })
     const actual = await loadUsersByEmail(addr)
@@ -19,7 +17,7 @@ describe('loadUsersByEmail', () => {
   })
 
   it('throws out records that don\'t have the given email address', async () => {
-    stub.callsFake((): any => {
+    sinon.stub(UserModel, 'find').callsFake((): any => {
       return new Promise(resolve => resolve([
         { _id: 'testA', active: true, admin: false, password: 'hash', emails: [], otp: { enabled: false } }
       ]))
@@ -29,7 +27,7 @@ describe('loadUsersByEmail', () => {
   })
 
   it('throws out records for which the given email address is not verified', async () => {
-    stub.callsFake((): any => {
+    sinon.stub(UserModel, 'find').callsFake((): any => {
       return new Promise(resolve => resolve([
         { _id: 'testA', active: true, admin: false, password: 'hash', emails: [{ addr, verified: false }], otp: { enabled: false } }
       ]))
@@ -39,7 +37,7 @@ describe('loadUsersByEmail', () => {
   })
 
   it('returns users who have verified the given email address', async () => {
-    stub.callsFake((): any => {
+    sinon.stub(UserModel, 'find').callsFake((): any => {
       return new Promise(resolve => resolve([
         { _id: 'testA', active: true, admin: false, password: 'hash', emails: [{ addr, verified: true }], otp: { enabled: false } }
       ]))
