@@ -1,9 +1,11 @@
 import cryptoRandomString from 'crypto-random-string'
 import Email from '../email/email.js'
 import User from '../user/user.js'
+import PasswordResetModel from './model.js'
 import getValOrDefault from '../../utils/get-val-or-default.js'
 
 class PasswordReset {
+  id?: string
   user: User
   email: Email
   code: string
@@ -17,6 +19,19 @@ class PasswordReset {
     this.user = user
     this.email = email
     this.code = cryptoRandomString({ length: 32, type: 'distinguishable' })
+  }
+
+  async save (): Promise<void> {
+    const user = this.user.id
+    const { id, email, code, expiration } = this
+    const data = { user, email, code, expiration }
+
+    if (id === undefined) {
+      const record = await PasswordResetModel.create(data)
+      this.id = record._id?.toString()
+    } else {
+      await PasswordResetModel.findOneAndUpdate({ _id: id }, data)
+    }
   }
 }
 

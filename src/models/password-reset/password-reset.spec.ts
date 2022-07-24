@@ -1,7 +1,9 @@
 import { expect } from 'chai'
+import * as sinon from 'sinon'
 import Email from '../email/email.js'
 import User from '../user/user.js'
 import PasswordReset from './password-reset.js'
+import PasswordResetModel from './model.js'
 
 describe('PasswordReset', () => {
   describe('constructor', () => {
@@ -33,6 +35,50 @@ describe('PasswordReset', () => {
       const email = new Email('test@testing.com', true)
       const reset = new PasswordReset(user, email)
       expect(reset.expiration).to.be.below(before)
+    })
+  })
+
+  describe('Instance methods', () => {
+    describe('save', () => {
+      const _id = 'abc123'
+      const user = new User()
+      const email = new Email('test@testing.com', true)
+
+      afterEach(() => sinon.restore())
+
+      it('creates a new record if the model doesn\'t have an ID', async () => {
+        const create = sinon.stub(PasswordResetModel, 'create').callsFake((): any => {
+          return new Promise(resolve => resolve({ _id }))
+        })
+        const reset = new PasswordReset(user, email)
+        await reset.save()
+        expect(create.callCount).to.equal(1)
+      })
+
+      it('sets the new ID if it didn\'t have one before', async () => {
+        sinon.stub(PasswordResetModel, 'create').callsFake((): any => {
+          return new Promise(resolve => resolve({ _id }))
+        })
+        const reset = new PasswordReset(user, email)
+        await reset.save()
+        expect(reset.id).to.equal(_id)
+      })
+
+      it('updates the record if the model already has an ID', async () => {
+        const findOneAndUpdate = sinon.stub(PasswordResetModel, 'findOneAndUpdate')
+        const reset = new PasswordReset(user, email)
+        reset.id = _id
+        await reset.save()
+        expect(findOneAndUpdate.callCount).to.equal(1)
+      })
+
+      it('keeps the existing ID if it already has one', async () => {
+        sinon.stub(PasswordResetModel, 'findOneAndUpdate')
+        const reset = new PasswordReset(user, email)
+        reset.id = _id
+        await reset.save()
+        expect(reset.id).to.equal(_id)
+      })
     })
   })
 })
