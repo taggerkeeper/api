@@ -48,4 +48,4 @@ const schema = new Schema<IUser>({
 const UserModel = model<IUser>('User', schema)
 
 export default UserModel
-export { IUser }
+export { IUser, IEmail }
