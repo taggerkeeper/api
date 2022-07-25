@@ -15,7 +15,7 @@ class PasswordReset {
   constructor (user: User, email: Email) {
     const { PASSWDRESETEXPIRES } = process.env
     const now = new Date().getTime()
-    this.expiration = new Date(now + getValOrDefault(PASSWDRESETEXPIRES, 1800000))
+    this.expiration = new Date(now + parseInt(getValOrDefault(PASSWDRESETEXPIRES, 1800000)))
 
     this.user = user
     this.email = email

@@ -6,7 +6,7 @@ describe('PasswordResetModel', () => {
     it('requires a User ID', () => {
       const actual = new PasswordResetModel()
       const errors = actual.validateSync()
-      expect(errors?.errors['user']).not.to.equal(undefined)
+      expect(errors?.errors.user).not.to.equal(undefined)
     })
 
     it('requires an email address', () => {
