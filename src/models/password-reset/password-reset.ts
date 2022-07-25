@@ -2,6 +2,7 @@ import cryptoRandomString from 'crypto-random-string'
 import Email from '../email/email.js'
 import User from '../user/user.js'
 import PasswordResetModel from './model.js'
+import loadUsersByEmail from '../user/loaders/by-email.js'
 import getValOrDefault from '../../utils/get-val-or-default.js'
 
 class PasswordReset {
@@ -32,6 +33,16 @@ class PasswordReset {
     } else {
       await PasswordResetModel.findOneAndUpdate({ _id: id }, data)
     }
+  }
+
+  static async create (addr: string): Promise<PasswordReset[]> {
+    const resets: PasswordReset[] = []
+    const users = await loadUsersByEmail(addr)
+    for (const user of users) {
+      const emails = user.emails.filter(email => email.addr === addr)
+      if (emails.length > 0) resets.push(new PasswordReset(user, emails[0]))
+    }
+    return resets
   }
 }
 

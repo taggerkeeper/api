@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import * as sinon from 'sinon'
 import Email from '../email/email.js'
 import User from '../user/user.js'
+import UserModel from '../user/model.js'
 import PasswordReset from './password-reset.js'
 import PasswordResetModel from './model.js'
 
@@ -78,6 +79,27 @@ describe('PasswordReset', () => {
         reset.id = _id
         await reset.save()
         expect(reset.id).to.equal(_id)
+      })
+    })
+  })
+
+  describe('Static methods', () => {
+    afterEach(() => sinon.restore())
+
+    describe('create', () => {
+      it('returns a reset for each user with the given email address', async () => {
+        const addr = 'test@testing.com'
+        sinon.stub(UserModel, 'find').callsFake((): any => {
+          return new Promise(resolve => resolve([
+            { _id: 'testA', active: true, admin: false, password: 'hash', emails: [{ addr, verified: true }], otp: { enabled: false } },
+            { _id: 'testB', active: true, admin: false, password: 'hash', emails: [{ addr, verified: true }], otp: { enabled: false } },
+            { _id: 'testC', active: true, admin: false, password: 'hash', emails: [{ addr, verified: true }], otp: { enabled: false } }
+          ]))
+        })
+
+        const resets = await PasswordReset.create(addr)
+        const actual = resets.map(reset => reset.constructor.name)
+        expect(actual.join(' ')).to.equal('PasswordReset PasswordReset PasswordReset')
       })
     })
   })
