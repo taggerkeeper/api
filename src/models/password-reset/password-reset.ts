@@ -13,17 +13,17 @@ class PasswordReset {
   expiration: Date
 
   constructor (user: User, email: Email, code?: string, expiration?: Date) {
-    if (expiration) {
+    if (expiration !== undefined) {
       this.expiration = expiration
     } else {
-      const {PASSWDRESETEXPIRES} = process.env
+      const { PASSWDRESETEXPIRES } = process.env
       const now = new Date().getTime()
       this.expiration = new Date(now + parseInt(getValOrDefault(PASSWDRESETEXPIRES, 1800000)))
     }
 
     this.user = user
     this.email = email
-    this.code = code || cryptoRandomString({ length: 32, type: 'distinguishable' })
+    this.code = code ?? cryptoRandomString({ length: 32, type: 'distinguishable' })
   }
 
   async save (): Promise<void> {
