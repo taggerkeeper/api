@@ -29,6 +29,14 @@ describe('PasswordReset', () => {
       expect(reset.code).to.have.lengthOf(32)
     })
 
+    it('can be given a code', () => {
+      const code = 'abc123'
+      const user = new User()
+      const email = new Email('test@testing.com', true)
+      const reset = new PasswordReset(user, email, code)
+      expect(reset.code).to.equal(code)
+    })
+
     it('expires in 30 minutes by default', () => {
       const before = new Date()
       before.setTime(before.getTime() + 1920000)
@@ -36,6 +44,15 @@ describe('PasswordReset', () => {
       const email = new Email('test@testing.com', true)
       const reset = new PasswordReset(user, email)
       expect(reset.expiration).to.be.below(before)
+    })
+
+    it('can be given an expiration', () => {
+      const expiration = new Date()
+      expiration.setTime(expiration.getTime() + 5000)
+      const user = new User()
+      const email = new Email('test@testing.com', true)
+      const reset = new PasswordReset(user, email, undefined, expiration)
+      expect(reset.expiration).to.equal(expiration)
     })
   })
 
