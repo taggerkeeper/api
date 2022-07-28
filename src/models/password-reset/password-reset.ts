@@ -6,7 +6,6 @@ import loadUsersByEmail from '../user/loaders/by-email.js'
 import getValOrDefault from '../../utils/get-val-or-default.js'
 
 class PasswordReset {
-  id?: string
   user: User
   email: Email
   code: string
@@ -28,15 +27,10 @@ class PasswordReset {
 
   async save (): Promise<void> {
     const user = this.user.id
-    const { id, email, code, expiration } = this
+    const { email, code, expiration } = this
     const data = { user, email, code, expiration }
-
-    if (id === undefined) {
-      const record = await PasswordResetModel.create(data)
-      this.id = record._id?.toString()
-    } else {
-      await PasswordResetModel.findOneAndUpdate({ _id: id }, data)
-    }
+    await PasswordResetModel.deleteMany({ 'email.addr': email.addr })
+    await PasswordResetModel.create(data)
   }
 
   static async create (addr: string): Promise<PasswordReset[]> {

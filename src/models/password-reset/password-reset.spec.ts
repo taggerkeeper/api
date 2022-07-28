@@ -58,44 +58,25 @@ describe('PasswordReset', () => {
 
   describe('Instance methods', () => {
     describe('save', () => {
-      const _id = 'abc123'
       const user = new User()
       const email = new Email('test@testing.com', true)
+      const create = sinon.stub(PasswordResetModel, 'create')
+      const del = sinon.stub(PasswordResetModel, 'deleteMany')
 
-      afterEach(() => sinon.restore())
+      afterEach(() => sinon.resetHistory())
+      after(() => sinon.restore())
 
-      it('creates a new record if the model doesn\'t have an ID', async () => {
-        const create = sinon.stub(PasswordResetModel, 'create').callsFake((): any => {
-          return new Promise(resolve => resolve({ _id }))
-        })
+      it('deletes all existing resets for that email', async () => {
+        const reset = new PasswordReset(user, email)
+        await reset.save()
+        const args = del.firstCall.args
+        expect((args[0] as any)['email.addr']).to.equal(email.addr)
+      })
+
+      it('creates a new reset', async () => {
         const reset = new PasswordReset(user, email)
         await reset.save()
         expect(create.callCount).to.equal(1)
-      })
-
-      it('sets the new ID if it didn\'t have one before', async () => {
-        sinon.stub(PasswordResetModel, 'create').callsFake((): any => {
-          return new Promise(resolve => resolve({ _id }))
-        })
-        const reset = new PasswordReset(user, email)
-        await reset.save()
-        expect(reset.id).to.equal(_id)
-      })
-
-      it('updates the record if the model already has an ID', async () => {
-        const findOneAndUpdate = sinon.stub(PasswordResetModel, 'findOneAndUpdate')
-        const reset = new PasswordReset(user, email)
-        reset.id = _id
-        await reset.save()
-        expect(findOneAndUpdate.callCount).to.equal(1)
-      })
-
-      it('keeps the existing ID if it already has one', async () => {
-        sinon.stub(PasswordResetModel, 'findOneAndUpdate')
-        const reset = new PasswordReset(user, email)
-        reset.id = _id
-        await reset.save()
-        expect(reset.id).to.equal(_id)
       })
     })
   })
