@@ -120,7 +120,7 @@ describe('PasswordReset', () => {
       }
 
       it('throws an error if only given a User ID', () => {
-        const badFn = () => PasswordReset.loadObject({
+        const badFn = (): PasswordReset => PasswordReset.loadObject({
           user: '0123456789abcdef12345678',
           email: { addr, verified: true, code: 'email-verification-code' },
           code: 'abc123',
