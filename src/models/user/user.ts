@@ -1,4 +1,4 @@
-import UserModel from './model.js'
+import UserModel, { IUser } from './model.js'
 import Password from '../password/password.js'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
@@ -59,6 +59,17 @@ class User {
     } else {
       await UserModel.findOneAndUpdate({ _id: this.id }, this.getObj())
     }
+  }
+
+  static loadObject (record: IUser): User {
+    const { active, admin, password } = record
+    const user = new User({ active, admin })
+    user.id = record._id
+    if (typeof password === 'string') user.password.hash = password
+    user.emails = record.emails.map(r => new Email(r.addr, r.verified, r.code))
+    user.otp.enabled = record.otp.enabled
+    user.otp.secret = record.otp.secret
+    return user
   }
 }
 
