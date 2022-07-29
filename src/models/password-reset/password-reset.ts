@@ -1,7 +1,8 @@
 import cryptoRandomString from 'crypto-random-string'
 import Email from '../email/email.js'
 import User from '../user/user.js'
-import PasswordResetModel from './model.js'
+import { IUser } from '../user/model.js'
+import PasswordResetModel, { IPasswordReset } from './model.js'
 import loadUsersByEmail from '../user/loaders/by-email.js'
 import getValOrDefault from '../../utils/get-val-or-default.js'
 
@@ -41,6 +42,13 @@ class PasswordReset {
       if (emails.length > 0) resets.push(new PasswordReset(user, emails[0]))
     }
     return resets
+  }
+
+  static loadObject (record: IPasswordReset): PasswordReset {
+    if (typeof record.user === 'string') throw new Error('PasswordReset.loadObject can only load password reset records on which the user has been populated.')
+    const user = User.loadObject(record.user as IUser)
+    const email = new Email(record.email.addr, record.email.verified, record.email.code)
+    return new PasswordReset(user, email, record.code, record.expiration)
   }
 }
 

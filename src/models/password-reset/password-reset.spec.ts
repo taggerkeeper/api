@@ -100,5 +100,65 @@ describe('PasswordReset', () => {
         expect(actual.join(' ')).to.equal('PasswordReset PasswordReset PasswordReset')
       })
     })
+
+    describe('loadObject', () => {
+      const addr = 'test@testing.com'
+      const record = {
+        user: {
+          _id: '0123456789abcdef12345678',
+          active: true,
+          admin: false,
+          password: 'hash',
+          emails: [
+            { addr, verified: true, code: 'email-verification-code' }
+          ],
+          otp: { enabled: false, secret: 'shhhhh' }
+        },
+        email: { addr, verified: true, code: 'email-verification-code' },
+        code: 'abc123',
+        expiration: new Date()
+      }
+
+      it('throws an error if only given a User ID', () => {
+        const badFn = () => PasswordReset.loadObject({
+          user: '0123456789abcdef12345678',
+          email: { addr, verified: true, code: 'email-verification-code' },
+          code: 'abc123',
+          expiration: new Date()
+        })
+        const msg = 'PasswordReset.loadObject can only load password reset records on which the user has been populated.'
+        expect(badFn).to.throw(msg)
+      })
+
+      it('loads a User instance', () => {
+        const actual = PasswordReset.loadObject(record)
+        expect(actual.user).to.be.an.instanceOf(User)
+      })
+
+      it('loads the email as an Email instance', () => {
+        const actual = PasswordReset.loadObject(record)
+        expect(actual.email).to.be.an.instanceOf(Email)
+      })
+
+      it('loads the email address', () => {
+        const actual = PasswordReset.loadObject(record)
+        expect(actual.email.addr).to.equal(addr)
+      })
+
+      it('loads the code', () => {
+        const actual = PasswordReset.loadObject(record)
+        expect(actual.code).to.equal(record.code)
+      })
+
+      it('loads the expiration as a Date', () => {
+        const actual = PasswordReset.loadObject(record)
+        expect(actual.expiration).to.be.an.instanceOf(Date)
+      })
+
+      it('loads the expiration', () => {
+        const actual = PasswordReset.loadObject(record)
+        expect(actual.expiration).to.equal(record.expiration)
+      })
+    })
   })
 })
