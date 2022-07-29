@@ -3,7 +3,7 @@ import { IUser, IEmail } from '../user/model.js'
 const { Schema, model } = mongoose
 
 interface IPasswordReset {
-  user: IUser['_id']
+  user: IUser['_id'] | IUser
   email: IEmail
   code: string
   expiration: Date
