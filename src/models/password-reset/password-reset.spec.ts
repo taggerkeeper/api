@@ -57,9 +57,46 @@ describe('PasswordReset', () => {
   })
 
   describe('Instance methods', () => {
+    let user: User
+    const email = new Email('test@testing.com', true)
+
+    describe('use', () => {
+      const _id = '0123456789abcdef12345678'
+      const newPasswd = 'this is my new password'
+      let create: sinon.SinonStub
+      let findOneAndUpdate: sinon.SinonStub
+      let del: sinon.SinonStub
+
+      beforeEach(() => {
+        user = new User()
+        create = sinon.stub(UserModel, 'create').callsFake((): any => {
+          return new Promise(resolve => resolve({ _id }))
+        })
+        del = sinon.stub(PasswordResetModel, 'deleteMany')
+      })
+
+      afterEach(() => sinon.restore())
+
+      it('changes the user\'s password', async () => {
+        const reset = new PasswordReset(user, email)
+        await reset.use(newPasswd)
+        expect(user.password.verify(newPasswd)).to.equal(true)
+      })
+
+      it('saves the user', async () => {
+        const reset = new PasswordReset(user, email)
+        await reset.use(newPasswd)
+        expect(create.callCount).to.equal(1)
+      })
+
+      it('deletes all your resets', async () => {
+        const reset = new PasswordReset(user, email)
+        await reset.use(newPasswd)
+        expect(del.callCount).to.equal(1)
+      })
+    })
+
     describe('save', () => {
-      const user = new User()
-      const email = new Email('test@testing.com', true)
       let create: sinon.SinonStub
       let del: sinon.SinonStub
 

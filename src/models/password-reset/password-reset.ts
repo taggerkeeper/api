@@ -1,7 +1,7 @@
 import cryptoRandomString from 'crypto-random-string'
 import Email from '../email/email.js'
 import User from '../user/user.js'
-import { IUser } from '../user/model.js'
+import UserModel, { IUser } from '../user/model.js'
 import PasswordResetModel, { IPasswordReset } from './model.js'
 import loadUsersByEmail from '../user/loaders/by-email.js'
 import getValOrDefault from '../../utils/get-val-or-default.js'
@@ -24,6 +24,13 @@ class PasswordReset {
     this.user = user
     this.email = email
     this.code = code ?? cryptoRandomString({ length: 32, type: 'distinguishable' })
+  }
+
+  async use (newPasswd: string): Promise<void> {
+    const { user, email } = this
+    user.password.change(newPasswd)
+    await user.save()
+    await PasswordResetModel.deleteMany({ 'email.addr': email.addr })
   }
 
   async save (): Promise<void> {
