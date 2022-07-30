@@ -60,11 +60,15 @@ describe('PasswordReset', () => {
     describe('save', () => {
       const user = new User()
       const email = new Email('test@testing.com', true)
-      const create = sinon.stub(PasswordResetModel, 'create')
-      const del = sinon.stub(PasswordResetModel, 'deleteMany')
+      let create: sinon.SinonStub
+      let del: sinon.SinonStub
 
-      afterEach(() => sinon.resetHistory())
-      after(() => sinon.restore())
+      beforeEach(() => {
+        create = sinon.stub(PasswordResetModel, 'create')
+        del = sinon.stub(PasswordResetModel, 'deleteMany')
+      })
+
+      afterEach(() => sinon.restore())
 
       it('deletes all existing resets for that email', async () => {
         const reset = new PasswordReset(user, email)
