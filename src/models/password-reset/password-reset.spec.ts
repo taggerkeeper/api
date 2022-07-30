@@ -74,7 +74,7 @@ describe('PasswordReset', () => {
         const reset = new PasswordReset(user, email)
         await reset.save()
         const args = del.firstCall.args
-        expect((args[0] as any)['email.addr']).to.equal(email.addr)
+        expect((args[0])['email.addr']).to.equal(email.addr)
       })
 
       it('creates a new reset', async () => {

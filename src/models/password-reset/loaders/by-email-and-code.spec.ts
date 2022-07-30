@@ -29,15 +29,15 @@ describe('loadPasswordResetByEmailAndCode', () => {
 
   it('searches by name and code', async () => {
     const stub = sinon.stub(PasswordResetModel, 'findOne').returns({
-      populate: sinon.stub().callsFake((query: any) => new Promise(resolve => resolve(null)))
+      populate: sinon.stub().callsFake(async (query: any): Promise<any> => null)
     } as any)
-    const actual = await loadPasswordResetByEmailAndCode(addr, record.code)
+    await loadPasswordResetByEmailAndCode(addr, record.code)
     expect(stub).to.have.been.calledWithMatch({ 'email.addr': addr, code: record.code })
   })
 
   it('returns null if the query returns null', async () => {
     sinon.stub(PasswordResetModel, 'findOne').returns({
-      populate: sinon.stub().callsFake((query: any) => new Promise(resolve => resolve(null)))
+      populate: sinon.stub().callsFake(async (query: any): Promise<any> => null)
     } as any)
     const actual = await loadPasswordResetByEmailAndCode(addr, record.code)
     expect(actual).to.equal(null)
@@ -45,7 +45,7 @@ describe('loadPasswordResetByEmailAndCode', () => {
 
   it('returns a PasswordReset if the query returns a record', async () => {
     sinon.stub(PasswordResetModel, 'findOne').returns({
-      populate: sinon.stub().callsFake((query: any) => new Promise(resolve => resolve(record)))
+      populate: sinon.stub().callsFake(async (query: any): Promise<any> => record)
     } as any)
     const actual = await loadPasswordResetByEmailAndCode(addr, record.code)
     expect(actual).to.be.an.instanceOf(PasswordReset)
