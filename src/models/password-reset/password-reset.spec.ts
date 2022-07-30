@@ -64,7 +64,6 @@ describe('PasswordReset', () => {
       const _id = '0123456789abcdef12345678'
       const newPasswd = 'this is my new password'
       let create: sinon.SinonStub
-      let findOneAndUpdate: sinon.SinonStub
       let del: sinon.SinonStub
 
       beforeEach(() => {

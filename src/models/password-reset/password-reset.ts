@@ -1,7 +1,7 @@
 import cryptoRandomString from 'crypto-random-string'
 import Email from '../email/email.js'
 import User from '../user/user.js'
-import UserModel, { IUser } from '../user/model.js'
+import { IUser } from '../user/model.js'
 import PasswordResetModel, { IPasswordReset } from './model.js'
 import loadUsersByEmail from '../user/loaders/by-email.js'
 import getValOrDefault from '../../utils/get-val-or-default.js'
