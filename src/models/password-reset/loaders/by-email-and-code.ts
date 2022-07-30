@@ -2,9 +2,7 @@ import PasswordResetModel from '../model.js'
 import PasswordReset from '../password-reset.js'
 
 const loadPasswordResetByEmailAndCode = async (addr: string, code: string): Promise<PasswordReset | null> => {
-  console.log({ addr, code })
   const record = await PasswordResetModel.findOne({ 'email.addr': addr, code, expiration: { $lt: new Date() } }).populate('user')
-  console.log(record)
   if (record === null) return null
   return PasswordReset.loadObject(record)
 }
