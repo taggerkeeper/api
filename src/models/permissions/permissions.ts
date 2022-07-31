@@ -33,6 +33,10 @@ class Permissions {
   canRead (user?: User, revisions?: Revision[]): boolean {
     return this.check('read', user, revisions)
   }
+
+  canWrtie (user?: User, revisions?: Revision[]): boolean {
+    return this.check('write', user, revisions)
+  }
 }
 
 export default Permissions
