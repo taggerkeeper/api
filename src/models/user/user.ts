@@ -2,7 +2,7 @@ import UserModel, { IUser } from './model.js'
 import Password from '../password/password.js'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
-import getValOrDefault from '../../utils/get-val-or-default.js'
+import getFirstVal from '../../utils/get-first-val.js'
 
 interface UserConstructorOptions {
   active?: boolean
@@ -31,8 +31,8 @@ class User {
   otp: OTP
 
   constructor (options?: UserConstructorOptions) {
-    this.active = getValOrDefault(options?.active, true)
-    this.admin = getValOrDefault(options?.admin, false)
+    this.active = getFirstVal(options?.active, true)
+    this.admin = getFirstVal(options?.admin, false)
     this.password = new Password(options?.password)
     this.emails = []
     this.otp = new OTP()

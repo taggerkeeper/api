@@ -4,7 +4,7 @@ import User from '../user/user.js'
 import { IUser } from '../user/model.js'
 import PasswordResetModel, { IPasswordReset } from './model.js'
 import loadUsersByEmail from '../user/loaders/by-email.js'
-import getValOrDefault from '../../utils/get-val-or-default.js'
+import getFirstVal from '../../utils/get-first-val.js'
 
 class PasswordReset {
   user: User
@@ -18,7 +18,7 @@ class PasswordReset {
     } else {
       const { PASSWDRESETEXPIRES } = process.env
       const now = new Date().getTime()
-      this.expiration = new Date(now + parseInt(getValOrDefault(PASSWDRESETEXPIRES, 1800000)))
+      this.expiration = new Date(now + parseInt(getFirstVal(PASSWDRESETEXPIRES, 1800000)))
     }
 
     this.user = user
