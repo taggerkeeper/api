@@ -1,38 +1,38 @@
 import { expect } from 'chai'
-import Permissions from './permissions.js'
+import Permissions, { PermissionLevel } from './permissions.js'
 
 describe('Permissions', () => {
   describe('constructor', () => {
-    it('defaults to 777 read permissions', () => {
+    it('defaults to anyone for read permissions', () => {
       const actual = new Permissions()
-      expect(actual.read).to.equal('777')
+      expect(actual.read).to.equal('anyone')
     })
 
     it('defaults to read permissions set by environment variable', () => {
-      process.env.DEFAULT_READ_PERMISSIONS = '770'
+      process.env.DEFAULT_READ_PERMISSIONS = 'authenticated'
       const actual = new Permissions()
-      expect(actual.read).to.equal('770')
+      expect(actual.read).to.equal('authenticated')
     })
 
     it('sets read permissions', () => {
-      const actual = new Permissions('700')
-      expect(actual.read).to.equal('700')
+      const actual = new Permissions(PermissionLevel.editor)
+      expect(actual.read).to.equal('editor')
     })
 
-    it('defaults to 777 write permissions', () => {
+    it('defaults to anyone write permissions', () => {
       const actual = new Permissions()
-      expect(actual.write).to.equal('777')
+      expect(actual.write).to.equal('anyone')
     })
 
     it('defaults to write permissions set by environment variable', () => {
-      process.env.DEFAULT_WRITE_PERMISSIONS = '770'
+      process.env.DEFAULT_WRITE_PERMISSIONS = 'authenticated'
       const actual = new Permissions()
-      expect(actual.write).to.equal('770')
+      expect(actual.write).to.equal('authenticated')
     })
 
     it('sets write permissions', () => {
-      const actual = new Permissions('700', '600')
-      expect(actual.write).to.equal('600')
+      const actual = new Permissions(PermissionLevel.editor, PermissionLevel.editor)
+      expect(actual.write).to.equal('editor')
     })
   })
 })

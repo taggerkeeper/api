@@ -1,14 +1,22 @@
 import getFirstVal from '../../utils/get-first-val.js'
 
-class Permissions {
-  read: string
-  write: string
+enum PermissionLevel {
+  admin = 'admin',
+  editor = 'editor',
+  authenticated = 'authenticated',
+  anyone = 'anyone'
+}
 
-  constructor (read?: string, write?: string) {
+class Permissions {
+  read: PermissionLevel
+  write: PermissionLevel
+
+  constructor (read?: PermissionLevel, write?: PermissionLevel) {
     const { DEFAULT_READ_PERMISSIONS, DEFAULT_WRITE_PERMISSIONS } = process.env
-    this.read = getFirstVal(read, DEFAULT_READ_PERMISSIONS, '777')
-    this.write = getFirstVal(write, DEFAULT_WRITE_PERMISSIONS, '777')
+    this.read = getFirstVal(read, DEFAULT_READ_PERMISSIONS, 'anyone')
+    this.write = getFirstVal(write, DEFAULT_WRITE_PERMISSIONS, 'anyone')
   }
 }
 
 export default Permissions
+export { PermissionLevel }
