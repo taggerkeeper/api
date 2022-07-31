@@ -40,7 +40,7 @@ describe('Permissions', () => {
       expect(actual.write).to.equal('editor')
     })
   })
-  
+
   describe('Instance methods', () => {
     const user = new User()
     const editor = new User()

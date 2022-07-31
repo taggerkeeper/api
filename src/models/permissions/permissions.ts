@@ -27,7 +27,7 @@ class Permissions {
     const isAnyone = level === PermissionLevel.anyone
     const isAuthenticated = level === PermissionLevel.authenticated && exists(user)
     const isEditor = level === PermissionLevel.editor && user?.id !== undefined && editorIDs.includes(user.id)
-    return isAnyone || isAuthenticated || isEditor || user?.admin || false
+    return isAnyone || isAuthenticated || isEditor || user?.admin === true || false
   }
 
   canRead (user?: User, revisions?: Revision[]): boolean {
