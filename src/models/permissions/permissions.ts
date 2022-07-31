@@ -29,6 +29,10 @@ class Permissions {
     const isEditor = level === PermissionLevel.editor && user?.id !== undefined && editorIDs.includes(user.id)
     return isAnyone || isAuthenticated || isEditor || user?.admin || false
   }
+
+  canRead (user?: User, revisions?: Revision[]): boolean {
+    return this.check('read', user, revisions)
+  }
 }
 
 export default Permissions
