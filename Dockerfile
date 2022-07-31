@@ -28,6 +28,7 @@ RUN npm test
 FROM installation AS production
 ENV NODE_ENV=production
 ENV CONNECTIONSTRING=mongodb://mongodb:27017/taggerkeeper
+ENV ELASTICSEARCH=http://elasticsearch:9200
 RUN npm ci --only=production
 COPY dist ./dist
 EXPOSE 8080
