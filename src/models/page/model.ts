@@ -24,7 +24,7 @@ const schema = new Schema<Page>({
   }],
   created: { type: Date, required: true, default: () => Date.now() },
   updated: { type: Date, required: true, default: () => Date.now() },
-  trashed: { type: Date, required: false },
+  trashed: { type: Date, required: false }
 })
 
 const PageModel = model<Page>('Page', schema)
