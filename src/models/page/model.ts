@@ -22,6 +22,7 @@ interface RevisionRecord {
     write: PermissionLevel
   }
   msg: string
+  timestamp: Date
 }
 
 interface PageRecord {
