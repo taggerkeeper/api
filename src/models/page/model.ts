@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
-import Page from './page.js'
 import { PermissionLevel } from '../permissions/permissions.js'
+import { IUser } from '../user/model.js'
 import getFirstVal from '../../utils/get-first-val.js'
 const { Schema, model } = mongoose
 const { DEFAULT_READ_PERMISSIONS, DEFAULT_WRITE_PERMISSIONS } = process.env
@@ -8,7 +8,30 @@ const { DEFAULT_READ_PERMISSIONS, DEFAULT_WRITE_PERMISSIONS } = process.env
 const defaultRead = getFirstVal(DEFAULT_READ_PERMISSIONS, PermissionLevel.anyone)
 const defaultWrite = getFirstVal(DEFAULT_WRITE_PERMISSIONS, PermissionLevel.anyone)
 
-const schema = new Schema<Page>({
+interface ContentRecord {
+  title: string
+  path?: string
+  body: string
+}
+
+interface RevisionRecord {
+  content: ContentRecord
+  editor: IUser['_id'] | IUser
+  permissions: {
+    read: PermissionLevel
+    write: PermissionLevel
+  }
+  msg: string
+}
+
+interface PageRecord {
+  revisions: RevisionRecord[]
+  created: Date
+  updated: Date
+  trashed?: Date
+}
+
+const schema = new Schema<PageRecord>({
   revisions: [{
     content: {
       title: String,
@@ -27,6 +50,7 @@ const schema = new Schema<Page>({
   trashed: { type: Date, required: false }
 })
 
-const PageModel = model<Page>('Page', schema)
+const PageModel = model<PageRecord>('Page', schema)
 
 export default PageModel
+export { ContentRecord, RevisionRecord, PageRecord }
