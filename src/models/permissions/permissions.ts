@@ -10,14 +10,19 @@ enum PermissionLevel {
   anyone = 'anyone'
 }
 
+interface IPermissions {
+  read?: PermissionLevel
+  write?: PermissionLevel
+}
+
 class Permissions {
   read: PermissionLevel
   write: PermissionLevel
 
-  constructor (read?: PermissionLevel, write?: PermissionLevel) {
+  constructor (options?: IPermissions) {
     const { DEFAULT_READ_PERMISSIONS, DEFAULT_WRITE_PERMISSIONS } = process.env
-    this.read = getFirstVal(read, DEFAULT_READ_PERMISSIONS, 'anyone')
-    this.write = getFirstVal(write, DEFAULT_WRITE_PERMISSIONS, 'anyone')
+    this.read = getFirstVal(options?.read, DEFAULT_READ_PERMISSIONS, 'anyone')
+    this.write = getFirstVal(options?.write, DEFAULT_WRITE_PERMISSIONS, 'anyone')
   }
 
   check (type: string, user?: User, revisions?: Revision[]): boolean {
@@ -40,4 +45,4 @@ class Permissions {
 }
 
 export default Permissions
-export { PermissionLevel }
+export { PermissionLevel, IPermissions }

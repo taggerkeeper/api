@@ -35,7 +35,7 @@ describe('Revision', () => {
     })
 
     it('sets read permissions', () => {
-      const permissions = new Permissions(PermissionLevel.authenticated)
+      const permissions = new Permissions({ read: PermissionLevel.authenticated })
       const actual = new Revision({ content, editor, permissions, msg })
       expect(actual.permissions.read).to.equal(PermissionLevel.authenticated)
     })
@@ -45,7 +45,7 @@ describe('Revision', () => {
     })
 
     it('sets write permissions', () => {
-      const permissions = new Permissions(PermissionLevel.authenticated, PermissionLevel.editor)
+      const permissions = new Permissions({ write: PermissionLevel.editor })
       const actual = new Revision({ content, editor, permissions, msg })
       expect(actual.permissions.write).to.equal(PermissionLevel.editor)
     })

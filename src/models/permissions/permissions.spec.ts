@@ -19,7 +19,7 @@ describe('Permissions', () => {
     })
 
     it('sets read permissions', () => {
-      const actual = new Permissions(PermissionLevel.editor)
+      const actual = new Permissions({ read: PermissionLevel.editor })
       expect(actual.read).to.equal('editor')
     })
 
@@ -36,7 +36,7 @@ describe('Permissions', () => {
     })
 
     it('sets write permissions', () => {
-      const actual = new Permissions(PermissionLevel.editor, PermissionLevel.editor)
+      const actual = new Permissions({ write: PermissionLevel.editor })
       expect(actual.write).to.equal('editor')
     })
   })
@@ -57,17 +57,17 @@ describe('Permissions', () => {
       })
 
       it('returns false for an anonymous user if only authenticated users can read', () => {
-        const perms = new Permissions(PermissionLevel.authenticated)
+        const perms = new Permissions({ read: PermissionLevel.authenticated })
         expect(perms.check('read', undefined, revisions)).to.equal(false)
       })
 
       it('returns false for an anonymous user if only editors can read', () => {
-        const perms = new Permissions(PermissionLevel.editor)
+        const perms = new Permissions({ read: PermissionLevel.editor })
         expect(perms.check('read', undefined, revisions)).to.equal(false)
       })
 
       it('returns false for an anonymous user if only admins can read', () => {
-        const perms = new Permissions(PermissionLevel.admin)
+        const perms = new Permissions({ read: PermissionLevel.admin })
         expect(perms.check('read', undefined, revisions)).to.equal(false)
       })
 
@@ -77,17 +77,17 @@ describe('Permissions', () => {
       })
 
       it('returns true for an authenticated user if only authenticated users can read', () => {
-        const perms = new Permissions(PermissionLevel.authenticated)
+        const perms = new Permissions({ read: PermissionLevel.authenticated })
         expect(perms.check('read', user, revisions)).to.equal(true)
       })
 
       it('returns false for an authenticated user if only editors can read', () => {
-        const perms = new Permissions(PermissionLevel.editor)
+        const perms = new Permissions({ read: PermissionLevel.editor })
         expect(perms.check('read', user, revisions)).to.equal(false)
       })
 
       it('returns false for an authenticated user if only admins can read', () => {
-        const perms = new Permissions(PermissionLevel.admin)
+        const perms = new Permissions({ read: PermissionLevel.admin })
         expect(perms.check('read', user, revisions)).to.equal(false)
       })
 
@@ -97,17 +97,17 @@ describe('Permissions', () => {
       })
 
       it('returns true for an editor if only authenticated users can read', () => {
-        const perms = new Permissions(PermissionLevel.authenticated)
+        const perms = new Permissions({ read: PermissionLevel.authenticated })
         expect(perms.check('read', editor, revisions)).to.equal(true)
       })
 
       it('returns true for an editor if only editors can read', () => {
-        const perms = new Permissions(PermissionLevel.editor)
+        const perms = new Permissions({ read: PermissionLevel.editor })
         expect(perms.check('read', editor, revisions)).to.equal(true)
       })
 
       it('returns false for an editor if only admins can read', () => {
-        const perms = new Permissions(PermissionLevel.admin)
+        const perms = new Permissions({ read: PermissionLevel.admin })
         expect(perms.check('read', editor, revisions)).to.equal(false)
       })
 
@@ -117,17 +117,17 @@ describe('Permissions', () => {
       })
 
       it('returns true for an admin if only authenticated users can read', () => {
-        const perms = new Permissions(PermissionLevel.authenticated)
+        const perms = new Permissions({ read: PermissionLevel.authenticated })
         expect(perms.check('read', admin, revisions)).to.equal(true)
       })
 
       it('returns true for an admin if only editors can read', () => {
-        const perms = new Permissions(PermissionLevel.editor)
+        const perms = new Permissions({ read: PermissionLevel.editor })
         expect(perms.check('read', admin, revisions)).to.equal(true)
       })
 
       it('returns true for an admin if only admins can read', () => {
-        const perms = new Permissions(PermissionLevel.admin)
+        const perms = new Permissions({ read: PermissionLevel.admin })
         expect(perms.check('read', admin, revisions)).to.equal(true)
       })
 
@@ -137,44 +137,37 @@ describe('Permissions', () => {
       })
 
       it('returns false for an anonymous user if only authenticated users can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.authenticated
+        const perms = new Permissions({ write: PermissionLevel.authenticated })
         expect(perms.check('write', undefined, revisions)).to.equal(false)
       })
 
       it('returns false for an anonymous user if only editors can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.editor
+        const perms = new Permissions({ write: PermissionLevel.editor })
         expect(perms.check('write', undefined, revisions)).to.equal(false)
       })
 
       it('returns false for an anonymous user if only admins can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.admin
+        const perms = new Permissions({ write: PermissionLevel.admin })
         expect(perms.check('write', undefined, revisions)).to.equal(false)
       })
 
       it('returns true for an authenticated user if anyone can write', () => {
         const perms = new Permissions()
-        perms.write = PermissionLevel.anyone
         expect(perms.check('write', user, revisions)).to.equal(true)
       })
 
       it('returns true for an authenticated user if only authenticated users can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.authenticated
+        const perms = new Permissions({ write: PermissionLevel.authenticated })
         expect(perms.check('write', user, revisions)).to.equal(true)
       })
 
       it('returns false for an authenticated user if only editors can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.editor
+        const perms = new Permissions({ write: PermissionLevel.editor })
         expect(perms.check('write', user, revisions)).to.equal(false)
       })
 
       it('returns false for an authenticated user if only admins can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.admin
+        const perms = new Permissions({ write: PermissionLevel.admin })
         expect(perms.check('write', user, revisions)).to.equal(false)
       })
 
@@ -184,20 +177,17 @@ describe('Permissions', () => {
       })
 
       it('returns true for an editor if only authenticated users can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.authenticated
+        const perms = new Permissions({ write: PermissionLevel.authenticated })
         expect(perms.check('write', editor, revisions)).to.equal(true)
       })
 
       it('returns true for an editor if only editors can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.editor
+        const perms = new Permissions({ write: PermissionLevel.editor })
         expect(perms.check('write', editor, revisions)).to.equal(true)
       })
 
       it('returns false for an editor if only admins can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.admin
+        const perms = new Permissions({ write: PermissionLevel.admin })
         expect(perms.check('write', editor, revisions)).to.equal(false)
       })
 
@@ -207,20 +197,17 @@ describe('Permissions', () => {
       })
 
       it('returns true for an admin if only authenticated users can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.authenticated
+        const perms = new Permissions({ write: PermissionLevel.authenticated })
         expect(perms.check('write', admin, revisions)).to.equal(true)
       })
 
       it('returns true for an admin if only editors can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.editor
+        const perms = new Permissions({ write: PermissionLevel.editor })
         expect(perms.check('write', admin, revisions)).to.equal(true)
       })
 
       it('returns true for an admin if only admins can write', () => {
-        const perms = new Permissions()
-        perms.write = PermissionLevel.admin
+        const perms = new Permissions({ write: PermissionLevel.admin })
         expect(perms.check('write', admin, revisions)).to.equal(true)
       })
     })
