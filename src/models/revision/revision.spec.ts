@@ -11,7 +11,7 @@ describe('Revision', () => {
     const body = 'This is a revision that I made.'
     const msg = 'This is a test revision.'
     const editor = new User()
-    const content = new Content(title, body)
+    const content = new Content({ title, body })
     const actual = new Revision({ content, editor, msg })
 
     it('sets the content title', () => {

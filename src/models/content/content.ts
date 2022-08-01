@@ -1,10 +1,20 @@
+import slugify from 'slugify'
+
+interface ContentConstructorOptions {
+  title: string
+  path?: string
+  body: string
+}
+
 class Content {
   title: string
+  path: string
   body: string
 
-  constructor (title: string, body: string) {
-    this.title = title
-    this.body = body
+  constructor (options: ContentConstructorOptions) {
+    this.title = options.title
+    this.path = options.path ?? `/${slugify(this.title)}`
+    this.body = options.body
   }
 }
 
