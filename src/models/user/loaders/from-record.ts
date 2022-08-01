@@ -10,11 +10,7 @@ const loadUserFromRecord = (record: IUser | null): User | null => {
   user.id = _id?.toString()
 
   if (password !== undefined) user.password.hash = password
-
-  for (const email of record.emails) {
-    const e = new Email(email.addr, email.verified, email.code)
-    user.emails.push(e)
-  }
+  user.emails = record.emails.map(data => new Email(data))
 
   if (otp !== undefined) {
     user.otp.enabled = otp.enabled

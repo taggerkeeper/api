@@ -103,7 +103,7 @@ describe('User', () => {
       it('includes the user\'s emails', () => {
         const user = new User()
         const emails = []
-        for (let i = 1; i < 4; i++) emails.push(new Email(`test${i}@testing.com`))
+        for (let i = 1; i < 4; i++) emails.push(new Email({ addr: `test${i}@testing.com` }))
         user.emails = emails
         const actual = user.getObj()
         expect(JSON.stringify(actual.emails)).to.equal(JSON.stringify(emails))

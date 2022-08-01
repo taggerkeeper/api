@@ -66,7 +66,7 @@ class User {
     const user = new User({ active, admin })
     user.id = record._id
     if (typeof password === 'string') user.password.hash = password
-    user.emails = record.emails.map(r => new Email(r.addr, r.verified, r.code))
+    user.emails = record.emails.map(data => new Email(data))
     user.otp.enabled = record.otp.enabled
     user.otp.secret = record.otp.secret
     return user

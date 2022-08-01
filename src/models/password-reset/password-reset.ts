@@ -54,7 +54,7 @@ class PasswordReset {
   static loadObject (record: IPasswordReset): PasswordReset {
     if (typeof record.user === 'string') throw new Error('PasswordReset.loadObject can only load password reset records on which the user has been populated.')
     const user = User.loadObject(record.user as IUser)
-    const email = new Email(record.email.addr, record.email.verified, record.email.code)
+    const email = new Email(record.email)
     return new PasswordReset(user, email, record.code, record.expiration)
   }
 }

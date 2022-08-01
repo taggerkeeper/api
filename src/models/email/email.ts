@@ -1,4 +1,5 @@
 import cryptoRandomString from 'crypto-random-string'
+import EmailData from './data.js'
 import exists from '../../utils/exists.js'
 
 class Email {
@@ -6,10 +7,10 @@ class Email {
   verified: boolean
   code?: string
 
-  constructor (addr?: string, verified?: boolean, code?: string) {
-    this.addr = addr
-    this.verified = verified === true
-    this.code = code
+  constructor (data?: EmailData) {
+    this.addr = data?.addr
+    this.verified = data?.verified === true
+    this.code = data?.code
   }
 
   generateVerificationCode (): string {

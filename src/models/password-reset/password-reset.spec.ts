@@ -17,14 +17,14 @@ describe('PasswordReset', () => {
 
     it('assigns the email given', () => {
       const user = new User()
-      const email = new Email('test@testing.com', true)
+      const email = new Email({ addr: 'test@testing.com', verified: true })
       const reset = new PasswordReset(user, email)
       expect(reset.email).to.equal(email)
     })
 
     it('creates a random 32-character code', () => {
       const user = new User()
-      const email = new Email('test@testing.com', true)
+      const email = new Email({ addr: 'test@testing.com', verified: true })
       const reset = new PasswordReset(user, email)
       expect(reset.code).to.have.lengthOf(32)
     })
@@ -32,7 +32,7 @@ describe('PasswordReset', () => {
     it('can be given a code', () => {
       const code = 'abc123'
       const user = new User()
-      const email = new Email('test@testing.com', true)
+      const email = new Email({ addr: 'test@testing.com', verified: true })
       const reset = new PasswordReset(user, email, code)
       expect(reset.code).to.equal(code)
     })
@@ -41,7 +41,7 @@ describe('PasswordReset', () => {
       const before = new Date()
       before.setTime(before.getTime() + 1920000)
       const user = new User()
-      const email = new Email('test@testing.com', true)
+      const email = new Email({ addr: 'test@testing.com', verified: true })
       const reset = new PasswordReset(user, email)
       expect(reset.expiration).to.be.below(before)
     })
@@ -50,7 +50,7 @@ describe('PasswordReset', () => {
       const expiration = new Date()
       expiration.setTime(expiration.getTime() + 5000)
       const user = new User()
-      const email = new Email('test@testing.com', true)
+      const email = new Email({ addr: 'test@testing.com', verified: true })
       const reset = new PasswordReset(user, email, undefined, expiration)
       expect(reset.expiration).to.equal(expiration)
     })
@@ -58,7 +58,7 @@ describe('PasswordReset', () => {
 
   describe('Instance methods', () => {
     let user: User
-    const email = new Email('test@testing.com', true)
+    const email = new Email({ addr: 'test@testing.com', verified: true })
 
     describe('use', () => {
       const _id = '0123456789abcdef12345678'

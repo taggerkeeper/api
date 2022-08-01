@@ -10,7 +10,7 @@ describe('Email', () => {
 
     it('lets you set the address', () => {
       const addr = 'tester@testing.com'
-      const email = new Email(addr)
+      const email = new Email({ addr })
       expect(email.addr).to.equal(addr)
     })
 
@@ -20,7 +20,7 @@ describe('Email', () => {
     })
 
     it('lets you specify if the email is verified', () => {
-      const email = new Email('tester@testing.com', true)
+      const email = new Email({ addr: 'tester@testing.com', verified: true })
       expect(email.verified).to.equal(true)
     })
 
@@ -31,7 +31,7 @@ describe('Email', () => {
 
     it('lets you set a verification code', () => {
       const code = '123abc'
-      const email = new Email('tester@testing.com', true, code)
+      const email = new Email({ addr: 'tester@testing.com', verified: true, code })
       expect(email.code).to.equal(code)
     })
   })
@@ -59,14 +59,14 @@ describe('Email', () => {
 
     describe('verify', () => {
       it('returns false if the code is wrong', () => {
-        const email = new Email('tester@testing.com')
+        const email = new Email({ addr: 'tester@testing.com' })
         email.generateVerificationCode()
         const res = email.verify('lolnope')
         expect(res).to.equal(false)
       })
 
       it('doesn\'t verify the email if the code is wrong', () => {
-        const email = new Email('tester@testing.com')
+        const email = new Email({ addr: 'tester@testing.com' })
         email.generateVerificationCode()
         email.verify('lolnope')
         expect(email.verified).to.equal(false)
@@ -80,35 +80,35 @@ describe('Email', () => {
       })
 
       it('doesn\'t verify the email if the address is a null string', () => {
-        const email = new Email('')
+        const email = new Email({ addr: '' })
         const code = email.generateVerificationCode()
         email.verify(code)
         expect(email.verified).to.equal(false)
       })
 
       it('returns true if the code is correct', () => {
-        const email = new Email('tester@testing.com')
+        const email = new Email({ addr: 'tester@testing.com' })
         const code = email.generateVerificationCode()
         const res = email.verify(code)
         expect(res).to.equal(true)
       })
 
       it('verifies the email if the code is correct', () => {
-        const email = new Email('tester@testing.com')
+        const email = new Email({ addr: 'tester@testing.com' })
         const code = email.generateVerificationCode()
         email.verify(code)
         expect(email.verified).to.equal(true)
       })
 
       it('returns true if you supply an incorrect code to an already-verified email', () => {
-        const email = new Email('tester@testing.com', true)
+        const email = new Email({ addr: 'tester@testing.com', verified: true })
         email.generateVerificationCode()
         const res = email.verify('lolnope')
         expect(res).to.equal(true)
       })
 
       it('returns true if you supply the correct code to an already-verified email', () => {
-        const email = new Email('tester@testing.com', true)
+        const email = new Email({ addr: 'tester@testing.com', verified: true })
         const code = email.generateVerificationCode()
         const res = email.verify(code)
         expect(res).to.equal(true)
