@@ -1,10 +1,11 @@
 import mongoose from 'mongoose'
-import { IUser, IEmail } from '../user/model.js'
+import EmailData from '../email/data.js'
+import { IUser } from '../user/model.js'
 const { Schema, model } = mongoose
 
 interface IPasswordReset {
   user: IUser['_id'] | IUser
-  email: IEmail
+  email: EmailData
   code: string
   expiration: Date
 }

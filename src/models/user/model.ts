@@ -1,18 +1,13 @@
 import mongoose from 'mongoose'
+import EmailData from '../email/data.js'
 const { Schema, model } = mongoose
-
-interface IEmail {
-  addr?: string
-  verified: boolean
-  code?: string
-}
 
 interface IUser {
   _id?: string
   active: boolean
   admin: boolean
   password?: string
-  emails: IEmail[]
+  emails: EmailData[]
   otp: {
     enabled: boolean
     secret?: string
@@ -48,4 +43,4 @@ const schema = new Schema<IUser>({
 const UserModel = model<IUser>('User', schema)
 
 export default UserModel
-export { IUser, IEmail }
+export { IUser }
