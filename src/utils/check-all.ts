@@ -1,4 +1,4 @@
-const checkAll = (claims: boolean[]): Boolean => {
+const checkAll = (claims: boolean[]): boolean => {
   const reducer = (acc: boolean, curr: boolean): boolean => acc && curr
   return claims.reduce(reducer, true)
 }
