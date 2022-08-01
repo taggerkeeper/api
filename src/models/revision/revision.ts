@@ -7,6 +7,7 @@ interface IRevision {
   editor: User
   permissions?: Permissions
   msg?: string
+  timestamp?: Date
 }
 
 class Revision {
@@ -21,7 +22,7 @@ class Revision {
     this.editor = options.editor
     this.permissions = options.permissions ?? new Permissions()
     this.msg = options.msg ?? ''
-    this.timestamp = new Date()
+    this.timestamp = options.timestamp ?? new Date()
   }
 }
 

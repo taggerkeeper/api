@@ -50,10 +50,16 @@ describe('Revision', () => {
       expect(actual.permissions.write).to.equal(PermissionLevel.editor)
     })
 
-    it('sets the timestamp', () => {
+    it('defaults the timestamp to now', () => {
       const after = new Date()
       const { timestamp } = actual
       expect(timestamp >= before && timestamp <= after).to.equal(true)
+    })
+
+    it('can set the timestamp', () => {
+      const timestamp = new Date('1 August 2022')
+      const actual = new Revision({ content, editor, msg, timestamp })
+      expect(actual.timestamp).to.equal(timestamp)
     })
   })
 })
