@@ -46,8 +46,8 @@ describe('Permissions', () => {
     const editor = new User()
     editor.id = '0123456789abcdef12345678'
     const admin = new User({ admin: true })
-    const r1 = new Revision(new Content('Title', 'Body text goes here.'), editor, 'First revision.')
-    const r2 = new Revision(new Content('New Title', 'Updated body test.'), editor, 'Second revision.')
+    const r1 = new Revision({ content: new Content('Title', 'Body text goes here.'), editor, msg: 'First revision.' })
+    const r2 = new Revision({ content: new Content('New Title', 'Updated body test.'), editor, msg: 'Second revision.' })
     const revisions = [r2, r1]
 
     describe('check', () => {

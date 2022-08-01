@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import Content from '../content/content.js'
 import User from '../user/user.js'
+import Permissions, { PermissionLevel } from '../permissions/permissions.js'
 import Revision from './revision.js'
 
 describe('Revision', () => {
@@ -11,7 +12,7 @@ describe('Revision', () => {
     const msg = 'This is a test revision.'
     const editor = new User()
     const content = new Content(title, body)
-    const actual = new Revision(content, editor, msg)
+    const actual = new Revision({ content, editor, msg })
 
     it('sets the content title', () => {
       expect(actual.content.title).to.equal(title)
@@ -27,6 +28,26 @@ describe('Revision', () => {
 
     it('sets the message', () => {
       expect(actual.msg).to.equal(msg)
+    })
+
+    it('defaults to the default read permissions', () => {
+      expect(actual.permissions.read).to.equal(PermissionLevel.anyone)
+    })
+
+    it('sets read permissions', () => {
+      const permissions = new Permissions(PermissionLevel.authenticated)
+      const actual = new Revision({ content, editor, permissions, msg })
+      expect(actual.permissions.read).to.equal(PermissionLevel.authenticated)
+    })
+
+    it('defaults to the default write permissions', () => {
+      expect(actual.permissions.write).to.equal(PermissionLevel.anyone)
+    })
+
+    it('sets write permissions', () => {
+      const permissions = new Permissions(PermissionLevel.authenticated, PermissionLevel.editor)
+      const actual = new Revision({ content, editor, permissions, msg })
+      expect(actual.permissions.write).to.equal(PermissionLevel.editor)
     })
 
     it('sets the timestamp', () => {
