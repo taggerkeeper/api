@@ -28,7 +28,7 @@ class Permissions {
   check (type: string, user?: User, revisions?: Revision[]): boolean {
     const level = type === 'write' ? this.write : this.read
     const history = revisions ?? []
-    const editorIDs = history.map(rev => rev.editor.id)
+    const editorIDs = history.map(rev => rev.editor?.id)
     const isAnyone = level === PermissionLevel.anyone
     const isAuthenticated = level === PermissionLevel.authenticated && exists(user)
     const isEditor = level === PermissionLevel.editor && user?.id !== undefined && editorIDs.includes(user.id)
