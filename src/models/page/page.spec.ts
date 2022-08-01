@@ -12,7 +12,7 @@ describe('Page', () => {
     const content = new Content({ title, body })
     const editor = new User()
     const rev = new Revision({ content, editor, msg: 'Initial text' })
-    const actual = new Page([rev])
+    const actual = new Page({ revisions: [rev] })
     const after = new Date()
 
     it('sets the revision history', () => {
