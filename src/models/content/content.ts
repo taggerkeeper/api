@@ -1,17 +1,12 @@
 import slugify from 'slugify'
-
-interface IContent {
-  title: string
-  path?: string
-  body: string
-}
+import ContentData from './data.js'
 
 class Content {
   title: string
   path: string
   body: string
 
-  constructor (options: IContent) {
+  constructor (options: ContentData) {
     this.title = options.title
     this.path = options.path ?? `/${slugify(this.title)}`
     this.body = options.body
@@ -19,4 +14,3 @@ class Content {
 }
 
 export default Content
-export { IContent }
