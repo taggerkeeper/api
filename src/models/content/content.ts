@@ -11,6 +11,11 @@ class Content {
     this.path = options.path ?? `/${slugify(this.title)}`
     this.body = options.body
   }
+
+  getObj (): ContentData {
+    const { title, path, body } = this
+    return { title, path, body }
+  }
 }
 
 export default Content
