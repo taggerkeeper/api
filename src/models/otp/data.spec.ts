@@ -2,6 +2,38 @@ import { expect } from 'chai'
 import { isOTPData } from './data.js'
 
 describe('isOTPData', () => {
+  it('returns false if given undefined', () => {
+    expect(isOTPData(undefined)).to.equal(false)
+  })
+
+  it('returns false if given null', () => {
+    expect(isOTPData(null)).to.equal(false)
+  })
+
+  it('returns false if given true', () => {
+    expect(isOTPData(true)).to.equal(false)
+  })
+
+  it('returns false if given false', () => {
+    expect(isOTPData(false)).to.equal(false)
+  })
+
+  it('returns false if given a string', () => {
+    expect(isOTPData('secret')).to.equal(false)
+  })
+
+  it('returns false if given a number', () => {
+    expect(isOTPData(1)).to.equal(false)
+  })
+
+  it('returns false if given an array', () => {
+    expect(isOTPData([])).to.equal(false)
+  })
+
+  it('returns false if given an empty object', () => {
+    expect(isOTPData({})).to.equal(false)
+  })
+
   it('returns true if enabled is true', () => {
     expect(isOTPData({ enabled: true })).to.equal(true)
   })

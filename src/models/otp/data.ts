@@ -8,6 +8,7 @@ interface OTPData {
 }
 
 const isOTPData = (obj: any): obj is OTPData => {
+  if (!exists(obj) || typeof obj !== 'object') return false
   const { enabled, secret } = obj
   return checkAll([
     checkAny([enabled === true, enabled === false]),
