@@ -24,6 +24,26 @@ describe('isUserData', () => {
     expect(isUserData(null)).to.equal(false)
   })
 
+  it('returns false if given a string', () => {
+    expect(isUserData('0123456789abcdef12345678')).to.equal(false)
+  })
+
+  it('returns false if given a number', () => {
+    expect(isUserData(1)).to.equal(false)
+  })
+
+  it('returns false if given true', () => {
+    expect(isUserData(true)).to.equal(false)
+  })
+
+  it('returns false if given false', () => {
+    expect(isUserData(false)).to.equal(false)
+  })
+
+  it('returns false if given an array', () => {
+    expect(isUserData([])).to.equal(false)
+  })
+
   it('returns true if _id is a string', () => {
     const cpy = Object.assign({}, min, { _id: 'test' })
     expect(isUserData(cpy)).to.equal(true)

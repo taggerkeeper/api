@@ -48,7 +48,7 @@ describe('UserModel', () => {
     it('can include an email', () => {
       const emails = [{ addr: 'test@testing.com', verified: false }]
       const model = new UserModel({ emails })
-      const actual = model.emails.map(email => ({ addr: email.addr, verified: email.verified }))
+      const actual = model.emails?.map(email => ({ addr: email.addr, verified: email.verified }))
       expect(JSON.stringify(actual)).to.equal(JSON.stringify(emails))
     })
 
@@ -59,29 +59,29 @@ describe('UserModel', () => {
         { addr: 'test3@testing.com', verified: false }
       ]
       const model = new UserModel({ emails })
-      const actual = model.emails.map(email => ({ addr: email.addr, verified: email.verified }))
+      const actual = model.emails?.map(email => ({ addr: email.addr, verified: email.verified }))
       expect(JSON.stringify(actual)).to.equal(JSON.stringify(emails))
     })
 
     it('defaults to having OTP disabled', () => {
       const actual = new UserModel()
-      expect(actual.otp.enabled).to.equal(false)
+      expect(actual.otp?.enabled).to.equal(false)
     })
 
     it('can enable OTP', () => {
       const actual = new UserModel({ otp: { enabled: true } })
-      expect(actual.otp.enabled).to.equal(true)
+      expect(actual.otp?.enabled).to.equal(true)
     })
 
     it('defaults to having no OTP secret', () => {
       const actual = new UserModel()
-      expect(actual.otp.secret).to.equal(undefined)
+      expect(actual.otp?.secret).to.equal(undefined)
     })
 
     it('can save an OTP secret', () => {
       const secret = 'shhhhh'
       const actual = new UserModel({ otp: { secret } })
-      expect(actual.otp.secret).to.equal(secret)
+      expect(actual.otp?.secret).to.equal(secret)
     })
 
     it('won\'t let you enable OTP without a secret', () => {

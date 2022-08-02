@@ -63,7 +63,7 @@ describe('isPasswordResetData', () => {
   })
 
   it('returns false if given an object for user that isn\'t UserData', () => {
-    const cpy = Object.assign({}, data, { user: {} })
+    const cpy = Object.assign({}, data, { user: { emails: true } })
     expect(isPasswordResetData(cpy)).to.equal(false)
   })
 

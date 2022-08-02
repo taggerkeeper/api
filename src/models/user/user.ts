@@ -6,12 +6,6 @@ import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
 import getFirstVal from '../../utils/get-first-val.js'
 
-interface UserConstructorOptions {
-  active?: boolean
-  admin?: boolean
-  password?: string
-}
-
 class User {
   id?: string
   active: boolean
@@ -20,12 +14,12 @@ class User {
   emails: Email[]
   otp: OTP
 
-  constructor (options?: UserConstructorOptions) {
-    this.active = getFirstVal(options?.active, true)
-    this.admin = getFirstVal(options?.admin, false)
-    this.password = new Password(options?.password)
+  constructor (data?: UserData) {
+    this.active = getFirstVal(data?.active, true)
+    this.admin = getFirstVal(data?.admin, false)
+    this.password = new Password(data?.password)
     this.emails = []
-    this.otp = new OTP()
+    this.otp = new OTP(data?.otp)
   }
 
   getObj (): UserData {
@@ -56,9 +50,9 @@ class User {
     const user = new User({ active, admin })
     if (mongoose.isValidObjectId(record._id)) user.id = record._id?.toString()
     if (typeof password === 'string') user.password.hash = password
-    user.emails = record.emails.map(data => new Email(data))
-    user.otp.enabled = record.otp.enabled
-    user.otp.secret = record.otp.secret
+    if (record.emails !== undefined) user.emails = record.emails.map(data => new Email(data))
+    if (record.otp?.enabled !== undefined) user.otp.enabled = record.otp.enabled
+    if (record.otp?.secret !== undefined) user.otp.secret = record.otp.secret
     return user
   }
 }

@@ -7,25 +7,27 @@ import exists from '../../utils/exists.js'
 interface UserData {
   _id?: string | object
   id?: string
-  active: boolean
-  admin: boolean
+  active?: boolean
+  admin?: boolean
   password?: string
-  emails: EmailData[]
-  otp: OTPData
+  emails?: EmailData[]
+  otp?: OTPData
 }
 
 const isUserData = (obj: any): obj is UserData => {
-  if (!exists(obj)) return false
+  if (!exists(obj) || typeof obj !== 'object' || Array.isArray(obj)) return false
   const { _id, id, active, admin, password, emails, otp } = obj
-  if (!Array.isArray(emails)) return false
+  const e = emails === undefined || !Array.isArray(emails)
+    ? [false]
+    : emails.map((data: any) => isEmailData(data))
   return checkAll([
     checkAny([!exists(_id), typeof _id === 'string', typeof _id === 'object']),
     checkAny([!exists(id), typeof id === 'string']),
-    checkAny([active === true, active === false]),
-    checkAny([admin === true, admin === false]),
+    checkAny([!exists(active), active === true, active === false]),
+    checkAny([!exists(admin), admin === true, admin === false]),
     checkAny([!exists(password), typeof password === 'string']),
-    ...emails.map((data: any) => isEmailData(data)),
-    isOTPData(otp)
+    checkAny([!exists(emails), checkAll(e)]),
+    checkAny([!exists(otp), isOTPData(otp)])
   ])
 }
 

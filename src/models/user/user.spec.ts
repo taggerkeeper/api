@@ -116,7 +116,7 @@ describe('User', () => {
         const user = new User()
         user.otp = otp
         const actual = user.getObj()
-        expect(actual.otp.enabled).to.equal(true)
+        expect(actual.otp?.enabled).to.equal(true)
       })
 
       it('includes the user\'s secret', () => {
@@ -126,7 +126,7 @@ describe('User', () => {
         const user = new User()
         user.otp = otp
         const actual = user.getObj()
-        expect(actual.otp.secret).to.equal(secret)
+        expect(actual.otp?.secret).to.equal(secret)
       })
     })
 

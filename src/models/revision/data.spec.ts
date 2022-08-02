@@ -104,13 +104,7 @@ describe('isRevisionData', () => {
   })
 
   it('returns true if given UserData for editor', () => {
-    const editor = {
-      active: true,
-      admin: false,
-      emails: [],
-      otp: { enabled: false }
-    }
-    const cpy = Object.assign({}, min, { editor })
+    const cpy = Object.assign({}, min, { editor: {} })
     expect(isRevisionData(cpy)).to.equal(true)
   })
 
@@ -135,7 +129,7 @@ describe('isRevisionData', () => {
   })
 
   it('returns false if given an object for editor that isn\'t UserData', () => {
-    const cpy = Object.assign({}, min, { editor: { code: '777' } })
+    const cpy = Object.assign({}, min, { editor: { emails: '777' } })
     expect(isRevisionData(cpy)).to.equal(false)
   })
 
