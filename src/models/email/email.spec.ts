@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import Email from './email.js'
+import { isEmailData } from './data.js'
 
 describe('Email', () => {
   describe('constructor', () => {
@@ -112,6 +113,18 @@ describe('Email', () => {
         const code = email.generateVerificationCode()
         const res = email.verify(code)
         expect(res).to.equal(true)
+      })
+    })
+
+    describe('getObj', () => {
+      const email = new Email({ addr: 'tester@testing.com', verified: true })
+
+      it('returns an object', () => {
+        expect(typeof email.getObj()).to.equal('object')
+      })
+
+      it('returns a ContentData object', () => {
+        expect(isEmailData(email.getObj())).to.equal(true)
       })
     })
   })

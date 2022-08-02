@@ -23,6 +23,11 @@ class Email {
     if (code === this.code) this.verified = true
     return this.verified
   }
+
+  getObj (): EmailData {
+    const { addr, verified, code } = this
+    return { addr, verified, code }
+  }
 }
 
 export default Email
