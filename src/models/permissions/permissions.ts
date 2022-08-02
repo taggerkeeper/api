@@ -1,25 +1,14 @@
 import User from '../user/user.js'
 import Revision from '../revision/revision.js'
+import { PermissionLevel } from './data.js'
 import exists from '../../utils/exists.js'
 import getFirstVal from '../../utils/get-first-val.js'
-
-enum PermissionLevel {
-  admin = 'admin',
-  editor = 'editor',
-  authenticated = 'authenticated',
-  anyone = 'anyone'
-}
-
-interface IPermissions {
-  read?: PermissionLevel
-  write?: PermissionLevel
-}
 
 class Permissions {
   read: PermissionLevel
   write: PermissionLevel
 
-  constructor (options?: IPermissions) {
+  constructor (options?: { read?: PermissionLevel, write?: PermissionLevel }) {
     const { DEFAULT_READ_PERMISSIONS, DEFAULT_WRITE_PERMISSIONS } = process.env
     this.read = getFirstVal(options?.read, DEFAULT_READ_PERMISSIONS, 'anyone')
     this.write = getFirstVal(options?.write, DEFAULT_WRITE_PERMISSIONS, 'anyone')
@@ -45,4 +34,3 @@ class Permissions {
 }
 
 export default Permissions
-export { PermissionLevel, IPermissions }

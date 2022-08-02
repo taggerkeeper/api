@@ -2,7 +2,8 @@ import { expect } from 'chai'
 import Content from '../content/content.js'
 import User from '../user/user.js'
 import Revision from '../revision/revision.js'
-import Permissions, { PermissionLevel } from '../permissions/permissions.js'
+import Permissions from '../permissions/permissions.js'
+import { PermissionLevel } from '../permissions/data.js'
 import Page from './page.js'
 
 describe('Page', () => {
