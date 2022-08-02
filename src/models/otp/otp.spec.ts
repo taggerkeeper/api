@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import speakeasy from 'speakeasy'
 import validDataUrl from 'valid-data-url'
 import OTP from './otp.js'
+import { isOTPData } from './data.js'
 
 describe('OTP', () => {
   const secret = 'shhhhh'
@@ -47,6 +48,18 @@ describe('OTP', () => {
         const otp = new OTP()
         const val = otp.enable(secret)
         expect(val).to.equal(true)
+      })
+    })
+
+    describe('getObj', () => {
+      const otp = new OTP()
+
+      it('returns an object', () => {
+        expect(typeof otp.getObj()).to.equal('object')
+      })
+
+      it('returns a ContentData object', () => {
+        expect(isOTPData(otp.getObj())).to.equal(true)
       })
     })
 

@@ -25,6 +25,12 @@ class OTP {
     return this.enabled
   }
 
+  getObj (): OTPData {
+    const obj: OTPData = { enabled: this.enabled }
+    if (this.secret !== undefined) obj.secret = this.secret
+    return obj
+  }
+
   async verify (token: string): Promise<boolean> {
     if (!this.enabled) return true
     return OTP.verify(this.secret as string, token)
