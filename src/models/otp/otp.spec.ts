@@ -16,6 +16,17 @@ describe('OTP', () => {
       const otp = new OTP()
       expect(otp.secret).to.equal(undefined)
     })
+
+    it('can be enabled', () => {
+      const otp = new OTP({ enabled: true })
+      expect(otp.enabled).to.equal(true)
+    })
+
+    it('can keep a secret', () => {
+      const secret = 'shhhh'
+      const otp = new OTP({ enabled: true, secret })
+      expect(otp.secret).to.equal(secret)
+    })
   })
 
   describe('Instance methods', () => {

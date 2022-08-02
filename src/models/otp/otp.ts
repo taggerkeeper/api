@@ -1,5 +1,6 @@
 import speakeasy from 'speakeasy'
 import QRCode from 'qrcode'
+import OTPData from './data.js'
 
 interface OTPSecret {
   ascii: string
@@ -12,6 +13,11 @@ interface OTPSecret {
 class OTP {
   enabled: boolean = false
   secret?: string = undefined
+
+  constructor (data?: OTPData) {
+    this.enabled = data?.enabled ?? false
+    if (data?.secret !== undefined) this.secret = data.secret
+  }
 
   enable (secret: string): boolean {
     this.secret = secret
