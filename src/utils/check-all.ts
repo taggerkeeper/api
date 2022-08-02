@@ -1,6 +1,8 @@
 const checkAll = (claims: boolean[]): boolean => {
-  const reducer = (acc: boolean, curr: boolean): boolean => acc && curr
-  return claims.reduce(reducer, true)
+  for (let claim of claims) {
+    if (!claim) return false
+  }
+  return true
 }
 
 export default checkAll

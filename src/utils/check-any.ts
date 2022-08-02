@@ -1,6 +1,8 @@
 const checkAny = (claims: boolean[]): boolean => {
-  const reducer = (acc: boolean, curr: boolean): boolean => acc || curr
-  return claims.reduce(reducer, false)
+  for (let claim of claims) {
+    if (claim) return true
+  }
+  return false
 }
 
 export default checkAny
