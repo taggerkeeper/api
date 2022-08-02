@@ -1,16 +1,8 @@
 import mongoose from 'mongoose'
-import EmailData from '../email/data.js'
-import UserData from '../user/data.js'
+import PasswordResetData from './data.js'
 const { Schema, model } = mongoose
 
-interface IPasswordReset {
-  user: UserData['_id'] | UserData
-  email: EmailData
-  code: string
-  expiration: Date
-}
-
-const schema = new Schema<IPasswordReset>({
+const schema = new Schema<PasswordResetData>({
   user: { type: Schema.Types.ObjectId, ref: 'User', required: true },
   email: {
     addr: { type: String, required: true },
@@ -29,7 +21,6 @@ const schema = new Schema<IPasswordReset>({
   expiration: { type: Date, required: true }
 })
 
-const PasswordResetModel = model<IPasswordReset>('PasswordReset', schema)
+const PasswordResetModel = model<PasswordResetData>('PasswordReset', schema)
 
 export default PasswordResetModel
-export { IPasswordReset }
