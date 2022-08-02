@@ -8,8 +8,8 @@ interface PasswordResetData {
   _id?: string | object
   user: UserData['_id'] | UserData
   email: EmailData
-  code: string
-  expiration: Date
+  code?: string
+  expiration?: Date
 }
 
 const isPasswordResetData = (obj: any): obj is PasswordResetData => {
@@ -19,8 +19,8 @@ const isPasswordResetData = (obj: any): obj is PasswordResetData => {
     checkAny([!exists(_id), typeof _id === 'string', typeof _id === 'object']),
     checkAny([typeof user === 'string', isUserData(user)]),
     isEmailData(email),
-    typeof code === 'string',
-    expiration?.constructor?.name === 'Date'
+    checkAny([!exists(code), typeof code === 'string']),
+    checkAny([!exists(expiration), expiration?.constructor?.name === 'Date'])
   ])
 }
 
