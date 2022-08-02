@@ -16,6 +16,14 @@ describe('isUserData', () => {
     expect(isUserData(min)).to.equal(true)
   })
 
+  it('returns false if given undefined', () => {
+    expect(isUserData(undefined)).to.equal(false)
+  })
+
+  it('returns false if given null', () => {
+    expect(isUserData(null)).to.equal(false)
+  })
+
   it('returns true if _id is a string', () => {
     const cpy = Object.assign({}, min, { _id: 'test' })
     expect(isUserData(cpy)).to.equal(true)

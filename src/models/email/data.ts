@@ -9,6 +9,7 @@ interface EmailData {
 }
 
 const isEmailData = (obj: any): obj is EmailData => {
+  if (!exists(obj)) return false
   const { addr, verified, code } = obj
   return checkAll([
     typeof obj === 'object',

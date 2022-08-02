@@ -15,6 +15,7 @@ interface UserData {
 }
 
 const isUserData = (obj: any): obj is UserData => {
+  if (!exists(obj)) return false
   const { _id, id, active, admin, password, emails, otp } = obj
   if (!Array.isArray(emails)) return false
   return checkAll([

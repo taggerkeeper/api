@@ -6,6 +6,14 @@ describe('isEmailData', () => {
     expect(isEmailData({})).to.equal(true)
   })
 
+  it('returns false if given undefined', () => {
+    expect(isEmailData(undefined)).to.equal(false)
+  })
+
+  it('returns false if given null', () => {
+    expect(isEmailData(null)).to.equal(false)
+  })
+
   it('returns false for a string', () => {
     expect(isEmailData('true')).to.equal(false)
   })
