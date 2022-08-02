@@ -11,6 +11,14 @@ describe('isContentData', () => {
     expect(isContentData(min)).to.equal(true)
   })
 
+  it('returns false if given undefined', () => {
+    expect(isContentData(undefined)).to.equal(false)
+  })
+
+  it('returns false if given null', () => {
+    expect(isContentData(null)).to.equal(false)
+  })
+
   it('returns false for an empty object', () => {
     expect(isContentData({})).to.equal(false)
   })

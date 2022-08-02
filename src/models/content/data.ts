@@ -9,6 +9,7 @@ interface ContentData {
 }
 
 const isContentData = (obj: any): obj is ContentData => {
+  if (!exists(obj) || typeof obj !== 'object') return false
   const { title, path, body } = obj
   return checkAll([
     typeof title === 'string',
