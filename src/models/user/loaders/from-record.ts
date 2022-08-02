@@ -1,8 +1,8 @@
 import User from '../user.js'
-import { IUser } from '../model.js'
+import UserData from '../data.js'
 import Email from '../../email/email.js'
 
-const loadUserFromRecord = (record: IUser | null): User | null => {
+const loadUserFromRecord = (record: UserData | null): User | null => {
   if (record === null) return null
   const { _id, active, admin, password, otp } = record
   const user = new User({ active, admin })

@@ -1,20 +1,8 @@
 import mongoose from 'mongoose'
-import EmailData from '../email/data.js'
+import UserData from './data.js'
 const { Schema, model } = mongoose
 
-interface IUser {
-  _id?: string
-  active: boolean
-  admin: boolean
-  password?: string
-  emails: EmailData[]
-  otp: {
-    enabled: boolean
-    secret?: string
-  }
-}
-
-const schema = new Schema<IUser>({
+const schema = new Schema<UserData>({
   active: { type: Boolean, default: true },
   admin: { type: Boolean, default: false },
   password: String,
@@ -40,7 +28,6 @@ const schema = new Schema<IUser>({
   }
 })
 
-const UserModel = model<IUser>('User', schema)
+const UserModel = model<UserData>('User', schema)
 
 export default UserModel
-export { IUser }
