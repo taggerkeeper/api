@@ -6,6 +6,26 @@ describe('isEmailData', () => {
     expect(isEmailData({})).to.equal(true)
   })
 
+  it('returns false for a string', () => {
+    expect(isEmailData('true')).to.equal(false)
+  })
+
+  it('returns false for a number', () => {
+    expect(isEmailData(42)).to.equal(false)
+  })
+
+  it('returns false for true', () => {
+    expect(isEmailData(true)).to.equal(false)
+  })
+
+  it('returns false for false', () => {
+    expect(isEmailData(false)).to.equal(false)
+  })
+
+  it('returns false for an array', () => {
+    expect(isEmailData([])).to.equal(false)
+  })
+
   it('returns true if given a string for addr', () => {
     expect(isEmailData({ addr: 'test' })).to.equal(true)
   })

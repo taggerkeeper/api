@@ -11,6 +11,8 @@ interface EmailData {
 const isEmailData = (obj: any): obj is EmailData => {
   const { addr, verified, code } = obj
   return checkAll([
+    typeof obj === 'object',
+    !Array.isArray(obj),
     checkAny([!exists(addr), typeof addr === 'string']),
     checkAny([!exists(verified), verified === true, verified === false]),
     checkAny([!exists(code), typeof code === 'string'])
