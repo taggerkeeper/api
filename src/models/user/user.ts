@@ -1,4 +1,6 @@
-import UserModel, { IUser } from './model.js'
+import mongoose from 'mongoose'
+import UserModel from './model.js'
+import UserData from './data.js'
 import Password from '../password/password.js'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
@@ -8,18 +10,6 @@ interface UserConstructorOptions {
   active?: boolean
   admin?: boolean
   password?: string
-}
-
-interface UserObject {
-  id?: string
-  active: boolean
-  admin: boolean
-  password?: string
-  emails: Email[]
-  otp: {
-    enabled: boolean
-    secret?: string
-  }
 }
 
 class User {
@@ -38,7 +28,7 @@ class User {
     this.otp = new OTP()
   }
 
-  getObj (): UserObject {
+  getObj (): UserData {
     return {
       id: this.id,
       active: this.active,
@@ -61,10 +51,10 @@ class User {
     }
   }
 
-  static loadObject (record: IUser): User {
+  static loadObject (record: UserData): User {
     const { active, admin, password } = record
     const user = new User({ active, admin })
-    user.id = record._id
+    if (mongoose.isValidObjectId(record._id)) user.id = record._id?.toString()
     if (typeof password === 'string') user.password.hash = password
     user.emails = record.emails.map(data => new Email(data))
     user.otp.enabled = record.otp.enabled
