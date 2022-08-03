@@ -4,17 +4,18 @@ import User from '../user/user.js'
 import Permissions from '../permissions/permissions.js'
 import { PermissionLevel } from '../permissions/data.js'
 import Revision from './revision.js'
+import { isRevisionData } from './data.js'
 
 describe('Revision', () => {
-  describe('constructor', () => {
-    const before = new Date()
-    const title = 'My Revision'
-    const body = 'This is a revision that I made.'
-    const msg = 'This is a test revision.'
-    const editor = new User()
-    const content = new Content({ title, body })
-    const actual = new Revision({ content, editor, msg })
+  const before = new Date()
+  const title = 'My Revision'
+  const body = 'This is a revision that I made.'
+  const msg = 'This is a test revision.'
+  const editor = new User()
+  const content = new Content({ title, body })
+  const actual = new Revision({ content, editor: editor.getObj(), msg })
 
+  describe('constructor', () => {
     it('sets the content title', () => {
       expect(actual.content.title).to.equal(title)
     })
@@ -24,7 +25,7 @@ describe('Revision', () => {
     })
 
     it('sets the editor', () => {
-      expect(actual.editor).to.equal(editor)
+      expect(JSON.stringify(actual.editor)).to.equal(JSON.stringify(editor))
     })
 
     it('sets the message', () => {
@@ -37,7 +38,7 @@ describe('Revision', () => {
 
     it('sets read permissions', () => {
       const permissions = new Permissions({ read: PermissionLevel.authenticated })
-      const actual = new Revision({ content, editor, permissions, msg })
+      const actual = new Revision({ content, editor: editor.getObj(), permissions, msg })
       expect(actual.permissions.read).to.equal(PermissionLevel.authenticated)
     })
 
@@ -47,7 +48,7 @@ describe('Revision', () => {
 
     it('sets write permissions', () => {
       const permissions = new Permissions({ write: PermissionLevel.editor })
-      const actual = new Revision({ content, editor, permissions, msg })
+      const actual = new Revision({ content, editor: editor.getObj(), permissions, msg })
       expect(actual.permissions.write).to.equal(PermissionLevel.editor)
     })
 
@@ -59,8 +60,16 @@ describe('Revision', () => {
 
     it('can set the timestamp', () => {
       const timestamp = new Date('1 August 2022')
-      const actual = new Revision({ content, editor, msg, timestamp })
+      const actual = new Revision({ content, editor: editor.getObj(), msg, timestamp })
       expect(actual.timestamp).to.equal(timestamp)
+    })
+  })
+
+  describe('Instance methods', () => {
+    describe('getObj', () => {
+      it('returns a RevisionData object', () => {
+        expect(isRevisionData(actual.getObj())).to.equal(true)
+      })
     })
   })
 })

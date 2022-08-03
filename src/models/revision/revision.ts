@@ -1,17 +1,7 @@
 import Content from '../content/content.js'
-import ContentData from '../content/data.js'
 import User from '../user/user.js'
-import UserData from '../user/data.js'
 import Permissions from '../permissions/permissions.js'
-import PermissionsData from '../permissions/data.js'
-
-interface RevisionConstructorOptions {
-  content: Content | ContentData
-  permissions?: Permissions | PermissionsData
-  editor?: User | UserData
-  msg?: string
-  timestamp?: Date
-}
+import RevisionData from './data.js'
 
 class Revision {
   content: Content
@@ -20,14 +10,23 @@ class Revision {
   msg: string
   timestamp: Date
 
-  constructor (options: RevisionConstructorOptions) {
-    this.content = new Content(options.content)
-    this.permissions = new Permissions(options.permissions) ?? new Permissions()
-    this.editor = options.editor?.constructor?.name === 'User'
-      ? options.editor as User
-      : new User(options.editor as UserData)
-    this.msg = options.msg ?? ''
-    this.timestamp = options.timestamp ?? new Date()
+  constructor (data: RevisionData) {
+    this.content = new Content(data.content)
+    this.permissions = new Permissions(data.permissions) ?? new Permissions()
+    this.msg = data.msg ?? ''
+    this.timestamp = data.timestamp ?? new Date()
+    if (data.editor !== undefined) this.editor = new User(data.editor)
+  }
+
+  getObj (): RevisionData {
+    const obj: RevisionData = {
+      content: this.content.getObj(),
+      permissions: this.permissions.getObj(),
+      msg: this.msg,
+      timestamp: this.timestamp
+    }
+    if (this.editor !== undefined) obj.editor = this.editor.getObj()
+    return obj
   }
 }
 

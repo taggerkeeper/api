@@ -5,6 +5,7 @@ import Password from '../password/password.js'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
 import getFirstVal from '../../utils/get-first-val.js'
+import exists from '../../utils/exists.js'
 
 class User {
   id?: string
@@ -29,17 +30,16 @@ class User {
   }
 
   getObj (): UserData {
-    return {
-      id: this.id,
+    const obj: UserData = {
       active: this.active,
       admin: this.admin,
       password: this.password.hash,
-      emails: this.emails,
-      otp: {
-        enabled: this.otp.enabled,
-        secret: this.otp.secret
-      }
+      emails: this.emails.map(email => email.getObj()),
+      otp: { enabled: this.otp.enabled }
     }
+    if (exists(this.id)) obj.id = this.id
+    if (exists(this.otp.secret)) obj.otp = { enabled: this.otp.enabled, secret: this.otp.secret }
+    return obj
   }
 
   async save (): Promise<void> {

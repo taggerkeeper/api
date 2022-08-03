@@ -44,11 +44,10 @@ describe('Permissions', () => {
 
   describe('Instance methods', () => {
     const user = new User()
-    const editor = new User()
-    editor.id = '0123456789abcdef12345678'
+    const editor = new User({ id: '0123456789abcdef12345678' })
     const admin = new User({ admin: true })
-    const r1 = new Revision({ content: new Content({ title: 'Title', body: 'Body text goes here.' }), editor, msg: 'First revision.' })
-    const r2 = new Revision({ content: new Content({ title: 'New Title', body: 'Updated body test.' }), editor, msg: 'Second revision.' })
+    const r1 = new Revision({ content: new Content({ title: 'Title', body: 'Body text goes here.' }), editor: editor.getObj(), msg: 'First revision.' })
+    const r2 = new Revision({ content: new Content({ title: 'New Title', body: 'Updated body test.' }), editor: editor.getObj(), msg: 'Second revision.' })
     const revisions = [r2, r1]
 
     describe('check', () => {
