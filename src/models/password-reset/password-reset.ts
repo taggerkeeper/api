@@ -28,6 +28,15 @@ class PasswordReset {
     this.code = code ?? cryptoRandomString({ length: 32, type: 'distinguishable' })
   }
 
+  getObj (): PasswordResetData {
+    return {
+      user: this.user.getObj(),
+      email: this.email.getObj(),
+      code: this.code,
+      expiration: this.expiration
+    }
+  }
+
   async use (newPasswd: string): Promise<void> {
     const { user, email } = this
     user.password.change(newPasswd)

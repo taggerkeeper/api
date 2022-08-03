@@ -5,6 +5,7 @@ import User from '../user/user.js'
 import UserModel from '../user/model.js'
 import PasswordReset from './password-reset.js'
 import PasswordResetModel from './model.js'
+import { isPasswordResetData } from './data.js'
 
 describe('PasswordReset', () => {
   describe('constructor', () => {
@@ -59,6 +60,22 @@ describe('PasswordReset', () => {
   describe('Instance methods', () => {
     let user: User
     const email = new Email({ addr: 'test@testing.com', verified: true })
+
+    describe('getObj', () => {
+      it('returns an object', () => {
+        user = new User()
+        const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
+        const actual = reset.getObj()
+        expect(typeof actual).to.equal('object')
+      })
+
+      it('returns a PasswordResetData object', () => {
+        user = new User()
+        const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
+        const actual = reset.getObj()
+        expect(isPasswordResetData(actual)).to.equal(true)
+      })
+    })
 
     describe('use', () => {
       const _id = '0123456789abcdef12345678'
