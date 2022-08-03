@@ -3,19 +3,20 @@ import Content from '../content/content.js'
 import User from '../user/user.js'
 import Revision from '../revision/revision.js'
 import Page from './page.js'
+import { isPageData } from './data.js'
 
 describe('Page', () => {
-  describe('constructor', () => {
-    const id = '012345abcdef'
-    const before = new Date()
-    const title = 'Test Page'
-    const body = 'This is a test page.'
-    const content = new Content({ title, body })
-    const editor = new User()
-    const rev = new Revision({ content, editor: editor.getObj(), msg: 'Initial text' })
-    const actual = new Page({ id, revisions: [rev.getObj()] })
-    const after = new Date()
+  const id = '012345abcdef'
+  const before = new Date()
+  const title = 'Test Page'
+  const body = 'This is a test page.'
+  const content = new Content({ title, body })
+  const editor = new User()
+  const rev = new Revision({ content, editor: editor.getObj(), msg: 'Initial text' })
+  const actual = new Page({ id, revisions: [rev.getObj()] })
+  const after = new Date()
 
+  describe('constructor', () => {
     it('sets the ID', () => {
       expect(actual.id).to.equal(id)
     })
@@ -40,6 +41,14 @@ describe('Page', () => {
 
     it('leaves the trashed timestamp undefined', () => {
       expect(actual.trashed).to.equal(undefined)
+    })
+  })
+
+  describe('Instance methods', () => {
+    describe('getObj', () => {
+      it('returns a PageData object', () => {
+        expect(isPageData(actual.getObj())).to.equal(true)
+      })
     })
   })
 })

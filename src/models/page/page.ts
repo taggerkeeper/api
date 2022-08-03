@@ -20,6 +20,17 @@ class Page {
     const id = getId(data)
     if (id !== null) this.id = id
   }
+
+  getObj (): PageData {
+    const obj: PageData = {
+      revisions: this.revisions.map(revision => revision.getObj()),
+      created: this.created,
+      updated: this.updated
+    }
+    if (this.trashed !== undefined) obj.trashed = this.trashed
+    if (this.id !== undefined) obj.id = this.id
+    return obj
+  }
 }
 
 export default Page
