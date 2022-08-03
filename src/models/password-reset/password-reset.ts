@@ -61,13 +61,6 @@ class PasswordReset {
     }
     return resets
   }
-
-  static loadObject (record: PasswordResetData): PasswordReset {
-    if (typeof record.user === 'string') throw new Error('PasswordReset.loadObject can only load password reset records on which the user has been populated.')
-    const user = User.loadObject(record.user as UserData)
-    const email = new Email(record.email)
-    return new PasswordReset({ user, email, code: record.code, expiration: record.expiration })
-  }
 }
 
 export default PasswordReset
