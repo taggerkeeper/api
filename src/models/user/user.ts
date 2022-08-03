@@ -45,17 +45,6 @@ class User {
       await UserModel.findOneAndUpdate({ _id: this.id }, this.getObj())
     }
   }
-
-  static loadObject (record: UserData): User {
-    const { active, admin, password } = record
-    const user = new User({ active, admin })
-    if (mongoose.isValidObjectId(record._id)) user.id = record._id?.toString()
-    if (typeof password === 'string') user.password.hash = password
-    if (record.emails !== undefined) user.emails = record.emails.map(data => new Email(data))
-    if (record.otp?.enabled !== undefined) user.otp.enabled = record.otp.enabled
-    if (record.otp?.secret !== undefined) user.otp.secret = record.otp.secret
-    return user
-  }
 }
 
 export default User
