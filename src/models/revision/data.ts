@@ -7,10 +7,10 @@ import exists from '../../utils/exists.js'
 
 interface RevisionData {
   content: ContentData
-  permissions: PermissionsData
+  permissions?: PermissionsData
   editor?: UserData
   msg?: string
-  timestamp: Date
+  timestamp?: Date
 }
 
 const isRevisionData = (obj: any): obj is RevisionData => {
