@@ -4,6 +4,30 @@ import mongoose from 'mongoose'
 import getId from './get-id.js'
 
 describe('getId', () => {
+  it('returns null if not given an argument', () => {
+    expect(getId()).to.equal(null)
+  })
+
+  it('returns null if passed undefined', () => {
+    expect(getId(undefined)).to.equal(null)
+  })
+
+  it('returns null if passed null', () => {
+    expect(getId(null)).to.equal(null)
+  })
+
+  it('returns null if passed a string', () => {
+    expect(getId('12345')).to.equal(null)
+  })
+
+  it('returns null if passed a number', () => {
+    expect(getId(12345)).to.equal(null)
+  })
+
+  it('returns null if passed an array', () => {
+    expect(getId([])).to.equal(null)
+  })
+
   it('returns the stringified version of a Mongoose ID', () => {
     sinon.stub(mongoose, 'isValidObjectId').returns(true)
     const str = 'test'

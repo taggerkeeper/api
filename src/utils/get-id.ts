@@ -1,6 +1,8 @@
 import mongoose from 'mongoose'
+import exists from './exists.js'
 
-const getId = (obj: any): string | null => {
+const getId = (obj?: any): string | null => {
+  if (!exists(obj) || typeof obj !== 'object') return null
   const { _id, id } = obj
   if (_id === undefined && id === undefined) return null
   // eslint-disable-next-line @typescript-eslint/no-base-to-string
