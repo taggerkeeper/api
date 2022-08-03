@@ -1,8 +1,10 @@
 import { expect } from 'chai'
+import * as sinon from 'sinon'
 import Content from '../content/content.js'
 import User from '../user/user.js'
 import Revision from '../revision/revision.js'
 import Page from './page.js'
+import PageModel from './model.js'
 import { isPageData } from './data.js'
 
 describe('Page', () => {
@@ -48,6 +50,44 @@ describe('Page', () => {
     describe('getObj', () => {
       it('returns a PageData object', () => {
         expect(isPageData(actual.getObj())).to.equal(true)
+      })
+    })
+
+    describe('save', () => {
+      const _id = 'abc123'
+
+      afterEach(() => sinon.restore())
+
+      it('creates a new record if the model doesn\'t have an ID', async () => {
+        const create = sinon.stub(PageModel, 'create').callsFake((): any => {
+          return new Promise(resolve => resolve({ _id }))
+        })
+        const page = new Page()
+        await page.save()
+        expect(create.callCount).to.equal(1)
+      })
+
+      it('sets the new ID if it didn\'t have one before', async () => {
+        sinon.stub(PageModel, 'create').callsFake((): any => {
+          return new Promise(resolve => resolve({ _id }))
+        })
+        const page = new Page()
+        await page.save()
+        expect(page.id).to.equal(_id)
+      })
+
+      it('updates the record if the model already has an ID', async () => {
+        const findOneAndUpdate = sinon.stub(PageModel, 'findOneAndUpdate')
+        const page = new Page({ _id, revisions: [] })
+        await page.save()
+        expect(findOneAndUpdate.callCount).to.equal(1)
+      })
+
+      it('keeps the existing ID if it already has one', async () => {
+        sinon.stub(PageModel, 'findOneAndUpdate')
+        const page = new Page({ _id, revisions: [] })
+        await page.save()
+        expect(page.id).to.equal(_id)
       })
     })
   })

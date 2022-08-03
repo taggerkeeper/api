@@ -1,4 +1,5 @@
 import Revision from '../revision/revision.js'
+import PageModel from './model.js'
 import PageData from './data.js'
 import exists from '../../utils/exists.js'
 import getId from '../../utils/get-id.js'
@@ -30,6 +31,15 @@ class Page {
     if (this.trashed !== undefined) obj.trashed = this.trashed
     if (this.id !== undefined) obj.id = this.id
     return obj
+  }
+
+  async save (): Promise<void> {
+    if (this.id === undefined) {
+      const record = await PageModel.create(this.getObj())
+      this.id = record._id?.toString()
+    } else {
+      await PageModel.findOneAndUpdate({ _id: this.id }, this.getObj())
+    }
   }
 }
 
