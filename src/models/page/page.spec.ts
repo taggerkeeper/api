@@ -6,14 +6,19 @@ import Page from './page.js'
 
 describe('Page', () => {
   describe('constructor', () => {
+    const id = '012345abcdef'
     const before = new Date()
     const title = 'Test Page'
     const body = 'This is a test page.'
     const content = new Content({ title, body })
     const editor = new User()
     const rev = new Revision({ content, editor: editor.getObj(), msg: 'Initial text' })
-    const actual = new Page({ revisions: [rev.getObj()] })
+    const actual = new Page({ id, revisions: [rev.getObj()] })
     const after = new Date()
+
+    it('sets the ID', () => {
+      expect(actual.id).to.equal(id)
+    })
 
     it('sets the revision history', () => {
       expect(actual.revisions).to.have.lengthOf(1)
