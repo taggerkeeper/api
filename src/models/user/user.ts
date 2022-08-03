@@ -21,6 +21,11 @@ class User {
     this.emails = []
     this.otp = new OTP(data?.otp)
     if (data?.password !== undefined) this.password.hash = data.password
+
+    // eslint-disable-next-line @typescript-eslint/no-base-to-string
+    if (data?._id !== undefined && mongoose.isValidObjectId(data?._id)) this.id = data._id.toString()
+    if (typeof data?._id === 'string') this.id = data?._id
+    if (data?.id !== undefined) this.id = data.id
   }
 
   getObj (): UserData {

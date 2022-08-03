@@ -8,9 +8,21 @@ import User from './user.js'
 
 describe('User', () => {
   describe('constructor', () => {
+    const id = '0123456789abcdef12345678'
+
     it('returns a User instance', () => {
       const user = new User()
       expect(user).to.be.instanceOf(User)
+    })
+
+    it('sets the ID from _id', () => {
+      const user = new User({ _id: id })
+      expect(user.id).to.equal(id)
+    })
+
+    it('sets the ID from id', () => {
+      const user = new User({ id })
+      expect(user.id).to.equal(id)
     })
 
     it('sets active to true by default', () => {
