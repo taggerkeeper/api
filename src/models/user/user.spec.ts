@@ -160,16 +160,14 @@ describe('User', () => {
 
       it('updates the record if the model already has an ID', async () => {
         const findOneAndUpdate = sinon.stub(UserModel, 'findOneAndUpdate')
-        const user = new User()
-        user.id = _id
+        const user = new User({ _id })
         await user.save()
         expect(findOneAndUpdate.callCount).to.equal(1)
       })
 
       it('keeps the existing ID if it already has one', async () => {
         sinon.stub(UserModel, 'findOneAndUpdate')
-        const user = new User()
-        user.id = _id
+        const user = new User({ _id })
         await user.save()
         expect(user.id).to.equal(_id)
       })
