@@ -3,6 +3,7 @@ import { PermissionLevel } from '../permissions/data.js'
 import { isPageData } from './data.js'
 
 describe('isPageData', () => {
+  const id = '0123456789abcdef12345678'
   const r2 = { content: { title: 'Updated Title', body: 'Updated content.' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }, timestamp: new Date('1 August 2022') }
   const r1 = { content: { title: 'Original Title', body: 'Original content.' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }, timestamp: new Date('31 July 2022') }
 
@@ -40,6 +41,54 @@ describe('isPageData', () => {
 
   it('returns false for an array', () => {
     expect(isPageData([])).to.equal(false)
+  })
+
+  it('returns true if _id is a string', () => {
+    expect(isPageData({ _id: id, revisions: [r2, r1] })).to.equal(true)
+  })
+
+  it('returns true if _id is an object', () => {
+    expect(isPageData({ _id: {}, revisions: [r2, r1] })).to.equal(true)
+  })
+
+  it('returns false if _id is a number', () => {
+    expect(isPageData({ _id: 12345, revisions: [r2, r1] })).to.equal(false)
+  })
+
+  it('returns false if _id is true', () => {
+    expect(isPageData({ _id: true, revisions: [r2, r1] })).to.equal(false)
+  })
+
+  it('returns false if _id is false', () => {
+    expect(isPageData({ _id: false, revisions: [r2, r1] })).to.equal(false)
+  })
+
+  it('returns false if _id is an array', () => {
+    expect(isPageData({ _id: [], revisions: [r2, r1] })).to.equal(false)
+  })
+
+  it('returns true if id is a string', () => {
+    expect(isPageData({ id, revisions: [r2, r1] })).to.equal(true)
+  })
+
+  it('returns false if id is a number', () => {
+    expect(isPageData({ id: 12345, revisions: [r2, r1] })).to.equal(false)
+  })
+
+  it('returns false if id is true', () => {
+    expect(isPageData({ id: true, revisions: [r2, r1] })).to.equal(false)
+  })
+
+  it('returns false if id is false', () => {
+    expect(isPageData({ id: false, revisions: [r2, r1] })).to.equal(false)
+  })
+
+  it('returns false if id is an object', () => {
+    expect(isPageData({ id: {}, revisions: [r2, r1] })).to.equal(false)
+  })
+
+  it('returns false if id is an array', () => {
+    expect(isPageData({ id: [], revisions: [r2, r1] })).to.equal(false)
   })
 
   it('returns true if all revisions are instances of RevisionData', () => {
