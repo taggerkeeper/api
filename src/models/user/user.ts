@@ -1,10 +1,10 @@
-import mongoose from 'mongoose'
 import UserModel from './model.js'
 import UserData from './data.js'
 import Password from '../password/password.js'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
 import getFirstVal from '../../utils/get-first-val.js'
+import getId from '../../utils/get-id.js'
 import exists from '../../utils/exists.js'
 
 class User {
@@ -22,11 +22,8 @@ class User {
     this.emails = []
     this.otp = new OTP(data?.otp)
     if (data?.password !== undefined) this.password.hash = data.password
-
-    // eslint-disable-next-line @typescript-eslint/no-base-to-string
-    if (data?._id !== undefined && mongoose.isValidObjectId(data?._id)) this.id = data._id.toString()
-    if (typeof data?._id === 'string') this.id = data?._id
-    if (data?.id !== undefined) this.id = data.id
+    const id = getId(data)
+    if (id !== null) this.id = id
   }
 
   getObj (): UserData {
