@@ -17,9 +17,10 @@ class User {
   constructor (data?: UserData) {
     this.active = getFirstVal(data?.active, true)
     this.admin = getFirstVal(data?.admin, false)
-    this.password = new Password(data?.password)
+    this.password = new Password()
     this.emails = []
     this.otp = new OTP(data?.otp)
+    if (data?.password !== undefined) this.password.hash = data.password
   }
 
   getObj (): UserData {

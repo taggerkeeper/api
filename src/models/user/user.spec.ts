@@ -41,7 +41,7 @@ describe('User', () => {
     it('lets you set the password', () => {
       const password = 'password'
       const user = new User({ password })
-      expect(user.password.verify(password)).to.equal(true)
+      expect(user.password.hash).to.equal(password)
     })
 
     it('creates an empty array for emails by default', () => {
@@ -91,13 +91,6 @@ describe('User', () => {
         const user = new User({ password })
         const actual = user.getObj()
         expect(typeof actual.password).to.equal('string')
-      })
-
-      it('does not store the user\'s password in plaintext', () => {
-        const password = 'password'
-        const user = new User({ password })
-        const actual = user.getObj()
-        expect(actual.password).not.to.equal(password)
       })
 
       it('includes the user\'s emails', () => {
