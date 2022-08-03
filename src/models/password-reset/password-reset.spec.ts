@@ -9,23 +9,23 @@ import PasswordResetModel from './model.js'
 describe('PasswordReset', () => {
   describe('constructor', () => {
     it('assigns the user given', () => {
-      const user = new User()
+      const user = new User({ admin: true, password: 'hash' })
       const email = new Email()
-      const reset = new PasswordReset(user, email)
-      expect(reset.user).to.equal(user)
+      const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
+      expect(JSON.stringify(reset.user)).to.equal(JSON.stringify(user))
     })
 
     it('assigns the email given', () => {
       const user = new User()
       const email = new Email({ addr: 'test@testing.com', verified: true })
-      const reset = new PasswordReset(user, email)
-      expect(reset.email).to.equal(email)
+      const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
+      expect(JSON.stringify(reset.email)).to.equal(JSON.stringify(email))
     })
 
     it('creates a random 32-character code', () => {
       const user = new User()
       const email = new Email({ addr: 'test@testing.com', verified: true })
-      const reset = new PasswordReset(user, email)
+      const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
       expect(reset.code).to.have.lengthOf(32)
     })
 
@@ -33,7 +33,7 @@ describe('PasswordReset', () => {
       const code = 'abc123'
       const user = new User()
       const email = new Email({ addr: 'test@testing.com', verified: true })
-      const reset = new PasswordReset(user, email, code)
+      const reset = new PasswordReset({ user: user.getObj(), email: email.getObj(), code })
       expect(reset.code).to.equal(code)
     })
 
@@ -42,7 +42,7 @@ describe('PasswordReset', () => {
       before.setTime(before.getTime() + 1920000)
       const user = new User()
       const email = new Email({ addr: 'test@testing.com', verified: true })
-      const reset = new PasswordReset(user, email)
+      const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
       expect(reset.expiration).to.be.below(before)
     })
 
@@ -51,7 +51,7 @@ describe('PasswordReset', () => {
       expiration.setTime(expiration.getTime() + 5000)
       const user = new User()
       const email = new Email({ addr: 'test@testing.com', verified: true })
-      const reset = new PasswordReset(user, email, undefined, expiration)
+      const reset = new PasswordReset({ user: user.getObj(), email: email.getObj(), expiration })
       expect(reset.expiration).to.equal(expiration)
     })
   })
@@ -77,19 +77,19 @@ describe('PasswordReset', () => {
       afterEach(() => sinon.restore())
 
       it('changes the user\'s password', async () => {
-        const reset = new PasswordReset(user, email)
+        const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
         await reset.use(newPasswd)
-        expect(user.password.verify(newPasswd)).to.equal(true)
+        expect(reset.user.password.verify(newPasswd)).to.equal(true)
       })
 
       it('saves the user', async () => {
-        const reset = new PasswordReset(user, email)
+        const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
         await reset.use(newPasswd)
         expect(create.callCount).to.equal(1)
       })
 
       it('deletes all your resets', async () => {
-        const reset = new PasswordReset(user, email)
+        const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
         await reset.use(newPasswd)
         expect(del.callCount).to.equal(1)
       })
@@ -107,14 +107,14 @@ describe('PasswordReset', () => {
       afterEach(() => sinon.restore())
 
       it('deletes all existing resets for that email', async () => {
-        const reset = new PasswordReset(user, email)
+        const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
         await reset.save()
         const args = del.firstCall.args
         expect((args[0])['email.addr']).to.equal(email.addr)
       })
 
       it('creates a new reset', async () => {
-        const reset = new PasswordReset(user, email)
+        const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
         await reset.save()
         expect(create.callCount).to.equal(1)
       })

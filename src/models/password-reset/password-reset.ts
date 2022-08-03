@@ -1,7 +1,7 @@
 import cryptoRandomString from 'crypto-random-string'
 import Email from '../email/email.js'
 import User from '../user/user.js'
-import UserData from '../user/data.js'
+import UserData, { isUserData } from '../user/data.js'
 import PasswordResetData from './data.js'
 import PasswordResetModel from './model.js'
 import loadUsersByEmail from '../user/loaders/by-email.js'
@@ -13,7 +13,8 @@ class PasswordReset {
   code: string
   expiration: Date
 
-  constructor (user: User, email: Email, code?: string, expiration?: Date) {
+  constructor (data: PasswordResetData) {
+    const { user, email, code, expiration } = data
     if (expiration !== undefined) {
       this.expiration = expiration
     } else {
@@ -22,8 +23,8 @@ class PasswordReset {
       this.expiration = new Date(now + parseInt(getFirstVal(PASSWDRESETEXPIRES, 1800000)))
     }
 
-    this.user = user
-    this.email = email
+    this.user = isUserData(user) ? new User(user) : new User()
+    this.email = new Email(email)
     this.code = code ?? cryptoRandomString({ length: 32, type: 'distinguishable' })
   }
 
@@ -47,7 +48,7 @@ class PasswordReset {
     const users = await loadUsersByEmail(addr)
     for (const user of users) {
       const emails = user.emails.filter(email => email.addr === addr)
-      if (emails.length > 0) resets.push(new PasswordReset(user, emails[0]))
+      if (emails.length > 0) resets.push(new PasswordReset({ user, email: emails[0] }))
     }
     return resets
   }
@@ -56,7 +57,7 @@ class PasswordReset {
     if (typeof record.user === 'string') throw new Error('PasswordReset.loadObject can only load password reset records on which the user has been populated.')
     const user = User.loadObject(record.user as UserData)
     const email = new Email(record.email)
-    return new PasswordReset(user, email, record.code, record.expiration)
+    return new PasswordReset({ user, email, code: record.code, expiration: record.expiration })
   }
 }
 
