@@ -8,8 +8,8 @@ enum PermissionLevel {
 }
 
 interface PermissionsData {
-  read: PermissionLevel
-  write: PermissionLevel
+  read?: PermissionLevel
+  write?: PermissionLevel
 }
 
 const isPermissionsData = (obj: any): obj is PermissionsData => {

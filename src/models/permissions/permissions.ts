@@ -1,6 +1,6 @@
 import User from '../user/user.js'
 import Revision from '../revision/revision.js'
-import { PermissionLevel } from './data.js'
+import PermissionsData, { PermissionLevel } from './data.js'
 import exists from '../../utils/exists.js'
 import getFirstVal from '../../utils/get-first-val.js'
 
@@ -8,7 +8,7 @@ class Permissions {
   read: PermissionLevel
   write: PermissionLevel
 
-  constructor (options?: { read?: PermissionLevel, write?: PermissionLevel }) {
+  constructor (options?: PermissionsData) {
     const { DEFAULT_READ_PERMISSIONS, DEFAULT_WRITE_PERMISSIONS } = process.env
     this.read = getFirstVal(options?.read, DEFAULT_READ_PERMISSIONS, 'anyone')
     this.write = getFirstVal(options?.write, DEFAULT_WRITE_PERMISSIONS, 'anyone')
