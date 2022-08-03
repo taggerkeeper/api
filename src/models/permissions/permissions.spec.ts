@@ -3,7 +3,7 @@ import Content from '../content/content.js'
 import Revision from '../revision/revision.js'
 import User from '../user/user.js'
 import Permissions from './permissions.js'
-import { PermissionLevel } from './data.js'
+import { isPermissionsData, PermissionLevel } from './data.js'
 
 describe('Permissions', () => {
   describe('constructor', () => {
@@ -210,6 +210,13 @@ describe('Permissions', () => {
       it('returns true for an admin if only admins can write', () => {
         const perms = new Permissions({ write: PermissionLevel.admin })
         expect(perms.check('write', admin, revisions)).to.equal(true)
+      })
+    })
+
+    describe('getObj', () => {
+      it('returns a PermissionsData object', () => {
+        const perms = new Permissions()
+        expect(isPermissionsData(perms.getObj())).to.equal(true)
       })
     })
   })

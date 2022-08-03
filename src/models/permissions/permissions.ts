@@ -31,6 +31,13 @@ class Permissions {
   canWrtie (user?: User, revisions?: Revision[]): boolean {
     return this.check('write', user, revisions)
   }
+
+  getObj (): PermissionsData {
+    return {
+      read: this.read,
+      write: this.write
+    }
+  }
 }
 
 export default Permissions
