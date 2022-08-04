@@ -15,9 +15,19 @@ describe('Page', () => {
   const editor = new User()
   const rev = new Revision({ content, editor: editor.getObj(), msg: 'Initial text' })
 
+  const updatedTitle = 'UpdatedTest Page'
+  const updatedBody = 'This is an updated test page.'
+  const updatedMsg = 'Update'
+  const updatedContent = new Content({ title: updatedTitle, body: updatedBody })
+  const update = new Revision({ content: updatedContent, editor: editor.getObj(), msg: updatedMsg })
+
   let before: Date
   let after: Date
   let actual: Page
+
+  const runTestUpdate = (): void => {
+    actual.addRevision(update)
+  }
 
   beforeEach(() => {
     before = new Date()
@@ -61,25 +71,40 @@ describe('Page', () => {
     })
 
     describe('addRevision', () => {
-      const updatedTitle = 'UpdatedTest Page'
-      const updatedBody = 'This is an updated test page.'
-      const updatedMsg = 'Update'
-      const updatedContent = new Content({ title: updatedTitle, body: updatedBody })
-      const update = new Revision({ content: updatedContent, editor: editor.getObj(), msg: updatedMsg })
+      beforeEach(() => runTestUpdate())
 
       it('adds another revision to the revisions array', () => {
-        actual.addRevision(update)
         expect(actual.revisions).to.have.lengthOf(2)
       })
 
       it('makes the new revision the first in the revisions array', () => {
-        actual.addRevision(update)
         expect(actual.revisions[0].msg).to.equal(updatedMsg)
       })
 
       it('sets the page\'s updated timestamp to the new revision\'s timestamp', () => {
-        actual.addRevision(update)
         expect(actual.updated).to.equal(update.timestamp)
+      })
+    })
+
+    describe('getRevision', () => {
+      beforeEach(() => runTestUpdate())
+
+      it('returns null if asked for revision 0', () => {
+        expect(actual.getRevision(0)).to.equal(null)
+      })
+
+      it('returns null if asked for a revision greater than the number of revisions', () => {
+        expect(actual.getRevision(3)).to.equal(null)
+      })
+
+      it('returns a Revision instance if given a valid number', () => {
+        const revision = actual.getRevision(2)
+        expect(revision).to.be.an.instanceOf(Revision)
+      })
+
+      it('returns the revision requested if given a valid number', () => {
+        const revision = actual.getRevision(2)
+        expect(revision?.content.title).to.equal(updatedTitle)
       })
     })
 

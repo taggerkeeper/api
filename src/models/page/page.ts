@@ -38,6 +38,13 @@ class Page {
     this.updated = revision.timestamp
   }
 
+  getRevision (order: number): Revision | null {
+    // "order" is 1 for the original version, 2 for the first revision, etc.
+    if (order < 1 || order > this.revisions.length) return null
+    const chronological = this.revisions.slice().reverse()
+    return chronological[order - 1]
+  }
+
   async save (): Promise<void> {
     if (this.id === undefined) {
       const record = await PageModel.create(this.getObj())
