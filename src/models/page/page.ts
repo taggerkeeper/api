@@ -1,4 +1,5 @@
 import Revision from '../revision/revision.js'
+import User from '../user/user.js'
 import PageModel from './model.js'
 import PageData from './data.js'
 import exists from '../../utils/exists.js'
@@ -38,11 +39,24 @@ class Page {
     this.updated = revision.timestamp
   }
 
-  getRevision (order: number): Revision | null {
-    // "order" is 1 for the original version, 2 for the first revision, etc.
-    if (order < 1 || order > this.revisions.length) return null
+  getRevision (num: number): Revision | null {
+    // "num" is 1 for the original version, 2 for the first revision, etc.
+    if (num < 1 || num > this.revisions.length) return null
     const chronological = this.revisions.slice().reverse()
-    return chronological[order - 1]
+    return chronological[num - 1]
+  }
+
+  rollback (num: number, editor: User): boolean {
+    // "num" is 1 for the original version, 2 for the first revision, etc.
+    const target = this.getRevision(num)
+    if (target === null) return false
+    const rollback = new Revision(Object.assign({}, target.getObj(), {
+      editor: editor.getObj(),
+      msg: target.msg.length > 0 ? `Rolling back to revision #${num}: ${target.msg}` : `Rolling back to revision #${num}`,
+      timestamp: new Date()
+    }))
+    this.addRevision(rollback)
+    return true
   }
 
   async save (): Promise<void> {

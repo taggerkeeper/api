@@ -108,6 +108,41 @@ describe('Page', () => {
       })
     })
 
+    describe('rollback', () => {
+      beforeEach(() => {
+        runTestUpdate()
+        actual.rollback(1, editor)
+      })
+
+      it('adds another revision to the revisions array', () => {
+        expect(actual.revisions).to.have.lengthOf(3)
+      })
+
+      it('sets the page\'s updated timestamp to the rollback\'s timestamp', () => {
+        expect(actual.updated).to.equal(actual.revisions[0].timestamp)
+      })
+
+      it('sets the title from the revision being rolled back to', () => {
+        expect(actual.revisions[0].content.title).to.equal(actual.revisions[2].content.title)
+      })
+
+      it('sets the body from the revision being rolled back to', () => {
+        expect(actual.revisions[0].content.body).to.equal(actual.revisions[2].content.body)
+      })
+
+      it('sets the read permissions from the revision being rolled back to', () => {
+        expect(actual.revisions[0].permissions.read).to.equal(actual.revisions[2].permissions.read)
+      })
+
+      it('sets the write permissions from the revision being rolled back to', () => {
+        expect(actual.revisions[0].permissions.write).to.equal(actual.revisions[2].permissions.write)
+      })
+
+      it('sets a message indicating that it is a rollback', () => {
+        expect(actual.revisions[0].msg).to.equal('Rolling back to revision #1: Initial text')
+      })
+    })
+
     describe('save', () => {
       const _id = 'abc123'
 
