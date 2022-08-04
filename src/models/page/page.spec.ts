@@ -9,14 +9,21 @@ import { isPageData } from './data.js'
 
 describe('Page', () => {
   const id = '012345abcdef'
-  const before = new Date()
   const title = 'Test Page'
   const body = 'This is a test page.'
   const content = new Content({ title, body })
   const editor = new User()
   const rev = new Revision({ content, editor: editor.getObj(), msg: 'Initial text' })
-  const actual = new Page({ id, revisions: [rev.getObj()] })
-  const after = new Date()
+
+  let before: Date
+  let after: Date
+  let actual: Page
+
+  beforeEach(() => {
+    before = new Date()
+    actual = new Page({ id, revisions: [rev.getObj()] })
+    after = new Date()
+  })
 
   describe('constructor', () => {
     it('sets the ID', () => {
@@ -50,6 +57,29 @@ describe('Page', () => {
     describe('getObj', () => {
       it('returns a PageData object', () => {
         expect(isPageData(actual.getObj())).to.equal(true)
+      })
+    })
+
+    describe('addRevision', () => {
+      const updatedTitle = 'UpdatedTest Page'
+      const updatedBody = 'This is an updated test page.'
+      const updatedMsg = 'Update'
+      const updatedContent = new Content({ title: updatedTitle, body: updatedBody })
+      const update = new Revision({ content: updatedContent, editor: editor.getObj(), msg: updatedMsg })
+
+      it('adds another revision to the revisions array', () => {
+        actual.addRevision(update)
+        expect(actual.revisions).to.have.lengthOf(2)
+      })
+
+      it('makes the new revision the first in the revisions array', () => {
+        actual.addRevision(update)
+        expect(actual.revisions[0].msg).to.equal(updatedMsg)
+      })
+
+      it('sets the page\'s updated timestamp to the new revision\'s timestamp', () => {
+        actual.addRevision(update)
+        expect(actual.updated).to.equal(update.timestamp)
       })
     })
 

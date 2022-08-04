@@ -33,6 +33,11 @@ class Page {
     return obj
   }
 
+  addRevision (revision: Revision): void {
+    this.revisions = [revision, ...this.revisions]
+    this.updated = revision.timestamp
+  }
+
   async save (): Promise<void> {
     if (this.id === undefined) {
       const record = await PageModel.create(this.getObj())
