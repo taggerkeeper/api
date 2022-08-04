@@ -27,6 +27,16 @@ const schema = new Schema<PageData>({
   trashed: { type: Date, required: false }
 })
 
+schema.index({
+  'revisions[0].content.title': 'text',
+  'revisions[0].content.body': 'text'
+}, {
+  weights: {
+    'revisions[0].content.title': 5,
+    'revisions[0].content.body': 1
+  }
+})
+
 const PageModel = model<PageData>('Page', schema)
 
 export default PageModel
