@@ -34,6 +34,10 @@ class Page {
     return obj
   }
 
+  getCurr (): Revision | null {
+    return this.revisions.length > 0 ? this.revisions[0] : null
+  }
+
   addRevision (revision: Revision): void {
     this.revisions = [revision, ...this.revisions]
     this.updated = revision.timestamp

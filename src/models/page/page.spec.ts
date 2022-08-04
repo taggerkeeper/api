@@ -70,6 +70,21 @@ describe('Page', () => {
       })
     })
 
+    describe('getCurr', () => {
+      it('returns null if the page doesn\'t have any revisions', () => {
+        const empty = new Page({ revisions: [] })
+        expect(empty.getCurr()).to.equal(null)
+      })
+
+      it('returns a Revision instance', () => {
+        expect(actual.getCurr()).to.be.an.instanceOf(Revision)
+      })
+
+      it('returns the most recent revision', () => {
+        expect(actual.getCurr()?.content.title).to.equal(title)
+      })
+    })
+
     describe('addRevision', () => {
       beforeEach(() => runTestUpdate())
 
