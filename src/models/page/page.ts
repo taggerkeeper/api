@@ -36,6 +36,7 @@ class Page {
   async save (): Promise<void> {
     if (this.id === undefined) {
       const record = await PageModel.create(this.getObj())
+      // eslint-disable-next-line @typescript-eslint/no-base-to-string
       this.id = record._id?.toString()
     } else {
       await PageModel.findOneAndUpdate({ _id: this.id }, this.getObj())
