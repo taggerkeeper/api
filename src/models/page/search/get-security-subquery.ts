@@ -1,6 +1,6 @@
-import { PermissionLevel } from '../models/permissions/data.js'
-import User from '../models/user/user.js'
-import exists from './exists.js'
+import { PermissionLevel } from '../../permissions/data.js'
+import User from '../../user/user.js'
+import exists from '../../../utils/exists.js'
 
 const getSecuritySubquery = (searcher?: User): any => {
   if (searcher?.admin === true) return {}

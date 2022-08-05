@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import User from '../models/user/user.js'
+import User from '../../user/user.js'
 import getSecuritySubquery from './get-security-subquery.js'
 
 describe('getSecuritySubquery', () => {
