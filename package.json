@@ -37,7 +37,9 @@
     "express": "^4.18.1",
     "mongoose": "^6.5.1",
     "qrcode": "^1.5.1",
+    "rehype-stringify": "^9.0.3",
     "remark-parse": "^10.0.1",
+    "remark-rehype": "^10.1.0",
     "slugify": "^1.6.5",
     "unified": "^10.1.2",
     "speakeasy": "^2.0.0"
