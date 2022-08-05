@@ -6,9 +6,9 @@ const getSecuritySubquery = (searcher?: User): any => {
   if (searcher?.admin === true) return {}
 
   const levels = {
-    anyone: { 'revisions[0].permissions.read': PermissionLevel.anyone },
-    authenticated: { 'revisions[0].permissions.read': PermissionLevel.authenticated },
-    editor: { 'revisions[0].permissions.read': PermissionLevel.editor }
+    anyone: { 'revisions.0.permissions.read': PermissionLevel.anyone },
+    authenticated: { 'revisions.0.permissions.read': PermissionLevel.authenticated },
+    editor: { 'revisions.0.permissions.read': PermissionLevel.editor }
   }
   const isEditor = { 'revisions.editor': searcher?.id }
 

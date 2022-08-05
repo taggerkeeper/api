@@ -3,7 +3,7 @@ import User from '../models/user/user.js'
 import getSecuritySubquery from './get-security-subquery.js'
 
 describe('getSecuritySubquery', () => {
-  const anyoneJson = '{"revisions[0].permissions.read":"anyone"}'
+  const anyoneJson = '{"revisions.0.permissions.read":"anyone"}'
 
   it('just checks for pages that can be anonymously read if not given a user', () => {
     expect(JSON.stringify(getSecuritySubquery())).to.equal(anyoneJson)
@@ -21,8 +21,8 @@ describe('getSecuritySubquery', () => {
   it('returns permissions logic for other users', () => {
     const id = '0123456789abcdef12345678'
     const searcher = new User({ id })
-    const authenticatedJson = '{"revisions[0].permissions.read":"authenticated"}'
-    const editorLevelJson = '{"revisions[0].permissions.read":"editor"}'
+    const authenticatedJson = '{"revisions.0.permissions.read":"authenticated"}'
+    const editorLevelJson = '{"revisions.0.permissions.read":"editor"}'
     const isEditorJson = `{"revisions.editor":"${id}"}`
     const json = `{"$or":[${anyoneJson},${authenticatedJson},{"$and":[${editorLevelJson},${isEditorJson}]}]}`
     expect(JSON.stringify(getSecuritySubquery(searcher))).to.equal(json)
