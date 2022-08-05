@@ -6,7 +6,8 @@ import buildQuery from './build-query.js'
 import getLimit from './get-limit.js'
 
 const search = async (query: PageQuery, searcher?: User): Promise<PageQueryResultSet> => {
-  const { offset, sort, text } = query
+  const { sort, text } = query
+  const offset = query.offset ?? 0
   const limit = getLimit(query)
   const includesTextQuery = text !== undefined
   const sortOrder = sort === 'alphabetical'
@@ -25,3 +26,5 @@ const search = async (query: PageQuery, searcher?: User): Promise<PageQueryResul
   const total = await PageModel.countDocuments(q)
   return { total, start: offset, end: offset + limit, pages }
 }
+
+export default search
