@@ -1,3 +1,5 @@
+import Page from '../page.js'
+
 interface PageQuery {
   created?: {
     before?: Date
@@ -17,4 +19,11 @@ interface PageQuery {
   sort?: 'created' | '-created' | 'updated' | '-updated' | 'alphabetical' | '-alphabetical' | 'relevance'
 }
 
-export { PageQuery }
+interface PageQueryResultSet {
+  total: number
+  start: number
+  end: number
+  pages: Page[]
+}
+
+export { PageQuery, PageQueryResultSet }
