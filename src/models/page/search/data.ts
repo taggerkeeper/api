@@ -7,6 +7,10 @@ interface PageQuery {
     before?: Date
     after?: Date
   }
+  revisions?: {
+    max?: number
+    min?: number
+  }
 }
 
 export { PageQuery }
