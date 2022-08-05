@@ -12,6 +12,9 @@ interface PageQuery {
     min?: number
   }
   text?: string
+  limit?: number
+  offset?: number
+  sort?: 'created' | '-created' | 'updated' | '-updated' | 'alphabetical' | '-alphabetical' | 'relevance'
 }
 
 export { PageQuery }
