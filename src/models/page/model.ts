@@ -15,7 +15,7 @@ const schema = new Schema<PageData>({
       path: String,
       body: String
     },
-    editor: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+    editor: { type: Schema.Types.ObjectId, ref: 'User' },
     permissions: {
       read: { type: String, required: true, default: defaultRead },
       write: { type: String, required: true, default: defaultWrite }
