@@ -51,4 +51,9 @@ describe('renderMarkdown', () => {
     const html = await renderMarkdown('<footer>This is a test.</footer>')
     expect(html).to.equal('<footer>This is a test.</footer>')
   })
+
+  it('adds ID\'s to headings', async () => {
+    const html = await renderMarkdown('## Test Heading\n\nHello, world!')
+    expect(html).to.equal('<h2 id="test-heading">Test Heading</h2>\n<p>Hello, world!</p>')
+  })
 })
