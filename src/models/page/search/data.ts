@@ -11,6 +11,7 @@ interface PageQuery {
     max?: number
     min?: number
   }
+  text?: string
 }
 
 export { PageQuery }
