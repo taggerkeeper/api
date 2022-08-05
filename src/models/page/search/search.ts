@@ -3,12 +3,11 @@ import User from '../../user/user.js'
 import PageModel from '../model.js'
 import { PageQuery, PageQueryResultSet } from './data.js'
 import buildQuery from './build-query.js'
-import getLimit from './get-limit.js'
+import getOffsetLimitStartEnd from './get-offset-limit-start-end.js'
 
 const search = async (query: PageQuery, searcher?: User): Promise<PageQueryResultSet> => {
   const { sort, text } = query
-  const offset = query.offset ?? 0
-  const limit = getLimit(query)
+  const { offset, limit, start, end } = getOffsetLimitStartEnd(query)
   const includesTextQuery = text !== undefined
   const sortOrder = sort === 'alphabetical'
     ? 'revisions.0.content.title'
@@ -24,7 +23,7 @@ const search = async (query: PageQuery, searcher?: User): Promise<PageQueryResul
   const records = await sorted.populate('revisions.editor').skip(offset).limit(limit)
   const pages = records.map(record => new Page(record))
   const total = await PageModel.countDocuments(q)
-  return { total, start: offset, end: offset + limit, pages }
+  return { total, start, end, pages }
 }
 
 export default search
