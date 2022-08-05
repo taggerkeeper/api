@@ -3,11 +3,11 @@ import getLimit from './get-limit.js'
 
 describe('getLimit', () => {
   it('returns the limit provided if it\'s less than the maximum', () => {
-    expect(getLimit(25)).to.equal(25)
+    expect(getLimit({ limit: 25 })).to.equal(25)
   })
 
   it('returns the maximum if you request something beyond that', () => {
-    expect(getLimit(1000000)).to.equal(1000)
+    expect(getLimit({ limit: 1000000 })).to.equal(1000)
   })
 
   it('returns the default if not given an argument', () => {
