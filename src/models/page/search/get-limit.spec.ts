@@ -1,5 +1,5 @@
 import { expect } from 'chai'
-import { getLimit } from './search.js'
+import getLimit from './get-limit.js'
 
 describe('getLimit', () => {
   it('returns the limit provided if it\'s less than the maximum', () => {
