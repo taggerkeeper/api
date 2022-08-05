@@ -19,6 +19,12 @@ interface PageQuery {
   sort?: 'created' | '-created' | 'updated' | '-updated' | 'alphabetical' | '-alphabetical' | 'relevance'
 }
 
+interface PageSearchOptions {
+  sort: string
+  offset: number
+  limit: number
+}
+
 interface PageQueryResultSet {
   total: number
   start: number
@@ -26,4 +32,4 @@ interface PageQueryResultSet {
   pages: Page[]
 }
 
-export { PageQuery, PageQueryResultSet }
+export { PageQuery, PageSearchOptions, PageQueryResultSet }
