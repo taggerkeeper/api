@@ -6,6 +6,7 @@ import exists from '../../utils/exists.js'
 interface PageData {
   _id?: string | object
   id?: string
+  path?: string
   revisions: RevisionData[]
   created?: Date
   updated?: Date

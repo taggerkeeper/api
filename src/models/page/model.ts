@@ -9,6 +9,7 @@ const defaultRead = getFirstVal(DEFAULT_READ_PERMISSIONS, PermissionLevel.anyone
 const defaultWrite = getFirstVal(DEFAULT_WRITE_PERMISSIONS, PermissionLevel.anyone)
 
 const schema = new Schema<PageData>({
+  path: { type: String, required: true, unique: true },
   revisions: [{
     content: {
       title: String,

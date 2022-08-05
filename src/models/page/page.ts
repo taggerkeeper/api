@@ -25,6 +25,7 @@ class Page {
 
   getObj (): PageData {
     const obj: PageData = {
+      path: this.revisions[0].content.path,
       revisions: this.revisions.map(revision => revision.getObj()),
       created: this.created,
       updated: this.updated
