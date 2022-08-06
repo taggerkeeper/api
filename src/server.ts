@@ -5,7 +5,7 @@ import getFirstVal from './utils/get-first-val.js'
 
 // Parse environment variables into something useful
 const { PORT, CONNECTIONSTRING } = process.env
-const port: number = getFirstVal(PORT, 8080)
+const port: number = parseInt(getFirstVal(PORT, 8080))
 const connectionString: string = getFirstVal(CONNECTIONSTRING, 'mongodb://localhost/taggerkeeper')
 
 // Connect to MongoDB
