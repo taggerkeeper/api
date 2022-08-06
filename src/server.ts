@@ -1,6 +1,8 @@
 import express from 'express'
 import mongoose from 'mongoose'
 
+import setupSwagger from './swagger.js'
+
 import getFirstVal from './utils/get-first-val.js'
 
 // Parse environment variables into something useful
@@ -12,6 +14,7 @@ const connectionString: string = getFirstVal(CONNECTIONSTRING, 'mongodb://localh
 await mongoose.connect(connectionString)
 
 const api = express()
+await setupSwagger(api)
 
 // GET /
 api.get('/', (req, res) => {
