@@ -1,7 +1,7 @@
 import getEnvVar from './get-env-var.js'
 import loadPackage from './load-package.js'
 
-const getRoot = async (): Promise<string> => {
+const getRoot = async (): Promise<{ host: string, root: string, base: string }> => {
   const protocol = getEnvVar('PROTOCOL') as string
   const domain = getEnvVar('DOMAIN') as string
   const port = getEnvVar('PORT') as number
@@ -12,7 +12,10 @@ const getRoot = async (): Promise<string> => {
   const versionElements = pkg !== undefined ? pkg.version.split('.') : [1]
   const pathElements = [...origPathElements.map(elem => `/${elem}`), `/v${versionElements[0]}`]
 
-  return `${protocol}://${domain}${port === 80 ? '' : `:${port}`}${pathElements.join('')}`
+  const host = `${protocol}://${domain}${port === 80 ? '' : `:${port}`}`
+  const base = pathElements.join('')
+  const root = `${host}${base}`
+  return { host, root, base }
 }
 
 export default getRoot
