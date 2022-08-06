@@ -17,7 +17,7 @@ Variable | Notes
 `PROTOCOL` | The protocol that the API uses. (Default: `https`)
 `DOMAIN` | The domain that the API is running on. (Default: `localhost`)
 `PORT` | The port number that the API will run on. (Default: `8080`)
-`PATH` | The path to the API on the domain. (Default: `/`)
+`APIPATH` | The path to the API on the domain. This should **not** include versioning; versioning is dynamically added, based on the `version` property in `package.json`. (Default: `/`)
 `CONNECTIONSTRING` | The connection string used to connect to MongoDB. (Default: `mongodb://localhost/taggerkeeper`)
 `DEFAULT_READ_PERMISSIONS` | Default read permissions for a new page. (Default: `anyone`)
 `DEFAULT_WRITE_PERMISSIONS` | Default write permissions for a new page. (Default: `anyone`)
