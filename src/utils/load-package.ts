@@ -14,3 +14,4 @@ const loadPackage = async (): Promise<NPMPackage | undefined> => {
 }
 
 export default loadPackage
+export { NPMPackage }
