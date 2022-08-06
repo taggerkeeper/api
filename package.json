@@ -46,6 +46,7 @@
     "remark-rehype": "^10.1.0",
     "slugify": "^1.6.5",
     "speakeasy": "^2.0.0",
+    "swagger-jsdoc": "^6.2.4",
     "unified": "^10.1.2"
   },
   "devDependencies": {
