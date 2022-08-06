@@ -10,7 +10,9 @@ const envVarDefaults: any = {
   DEFAULT_READ_PERMISSIONS: { type: 'string', value: PermissionLevel.anyone },
   DEFAULT_WRITE_PERMISSIONS: { type: 'string', value: PermissionLevel.anyone },
   DEFAULT_QUERY_LIMIT: { type: 'number', value: 50 },
-  MAX_QUERY_LIMIT: { type: 'number', value: 1000 }
+  MAX_QUERY_LIMIT: { type: 'number', value: 1000 },
+  OPENAPI_TITLE: { type: 'string', value: 'Tagger Keeper API' },
+  OPENAPI_DESC: { type: 'string', value: 'Example server.' }
 }
 
 const getEnvVar = (varName: string): string | number | undefined => {

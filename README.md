@@ -23,3 +23,5 @@ Variable | Notes
 `DEFAULT_WRITE_PERMISSIONS` | Default write permissions for a new page. (Default: `anyone`)
 `DEFAULT_QUERY_LIMIT` | The number of pages that you’ll get back from a single search by default. (Default: `50`)
 `MAX_QUERY_LIMIT` | The maximum number of pages that any single search will return. (Default: `1000`)
+`OPENAPI_TITLE` | The title to use for OpenAPI documentation. (Default: `Tagger Keeper API`)
+`OPENAPI_DESC` | The description of the API to use for OpenAPI documentation. (Default: `Example server.`)
