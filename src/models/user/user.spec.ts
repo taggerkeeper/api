@@ -135,6 +135,32 @@ describe('User', () => {
       })
     })
 
+    describe('getPublicObj', () => {
+      it('returns an object', () => {
+        const user = new User()
+        expect(typeof user.getPublicObj()).to.equal('object')
+      })
+
+      it('returns the user ID', () => {
+        const user = new User()
+        user.id = 'test'
+        const actual = user.getPublicObj()
+        expect(actual.id).to.equal(user.id)
+      })
+
+      it('returns the user\'s active status', () => {
+        const user = new User({ active: false })
+        const actual = user.getPublicObj()
+        expect(actual.active).to.equal(false)
+      })
+
+      it('returns the user\'s admin status', () => {
+        const user = new User({ admin: true })
+        const actual = user.getPublicObj()
+        expect(actual.admin).to.equal(true)
+      })
+    })
+
     describe('save', () => {
       const _id = 'abc123'
 

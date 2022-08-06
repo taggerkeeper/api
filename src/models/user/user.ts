@@ -1,5 +1,6 @@
 import UserModel from './model.js'
 import UserData from './data.js'
+import PublicUserData from './public.js'
 import Password from '../password/password.js'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
@@ -37,6 +38,14 @@ class User {
     if (exists(this.id)) obj.id = this.id
     if (exists(this.otp.secret)) obj.otp = { enabled: this.otp.enabled, secret: this.otp.secret }
     return obj
+  }
+
+  getPublicObj (): PublicUserData {
+    return {
+      id: this.id ?? '',
+      active: this.active ?? true,
+      admin: this.admin ?? false
+    }
   }
 
   async save (): Promise<void> {
