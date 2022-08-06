@@ -1,12 +1,17 @@
+import { NPMPackage } from './load-package.js'
 import getEnvVar from './get-env-var.js'
-import loadPackage from './load-package.js'
 
-const getRoot = async (): Promise<{ host: string, root: string, base: string }> => {
+interface APIInfo {
+  host: string
+  root: string
+  base: string
+}
+
+const getAPIInfo = (pkg: NPMPackage): APIInfo => {
   const protocol = getEnvVar('PROTOCOL') as string
   const domain = getEnvVar('DOMAIN') as string
   const port = getEnvVar('PORT') as number
   const path = getEnvVar('APIPATH') as string
-  const pkg = await loadPackage()
 
   const origPathElements = path !== undefined ? path.split('/').filter((elem: string) => elem.length > 0) : []
   const versionElements = pkg !== undefined ? pkg.version.split('.') : [1]
@@ -18,4 +23,5 @@ const getRoot = async (): Promise<{ host: string, root: string, base: string }> 
   return { host, root, base }
 }
 
-export default getRoot
+export default getAPIInfo
+export { APIInfo }
