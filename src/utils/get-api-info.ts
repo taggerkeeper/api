@@ -7,7 +7,7 @@ interface APIInfo {
   base: string
 }
 
-const getAPIInfo = (pkg: NPMPackage): APIInfo => {
+const getAPIInfo = (pkg?: NPMPackage): APIInfo => {
   const protocol = getEnvVar('PROTOCOL') as string
   const domain = getEnvVar('DOMAIN') as string
   const port = getEnvVar('PORT') as number
