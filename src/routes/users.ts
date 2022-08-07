@@ -42,7 +42,7 @@ const router = Router()
  *           example: "alice@example.com"
  *         password:
  *           type: string
- *           description: "The password that the user would like to use to authenticate. This is submitted in plaintext and then hashed on the server before it is stored, so user creation requests **must** be submitted over an SSL-protected connection to be secure.
+ *           description: "The password that the user would like to use to authenticate. This is submitted in plaintext and then hashed on the server before it is stored, so user creation requests **must** be submitted over an SSL-protected connection to be secure."
  *           example: "Longer passwords are better passwords."
  */
 
