@@ -20,7 +20,7 @@ class User {
   otp: OTP
 
   constructor (data?: UserData) {
-    this.name = getFirstVal(data?.name, `Anonymous ${pickRandomElem(anonymousAnimals)}`)
+    this.name = getFirstVal(data?.name, `Anonymous ${pickRandomElem(anonymousAnimals) as string}`)
     this.active = getFirstVal(data?.active, true)
     this.admin = getFirstVal(data?.admin, false)
     this.password = new Password()
