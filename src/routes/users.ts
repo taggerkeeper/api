@@ -1,6 +1,6 @@
 import { Request, Response, Router } from 'express'
 
-import allow from '../middlewares/allow'
+import allow from '../middlewares/allow.js'
 
 const router = Router()
 
