@@ -1,4 +1,4 @@
-import express from 'express'
+import express, { Router } from 'express'
 import mongoose from 'mongoose'
 
 import userRouter from './routes/users.js'
@@ -24,11 +24,20 @@ const api = express()
 await setupSwagger(api)
 
 // Connect routes
-api.use(`${base}/users`, userRouter)
+const endpoints: { [key: string]: Router } = {
+  users: userRouter
+}
+
+for (const endpoint of Object.keys(endpoints)) {
+  api.use(`${base}/${endpoint}`, endpoints[endpoint])
+}
 
 // GET /
 api.get(`${base}/`, (req, res) => {
-  res.send({ message: 'Hello, world! ' })
+  res.send({
+    endpoints: Object.keys(endpoints).map(endpoint => `${root}/${endpoint}`),
+    documentation: `${root}/docs`
+  })
 })
 
 // Start server
