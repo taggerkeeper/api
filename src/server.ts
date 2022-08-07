@@ -27,7 +27,7 @@ await setupSwagger(api)
 api.use(`${base}/users`, userRouter)
 
 // GET /
-api.get('/', (req, res) => {
+api.get(`${base}/`, (req, res) => {
   res.send({ message: 'Hello, world! ' })
 })
 
