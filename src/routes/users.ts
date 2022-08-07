@@ -119,6 +119,6 @@ router.options('/', collection.options)
  *               $ref: "#/components/schemas/User"
  */
 
-router.options('/', createUser, setPassword, addEmail, saveSubject, collection.options)
+router.post('/', createUser, setPassword, addEmail, saveSubject, collection.post)
 
 export default router
