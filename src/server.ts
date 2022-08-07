@@ -19,6 +19,8 @@ await mongoose.connect(connectionString)
 
 // Create server
 const api = express()
+api.use(express.json())
+api.use(express.urlencoded({ extended: true }))
 
 // Set up Swagger documentation
 await setupSwagger(api)
