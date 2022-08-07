@@ -12,7 +12,7 @@ import getAPIInfo from './utils/get-api-info.js'
 const pkg = await loadPackage()
 const port: number = getEnvVar('PORT') as number
 const connectionString: string = getEnvVar('CONNECTIONSTRING') as string
-const { base } = getAPIInfo(pkg)
+const { root, base } = getAPIInfo(pkg)
 
 // Connect to MongoDB
 await mongoose.connect(connectionString)
@@ -34,6 +34,7 @@ api.get(`${base}/`, (req, res) => {
 // Start server
 const server = api.listen(port, () => {
   console.log(`Tagger Keeper API is now running at port ${port}`)
+  console.log(`Entrypoint can be found at <${root}>`)
 })
 
 /**
