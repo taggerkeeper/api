@@ -1,20 +1,30 @@
 import express from 'express'
 import mongoose from 'mongoose'
 
+import userRouter from './routes/users.js'
+
 import setupSwagger from './swagger.js'
 
-import getFirstVal from './utils/get-first-val.js'
+import getEnvVar from './utils/get-env-var.js'
+import loadPackage from './utils/load-package.js'
+import getAPIInfo from './utils/get-api-info.js'
 
-// Parse environment variables into something useful
-const { PORT, CONNECTIONSTRING } = process.env
-const port: number = parseInt(getFirstVal(PORT, 8080))
-const connectionString: string = getFirstVal(CONNECTIONSTRING, 'mongodb://localhost/taggerkeeper')
+const pkg = await loadPackage()
+const port: number = getEnvVar('PORT') as number
+const connectionString: string = getEnvVar('CONNECTIONSTRING') as string
+const { base } = getAPIInfo(pkg)
 
 // Connect to MongoDB
 await mongoose.connect(connectionString)
 
+// Create server
 const api = express()
+
+// Set up Swagger documentation
 await setupSwagger(api)
+
+// Connect routes
+api.use(`${base}/users`, userRouter)
 
 // GET /
 api.get('/', (req, res) => {
