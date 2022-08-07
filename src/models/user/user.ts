@@ -8,7 +8,17 @@ import getFirstVal from '../../utils/get-first-val.js'
 import getId from '../../utils/get-id.js'
 import exists from '../../utils/exists.js'
 import pickRandomElem from '../../utils/pick-random-elem.js'
-import anonymousAnimals from '../../anonymous.json'
+
+const anonymousAnimals = ['Aardvark', 'Akita', 'Albatross', 'Anteater', 'Antelope', 'Ape', 'Armadillo', 'Awk',
+  'Axolotl', 'Baboon', 'Badger', 'Bear', 'Bison', 'Boar', 'Cheetah', 'Cobra', 'Coelacanth', 'Coyote', 'Crab', 'Crane',
+  'Crocodile', 'Crow', 'Dingo', 'Eagle', 'Emu', 'Ermine', 'Falcon', 'Ferret', 'Fox', 'Frog', 'Gecko', 'Gibbon',
+  'Gopher', 'Greyhound', 'Haddock', 'Heron', 'Hippo', 'Hyena', 'Ibis', 'Impala', 'Jackal', 'Jaguar', 'Lemur', 'Lizard',
+  'Llama', 'Lobster', 'Lynx', 'Macaque', 'Macaw', 'Mallard', 'Mandrill', 'Mantis', 'Mastiff', 'Meerkat', 'Mongoose',
+  'Monkey', 'Muskrat', 'Newt', 'Nightingale', 'Ocelot', 'Octopus', 'Pangolin', 'Panther', 'Parrot', 'Pelican',
+  'Penguin', 'Pirana', 'Platypus', 'Porpoise', 'Puffin', 'Puma', 'Python', 'Raven', 'Rhino', 'Robin', 'Sable',
+  'Salamander', 'Sawfish', 'Scorpion', 'Serpent', 'Shark', 'Sloth', 'Snake', 'Sparrow', 'Spider', 'Starfish',
+  'Stingray', 'Swan', 'Tapir', 'Tarsier', 'Tiger', 'Toad', 'Toucan', 'Vulture', 'Whippet', 'Wildebeest', 'Wolf',
+  'Wombat', 'Zebra', 'Zebu']
 
 class User {
   id?: string
