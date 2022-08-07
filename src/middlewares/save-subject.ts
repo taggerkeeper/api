@@ -7,6 +7,7 @@ const saveSubject = async function (req: Request, res: Response, next: NextFunct
   } catch (err) {
     console.error(err)
   }
+  next()
 }
 
 export default expressAsyncHandler(saveSubject)

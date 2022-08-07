@@ -6,6 +6,7 @@ const addEmail = function (req: Request, res: Response, next: NextFunction): voi
     const email = new Email({ addr: req.body.email })
     req.subject.emails = [...req.subject.emails, email]
   }
+  next()
 }
 
 export default addEmail

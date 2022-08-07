@@ -4,6 +4,7 @@ const setPassword = function (req: Request, res: Response, next: NextFunction): 
   if (req.subject !== undefined && req.body.password !== undefined) {
     req.subject.password.change(req.body.password)
   }
+  next()
 }
 
 export default setPassword
