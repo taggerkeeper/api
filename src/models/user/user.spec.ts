@@ -9,6 +9,7 @@ import User from './user.js'
 describe('User', () => {
   describe('constructor', () => {
     const id = '0123456789abcdef12345678'
+    const name = 'Tester'
 
     it('returns a User instance', () => {
       const user = new User()
@@ -16,13 +17,18 @@ describe('User', () => {
     })
 
     it('sets the ID from _id', () => {
-      const user = new User({ _id: id })
+      const user = new User({ _id: id, name })
       expect(user.id).to.equal(id)
     })
 
     it('sets the ID from id', () => {
-      const user = new User({ id })
+      const user = new User({ id, name })
       expect(user.id).to.equal(id)
+    })
+
+    it('sets the name', () => {
+      const user = new User({ name })
+      expect(user.name).to.equal(name)
     })
 
     it('sets active to true by default', () => {
@@ -31,7 +37,7 @@ describe('User', () => {
     })
 
     it('lets you set the active flag', () => {
-      const user = new User({ active: false })
+      const user = new User({ name, active: false })
       expect(user.active).to.equal(false)
     })
 
@@ -41,7 +47,7 @@ describe('User', () => {
     })
 
     it('lets you set the admin flag', () => {
-      const user = new User({ admin: true })
+      const user = new User({ name, admin: true })
       expect(user.admin).to.equal(true)
     })
 
@@ -52,7 +58,7 @@ describe('User', () => {
 
     it('lets you set the password', () => {
       const password = 'password'
-      const user = new User({ password })
+      const user = new User({ name, password })
       expect(user.password.hash).to.equal(password)
     })
 
@@ -87,20 +93,20 @@ describe('User', () => {
       })
 
       it('returns the user\'s active status', () => {
-        const user = new User({ active: false })
+        const user = new User({ name: 'Tester', active: false })
         const actual = user.getObj()
         expect(actual.active).to.equal(false)
       })
 
       it('returns the user\'s admin status', () => {
-        const user = new User({ admin: true })
+        const user = new User({ name: 'Tester', admin: true })
         const actual = user.getObj()
         expect(actual.admin).to.equal(true)
       })
 
       it('returns a string for the hash of the user\'s password', () => {
         const password = 'password'
-        const user = new User({ password })
+        const user = new User({ name: 'Tester', password })
         const actual = user.getObj()
         expect(typeof actual.password).to.equal('string')
       })
@@ -149,13 +155,13 @@ describe('User', () => {
       })
 
       it('returns the user\'s active status', () => {
-        const user = new User({ active: false })
+        const user = new User({ name: 'Tester', active: false })
         const actual = user.getPublicObj()
         expect(actual.active).to.equal(false)
       })
 
       it('returns the user\'s admin status', () => {
-        const user = new User({ admin: true })
+        const user = new User({ name: 'Tester', admin: true })
         const actual = user.getPublicObj()
         expect(actual.admin).to.equal(true)
       })
@@ -186,14 +192,14 @@ describe('User', () => {
 
       it('updates the record if the model already has an ID', async () => {
         const findOneAndUpdate = sinon.stub(UserModel, 'findOneAndUpdate')
-        const user = new User({ _id })
+        const user = new User({ _id, name: 'Tester' })
         await user.save()
         expect(findOneAndUpdate.callCount).to.equal(1)
       })
 
       it('keeps the existing ID if it already has one', async () => {
         sinon.stub(UserModel, 'findOneAndUpdate')
-        const user = new User({ _id })
+        const user = new User({ _id, name: 'Tester' })
         await user.save()
         expect(user.id).to.equal(_id)
       })

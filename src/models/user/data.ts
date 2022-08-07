@@ -7,6 +7,7 @@ import exists from '../../utils/exists.js'
 interface UserData {
   _id?: string | object
   id?: string
+  name: string
   active?: boolean
   admin?: boolean
   password?: string
@@ -16,13 +17,14 @@ interface UserData {
 
 const isUserData = (obj: any): obj is UserData => {
   if (!exists(obj) || typeof obj !== 'object' || Array.isArray(obj)) return false
-  const { _id, id, active, admin, password, emails, otp } = obj
+  const { _id, id, name, active, admin, password, emails, otp } = obj
   const e = emails === undefined || !Array.isArray(emails)
     ? [false]
     : emails.map((data: any) => isEmailData(data))
   return checkAll([
     checkAny([!exists(_id), typeof _id === 'string', typeof _id === 'object']),
     checkAny([!exists(id), typeof id === 'string']),
+    typeof name === 'string',
     checkAny([!exists(active), active === true, active === false]),
     checkAny([!exists(admin), admin === true, admin === false]),
     checkAny([!exists(password), typeof password === 'string']),

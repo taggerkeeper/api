@@ -104,7 +104,7 @@ describe('isRevisionData', () => {
   })
 
   it('returns true if given UserData for editor', () => {
-    const cpy = Object.assign({}, min, { editor: {} })
+    const cpy = Object.assign({}, min, { editor: { name: 'Editor' } })
     expect(isRevisionData(cpy)).to.equal(true)
   })
 

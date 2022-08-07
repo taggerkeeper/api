@@ -4,6 +4,7 @@ import { isPublicUserData } from './public.js'
 describe('isPublicUserData', () => {
   const min = {
     id: '0123456789abcdef12345678',
+    name: 'Tester',
     active: true,
     admin: false
   }
@@ -62,6 +63,31 @@ describe('isPublicUserData', () => {
 
   it('returns false if id is an array', () => {
     const cpy = Object.assign({}, min, { id: [] })
+    expect(isPublicUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is a number', () => {
+    const cpy = Object.assign({}, min, { name: 42 })
+    expect(isPublicUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is true', () => {
+    const cpy = Object.assign({}, min, { name: true })
+    expect(isPublicUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is false', () => {
+    const cpy = Object.assign({}, min, { name: false })
+    expect(isPublicUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is an object', () => {
+    const cpy = Object.assign({}, min, { name: {} })
+    expect(isPublicUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is an array', () => {
+    const cpy = Object.assign({}, min, { name: [] })
     expect(isPublicUserData(cpy)).to.equal(false)
   })
 

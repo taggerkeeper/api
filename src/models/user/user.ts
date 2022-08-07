@@ -10,6 +10,7 @@ import exists from '../../utils/exists.js'
 
 class User {
   id?: string
+  name: string
   active: boolean
   admin: boolean
   password: Password
@@ -17,6 +18,7 @@ class User {
   otp: OTP
 
   constructor (data?: UserData) {
+    this.name = getFirstVal(data?.name, 'User')
     this.active = getFirstVal(data?.active, true)
     this.admin = getFirstVal(data?.admin, false)
     this.password = new Password()
@@ -29,6 +31,7 @@ class User {
 
   getObj (): UserData {
     const obj: UserData = {
+      name: this.name,
       active: this.active,
       admin: this.admin,
       password: this.password.hash,
@@ -43,6 +46,7 @@ class User {
   getPublicObj (): PublicUserData {
     return {
       id: this.id ?? '',
+      name: this.name,
       active: this.active ?? true,
       admin: this.admin ?? false
     }

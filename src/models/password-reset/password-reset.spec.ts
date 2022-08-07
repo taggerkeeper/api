@@ -10,7 +10,7 @@ import { isPasswordResetData } from './data.js'
 describe('PasswordReset', () => {
   describe('constructor', () => {
     it('assigns the user given', () => {
-      const user = new User({ admin: true, password: 'hash' })
+      const user = new User({ name: 'Admin', admin: true, password: 'hash' })
       const email = new Email()
       const reset = new PasswordReset({ user: user.getObj(), email: email.getObj() })
       expect(JSON.stringify(reset.user)).to.equal(JSON.stringify(user))

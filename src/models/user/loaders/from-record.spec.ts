@@ -8,7 +8,7 @@ import loadUserFromRecord from './from-record.js'
 describe('loadUserFromRecord', () => {
   const emails = [{ addr: 'test1@testing.com', verified: true }, { addr: 'test2@testing.com', verified: false }]
   const otp = { enabled: true, secret: 'shhhh' }
-  const record: UserData = { _id: 'abc123', active: true, admin: false, password: 'hash', emails, otp }
+  const record: UserData = { _id: 'abc123', name: 'Tester', active: true, admin: false, password: 'hash', emails, otp }
 
   it('returns null if not given a proper record', () => {
     const actual = loadUserFromRecord(null)

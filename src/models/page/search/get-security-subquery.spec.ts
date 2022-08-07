@@ -14,13 +14,13 @@ describe('getSecuritySubquery', () => {
   })
 
   it('returns an empty object if the user is an admin', () => {
-    const admin = new User({ admin: true })
+    const admin = new User({ name: 'Admin', admin: true })
     expect(JSON.stringify(getSecuritySubquery(admin))).to.equal('{}')
   })
 
   it('returns permissions logic for other users', () => {
     const id = '0123456789abcdef12345678'
-    const searcher = new User({ id })
+    const searcher = new User({ id, name: 'Searcher' })
     const authenticatedJson = '{"revisions.0.permissions.read":"authenticated"}'
     const editorLevelJson = '{"revisions.0.permissions.read":"editor"}'
     const isEditorJson = `{"revisions.editor":"${id}"}`

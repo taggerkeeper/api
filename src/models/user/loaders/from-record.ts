@@ -4,8 +4,8 @@ import Email from '../../email/email.js'
 
 const loadUserFromRecord = (record: UserData | null): User | null => {
   if (record === null) return null
-  const { _id, active, admin, password, emails, otp } = record
-  const user = new User({ active, admin })
+  const { _id, name, active, admin, password, emails, otp } = record
+  const user = new User({ name, active, admin })
 
   user.id = _id?.toString()
 

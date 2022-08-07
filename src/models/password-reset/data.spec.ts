@@ -4,6 +4,7 @@ import { isPasswordResetData } from './data.js'
 describe('isPasswordResetData', () => {
   const data = {
     user: {
+      name: 'Tester',
       active: true,
       admin: false,
       emails: [{ addr: 'test@testing.com', verified: true }],

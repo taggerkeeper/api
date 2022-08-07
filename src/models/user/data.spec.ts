@@ -6,6 +6,7 @@ describe('isUserData', () => {
   const email2 = { addr: 'also@testing.com', verified: false, code: 'abc123' }
 
   const min = {
+    name: 'Tester',
     active: true,
     admin: false,
     emails: [],
@@ -69,11 +70,6 @@ describe('isUserData', () => {
     expect(isUserData(cpy)).to.equal(false)
   })
 
-  it('returns false if _id is a number', () => {
-    const cpy = Object.assign({}, min, { _id: 42 })
-    expect(isUserData(cpy)).to.equal(false)
-  })
-
   it('returns true if id is a string', () => {
     const cpy = Object.assign({}, min, { id: 'test' })
     expect(isUserData(cpy)).to.equal(true)
@@ -94,11 +90,6 @@ describe('isUserData', () => {
     expect(isUserData(cpy)).to.equal(false)
   })
 
-  it('returns false if id is a number', () => {
-    const cpy = Object.assign({}, min, { id: 42 })
-    expect(isUserData(cpy)).to.equal(false)
-  })
-
   it('returns false if id is an object', () => {
     const cpy = Object.assign({}, min, { id: {} })
     expect(isUserData(cpy)).to.equal(false)
@@ -106,6 +97,31 @@ describe('isUserData', () => {
 
   it('returns false if id is an array', () => {
     const cpy = Object.assign({}, min, { id: [] })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is a number', () => {
+    const cpy = Object.assign({}, min, { name: 42 })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is true', () => {
+    const cpy = Object.assign({}, min, { name: true })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is false', () => {
+    const cpy = Object.assign({}, min, { name: false })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is an object', () => {
+    const cpy = Object.assign({}, min, { name: { first: 'Tester', last: 'McTesterface' } })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if name is an array', () => {
+    const cpy = Object.assign({}, min, { id: ['Tester', 'McTestface'] })
     expect(isUserData(cpy)).to.equal(false)
   })
 

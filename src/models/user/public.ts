@@ -4,15 +4,17 @@ import exists from '../../utils/exists.js'
 
 interface PublicUserData {
   id: string
+  name: string
   active: boolean
   admin: boolean
 }
 
 const isPublicUserData = (obj: any): obj is PublicUserData => {
   if (!exists(obj) || typeof obj !== 'object' || Array.isArray(obj)) return false
-  const { id, active, admin } = obj
+  const { id, name, active, admin } = obj
   return checkAll([
     typeof id === 'string',
+    typeof name === 'string',
     checkAny([active === true, active === false]),
     checkAny([admin === true, admin === false]),
     obj._id === undefined,
