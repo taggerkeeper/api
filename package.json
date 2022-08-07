@@ -36,6 +36,7 @@
     "crypto-random-string": "^5.0.0",
     "deepmerge": "^4.2.2",
     "express": "^4.18.1",
+    "express-async-handler": "^1.2.0",
     "mongoose": "^6.5.1",
     "qrcode": "^1.5.1",
     "rehype-raw": "^6.1.1",
