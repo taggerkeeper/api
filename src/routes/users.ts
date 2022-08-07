@@ -1,7 +1,16 @@
 import { Request, Response, Router } from 'express'
 
-import allow from '../middlewares/allow.js'
+import loadPackage from '../utils/load-package.js'
+import getAPIInfo from '../utils/get-api-info.js'
 
+import addEmail from '../middlewares/add-email.js'
+import allow from '../middlewares/allow.js'
+import createUser from '../middlewares/create-user.js'
+import saveSubject from '../middlewares/save-subject.js'
+import setPassword from '../middlewares/set-password.js'
+
+const pkg = await loadPackage()
+const { root } = getAPIInfo(pkg)
 const router = Router()
 
 /**
@@ -51,6 +60,13 @@ const router = Router()
 const collection = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  post: (req: Request, res: Response) => {
+    const { subject } = req
+    const status = subject !== undefined ? 201 : 500
+    const body = subject !== undefined ? subject.getPublicObj() : { message: 'No new user was created.' }
+    if (subject !== undefined) res.set('Location', `${root}/users/${subject.id ?? ''}`)
+    res.status(status).send(body)
   }
 }
 
@@ -75,5 +91,34 @@ router.all('/', allow(collection))
  */
 
 router.options('/', collection.options)
+
+/**
+ * @openapi
+ * /api/v1/users:
+ *   post:
+ *     tags:
+ *       - "Users"
+ *     summary: "Create a new user."
+ *     description: "Create a new user."
+ *     requestBody:
+ *       description: "The information you provide will be used to create a new user."
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/UserCreate"
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: "#/components/schemas/UserCreate"
+ *     responses:
+ *       201:
+ *         description: "A new user was created."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/User"
+ */
+
+router.options('/', createUser, setPassword, addEmail, saveSubject, collection.options)
 
 export default router
