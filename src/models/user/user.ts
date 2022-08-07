@@ -7,6 +7,8 @@ import OTP from '../otp/otp.js'
 import getFirstVal from '../../utils/get-first-val.js'
 import getId from '../../utils/get-id.js'
 import exists from '../../utils/exists.js'
+import pickRandomElem from '../../utils/pick-random-elem.js'
+import anonymousAnimals from '../../anonymous.json'
 
 class User {
   id?: string
@@ -18,7 +20,7 @@ class User {
   otp: OTP
 
   constructor (data?: UserData) {
-    this.name = getFirstVal(data?.name, 'User')
+    this.name = getFirstVal(data?.name, `Anonymous ${pickRandomElem(anonymousAnimals)}`)
     this.active = getFirstVal(data?.active, true)
     this.admin = getFirstVal(data?.admin, false)
     this.password = new Password()
