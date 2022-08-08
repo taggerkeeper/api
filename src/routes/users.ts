@@ -94,7 +94,7 @@ router.options('/', collection.options)
 
 /**
  * @openapi
- * /api/v1/users:
+ * /users:
  *   post:
  *     tags:
  *       - "Users"
@@ -120,5 +120,51 @@ router.options('/', collection.options)
  */
 
 router.post('/', createUser, setPassword, addEmail, saveSubject, collection.post)
+
+// /users/:uid
+
+const item = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  },
+  get: (req: Request, res: Response) => {
+    const { subject } = req
+    const { uid } = req.params
+    const status = subject !== undefined ? 200 : 404
+    const message = uid !== undefined ? `No user found with the ID ${uid}.` : 'No user ID (uid) provided.'
+    const body = subject !== undefined ? subject.getPublicObj() : { message }
+    res.status(status).send(body)
+  }
+}
+
+router.all('/:uid', allow(item))
+
+/**
+ * @openapi
+ * /users/{uid}:
+ *   options:
+ *     summary: "Return options on how to use the Users collection."
+ *     description: "Return which options are permissible for the Users collection."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the users endpoint."
+ *               example: "OPTIONS, POST"
+ */
+
+router.options('/:uid', item.options)
 
 export default router
