@@ -6,6 +6,7 @@ import getAPIInfo from '../utils/get-api-info.js'
 import addEmail from '../middlewares/add-email.js'
 import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
+import loadSubject from '../middlewares/load-subject.js'
 import saveSubject from '../middlewares/save-subject.js'
 import setPassword from '../middlewares/set-password.js'
 
@@ -166,5 +167,32 @@ router.all('/:uid', allow(item))
  */
 
 router.options('/:uid', item.options)
+
+/**
+ * @openapi
+ * /users/{uid}:
+ *   post:
+ *     summary: "Create a new user."
+ *     description: "Create a new user."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "THe user requested was found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/User"
+ */
+
+router.get('/:uid', loadSubject, item.get)
 
 export default router
