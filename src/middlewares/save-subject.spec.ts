@@ -4,7 +4,7 @@ import * as sinon from 'sinon'
 import User from '../models/user/user.js'
 import saveSubject from './save-subject.js'
 
-describe('createUser', () => {
+describe('saveSubject', () => {
   let mockReq = mockRequest()
   let mockRes = mockResponse()
   let mockNext = (): void => {}
@@ -19,6 +19,8 @@ describe('createUser', () => {
     save = sinon.stub(User.prototype, 'save')
     saveSubject(mockReq, mockRes, mockNext)
   })
+
+  afterEach(() => sinon.restore())
 
   it('saves the request subject', () => {
     expect(save.callCount).to.equal(1)
