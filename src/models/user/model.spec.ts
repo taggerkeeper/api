@@ -1,5 +1,9 @@
-import { expect } from 'chai'
+import chai from 'chai'
+import chaiString from 'chai-string'
 import UserModel from './model.js'
+
+chai.use(chaiString)
+const { expect } = chai
 
 describe('UserModel', () => {
   describe('constructor', () => {
@@ -7,6 +11,11 @@ describe('UserModel', () => {
       const actual = new UserModel()
       const errors = actual.validateSync()
       expect(errors).to.equal(undefined)
+    })
+
+    it('defaults to a randomly-selected anonymous something-or-other', () => {
+      const actual = new UserModel()
+      expect(actual.name).to.startWith('Anonymous ')
     })
 
     it('defaults to active', () => {
@@ -94,6 +103,20 @@ describe('UserModel', () => {
       const actual = new UserModel({ otp: { enabled: true, secret: 'shhhhh' } })
       const errors = actual.validateSync()
       expect(errors?.errors['otp.enabled']).to.equal(undefined)
+    })
+  })
+
+  describe('Static methods', () => {
+    describe('generateRandomName', () => {
+      it('returns a string', () => {
+        const name = UserModel.generateRandomName()
+        expect(name).to.be.a('string')
+      })
+
+      it('returns an anonymous something-or-other', () => {
+        const name = UserModel.generateRandomName()
+        expect(name).to.startWith('Anonymous ')
+      })
     })
   })
 })
