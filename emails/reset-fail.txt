@@ -1,0 +1,9 @@
+Hello!
+
+Someone (hopefully you!) asked us to reset the password for a Tagger Keeper user account with this email address ([EMAILADDR]). We don’t have any record of a user account with that email, though. If you sent this request, you can try a different email address.
+
+If you weren’t expecting this email, it’s possibly that someone’s up to something. If you’re reading this, they probably haven’t succeeded. All we have is an IP address ([IPADDR]). IP addresses can be manipulated pretty easily, so you shouldn’t put too much faith in what they reveal, but it could be a hint as to what’s going on if this is a mystery. You can visit the URL below to learn more about this IP address.
+
+https://whatismyipaddress.com/ip/[IPADDR]
+
+Tagger Keeper Team

@@ -1,0 +1,12 @@
+Hello!
+
+Someone (hopefully you!) just added this email address ([EMAILADDR]) to a Tagger Keeper user account. To make sure that we’ve got it right, can you verify that this really is your email address for us by going to this URL?
+
+https://taggerkeeper.com/verify/[VERIFYCODE]
+
+If you weren’t expecting this email, it’s possible that someone’s up to something. If you’re reading this, they probably haven’t succeeded. All we have is an IP address ([IPADDR]). IP addresses can be manipulated pretty easily, so you shouldn’t put too much faith in what they reveal, but it could be a hint as to what’s going on if this is a mystery. You can visit the URL below to learn more about this IP address.
+
+https://whatismyipaddress.com/ip/[IPADDR]
+
+Thanks,
+The Tagger Keeper Team
