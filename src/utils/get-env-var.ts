@@ -12,7 +12,12 @@ const envVarDefaults: any = {
   DEFAULT_QUERY_LIMIT: { type: 'number', value: 50 },
   MAX_QUERY_LIMIT: { type: 'number', value: 1000 },
   OPENAPI_TITLE: { type: 'string', value: 'Tagger Keeper API' },
-  OPENAPI_DESC: { type: 'string', value: 'Example server.' }
+  OPENAPI_DESC: { type: 'string', value: 'Example server.' },
+  EMAIL_FROM: { type: 'string', value: 'Tagger Keeper API <api@taggerkeeper.com>' },
+  MAILGUN_USERNAME: { type: 'string', value: 'your-mailgun-username' },
+  MAILGUN_APIKEY: { type: 'string', value: 'your-mailgun-api-key' },
+  MAILGUN_DOMAIN: { type: 'string', value: 'sandbox12345.mailgun.org' },
+  MAILGUN_API: { type: 'string', value: 'https://api.mailgun.net'}
 }
 
 const getEnvVar = (varName: string): string | number | undefined => {
