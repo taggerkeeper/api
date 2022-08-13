@@ -8,7 +8,7 @@ const sendVerification = async (email: Email, ipaddr: string): Promise<boolean> 
   const { addr, code, verified } = email
   if (verified || addr === undefined) return false
   const validation = await client.validate.get(addr)
-  if (!validation) return false
+  if (validation.is_valid === false) return false
   const text = await composeMail('../../emails/verify.txt', { emailaddr: addr, verifycode: code, ipaddr })
   return await sendMail(addr, 'Can you verify this email address?', text)
 }

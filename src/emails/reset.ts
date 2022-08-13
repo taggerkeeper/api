@@ -5,10 +5,10 @@ import sendMail from './send.js'
 
 const sendReset = async (reset: PasswordReset, ipaddr: string): Promise<boolean> => {
   const client = getClient()
-  const { addr, code, verified } = reset.email
+  const { addr, verified } = reset.email
   if (!verified || addr === undefined) return false
   const validation = await client.validate.get(addr)
-  if (!validation) return false
+  if (validation.is_valid === false) return false
   const text = await composeMail('../../emails/reset.txt', { resetcode: reset.code, ipaddr })
   return await sendMail(addr, 'Reset your password', text)
 }
