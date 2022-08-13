@@ -6,8 +6,6 @@ const getClient = () => {
   const username = getEnvVar('MAILGUN_USERNAME') as string
   const key = getEnvVar('MAILGUN_APIKEY') as string
   const url = getEnvVar('MAILGUN_API') as string
-  const domain = getEnvVar('MAILGUN_DOMAIN') as string
-  const emailFrom = getEnvVar('EMAIL_FROM') as string
 
   const mailgun = new Mailgun(formData)
   return mailgun.client({ username, key, url })
