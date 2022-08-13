@@ -17,7 +17,7 @@ const envVarDefaults: any = {
   MAILGUN_USERNAME: { type: 'string', value: 'your-mailgun-username' },
   MAILGUN_APIKEY: { type: 'string', value: 'your-mailgun-api-key' },
   MAILGUN_DOMAIN: { type: 'string', value: 'sandbox12345.mailgun.org' },
-  MAILGUN_API: { type: 'string', value: 'https://api.mailgun.net'}
+  MAILGUN_API: { type: 'string', value: 'https://api.mailgun.net' }
 }
 
 const getEnvVar = (varName: string): string | number | undefined => {
