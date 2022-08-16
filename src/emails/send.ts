@@ -7,13 +7,18 @@ const sendMail = async (emailTo: string, subject: string, text: string): Promise
 
   try {
     const client = getClient()
-    await client.messages.create(domain, {
-      from: emailFrom,
-      to: emailTo,
-      subject,
-      text
-    })
-    return true
+    const validation = await client.validate.get(emailTo)
+    if (validation.is_valid === true) {
+      await client.messages.create(domain, {
+        from: emailFrom,
+        to: emailTo,
+        subject,
+        text
+      })
+      return true
+    } else {
+      return false
+    }
   } catch (err) {
     console.error(err)
     return false
