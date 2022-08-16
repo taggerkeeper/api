@@ -24,6 +24,18 @@ describe('addEmail', () => {
     expect(mockReq.subject?.emails).to.have.lengthOf(1)
   })
 
+  it('adds an Email instance to the request', () => {
+    expect(mockReq.email).to.be.an.instanceOf(Email)
+  })
+
+  it('sets the address for the email', () => {
+    expect(mockReq.email?.addr).to.equal(addr)
+  })
+
+  it('creates an unverified email on the request', () => {
+    expect(mockReq.email?.verified).to.equal(false)
+  })
+
   it('adds an Email instance to the request subject\'s array of emails', () => {
     expect(mockReq.subject?.emails[0]).to.be.an.instanceOf(Email)
   })
