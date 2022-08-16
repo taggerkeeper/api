@@ -1,5 +1,6 @@
 import Email from '../models/email/email.js'
-import composeMail from './compose.js'
+import readFile from '../utils/read-file.js'
+import renderStrVars from '../render/render-str-vars.js'
 import getClient from './get-client.js'
 import sendMail from './send.js'
 
@@ -9,7 +10,7 @@ const sendVerification = async (email: Email, ipaddr: string): Promise<boolean> 
   if (verified || addr === undefined) return false
   const validation = await client.validate.get(addr)
   if (validation.is_valid === false) return false
-  const text = await composeMail('../../emails/verify.txt', { emailaddr: addr, verifycode: code, ipaddr })
+  const text = renderStrVars(readFile('../../emails/verify.txt'), { emailaddr: addr, verifycode: code, ipaddr })
   return await sendMail(addr, 'Can you verify this email address?', text)
 }
 

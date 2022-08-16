@@ -1,4 +1,5 @@
-import composeMail from './compose.js'
+import readFile from '../utils/read-file.js'
+import renderStrVars from '../render/render-str-vars.js'
 import getClient from './get-client.js'
 import sendMail from './send.js'
 
@@ -6,7 +7,7 @@ const sendResetFail = async (addr: string, ipaddr: string): Promise<boolean> => 
   const client = getClient()
   const validation = await client.validate.get(addr)
   if (validation.is_valid === false) return false
-  const text = await composeMail('../../emails/reset-fail.txt', { emailaddr: addr, ipaddr })
+  const text = renderStrVars(readFile('../../emails/reset-fail.txt'), { emailaddr: addr, ipaddr })
   return await sendMail(addr, 'Password reset failed', text)
 }
 
