@@ -30,6 +30,6 @@ describe('sendMail', () => {
   it('sends the email', async () => {
     await sendMail(emailTo, subject, text, fns)
     const obj = fns.emailer.firstCall.args[1]
-    expect([ emailTo, subject, text ].join(' ')).to.equal([ obj.to, obj.subject, obj.text].join(' '))
+    expect([emailTo, subject, text].join(' ')).to.equal([obj.to, obj.subject, obj.text].join(' '))
   })
 })

@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
 import expressAsyncHandler from 'express-async-handler'
-import Email from '../models/email/email.js'
 import sendMail from '../emails/send.js'
 import sendVerification from '../emails/verify.js'
 

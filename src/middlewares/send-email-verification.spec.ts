@@ -1,7 +1,6 @@
 import { expect } from 'chai'
 import { mockRequest, mockResponse } from 'mock-req-res'
 import * as sinon from 'sinon'
-import sinonChai from 'sinon-chai'
 import Email from '../models/email/email.js'
 import sendEmailVerification from './send-email-verification.js'
 
