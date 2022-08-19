@@ -8,6 +8,7 @@ import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
 import loadSubject from '../middlewares/load-subject.js'
 import saveSubject from '../middlewares/save-subject.js'
+import sendEmailVerification from '../middlewares/send-email-verification.js'
 import setPassword from '../middlewares/set-password.js'
 
 const pkg = await loadPackage()
@@ -120,7 +121,7 @@ router.options('/', collection.options)
  *               $ref: "#/components/schemas/User"
  */
 
-router.post('/', createUser, setPassword, addEmail, saveSubject, collection.post)
+router.post('/', createUser, setPassword, addEmail, saveSubject, sendEmailVerification, collection.post)
 
 // /users/:uid
 
