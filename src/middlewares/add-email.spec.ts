@@ -36,6 +36,10 @@ describe('addEmail', () => {
     expect(mockReq.email?.verified).to.equal(false)
   })
 
+  it('generates a verification code for the email on the request', () => {
+    expect(mockReq.email?.code).to.have.lengthOf(10)
+  })
+
   it('adds an Email instance to the request subject\'s array of emails', () => {
     expect(mockReq.subject?.emails[0]).to.be.an.instanceOf(Email)
   })
@@ -46,5 +50,9 @@ describe('addEmail', () => {
 
   it('creates an unverified email', () => {
     expect(mockReq.subject?.emails[0].verified).to.equal(false)
+  })
+
+  it('creates a verification code for the email', () => {
+    expect(mockReq.subject?.emails[0].code).to.have.lengthOf(10)
   })
 })
