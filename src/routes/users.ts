@@ -145,8 +145,8 @@ router.all('/:uid', allow(item))
  * @openapi
  * /users/{uid}:
  *   options:
- *     summary: "Return options on how to use the Users collection."
- *     description: "Return which options are permissible for the Users collection."
+ *     summary: "Return options on how to use an individual User."
+ *     description: "Return which options are permissible for an individual User."
  *     tags:
  *       - "Users"
  *     parameters:
