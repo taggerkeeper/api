@@ -7,6 +7,7 @@ import addEmail from '../middlewares/add-email.js'
 import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
 import loadSubject from '../middlewares/load-subject.js'
+import requireSubject from '../middlewares/require-subject.js'
 import saveSubject from '../middlewares/save-subject.js'
 import sendEmailVerification from '../middlewares/send-email-verification.js'
 import setPassword from '../middlewares/set-password.js'
@@ -65,10 +66,8 @@ const collection = {
   },
   post: (req: Request, res: Response) => {
     const { subject } = req
-    const status = subject !== undefined ? 201 : 500
-    const body = subject !== undefined ? subject.getPublicObj() : { message: 'No new user was created.' }
-    if (subject !== undefined) res.set('Location', `${root}/users/${subject.id ?? ''}`)
-    res.status(status).send(body)
+    res.set('Location', `${root}/users/${subject?.id ?? ''}`)
+    res.status(201).send(subject?.getPublicObj())
   }
 }
 
@@ -121,7 +120,7 @@ router.options('/', collection.options)
  *               $ref: "#/components/schemas/User"
  */
 
-router.post('/', createUser, setPassword, addEmail, saveSubject, sendEmailVerification, collection.post)
+router.post('/', createUser, setPassword, addEmail, saveSubject, sendEmailVerification, requireSubject, collection.post)
 
 // /users/:uid
 
@@ -131,11 +130,7 @@ const item = {
   },
   get: (req: Request, res: Response) => {
     const { subject } = req
-    const { uid } = req.params
-    const status = subject !== undefined ? 200 : 404
-    const message = uid !== undefined ? `No user found with the ID ${uid}.` : 'No user ID (uid) provided.'
-    const body = subject !== undefined ? subject.getPublicObj() : { message }
-    res.status(status).send(body)
+    res.status(200).send(subject?.getPublicObj())
   }
 }
 
@@ -167,7 +162,7 @@ router.all('/:uid', allow(item))
  *               example: "OPTIONS, POST"
  */
 
-router.options('/:uid', item.options)
+router.options('/:uid', loadSubject, requireSubject, item.options)
 
 /**
  * @openapi
@@ -194,6 +189,6 @@ router.options('/:uid', item.options)
  *               $ref: "#/components/schemas/User"
  */
 
-router.get('/:uid', loadSubject, item.get)
+router.get('/:uid', loadSubject, requireSubject, item.get)
 
 export default router
