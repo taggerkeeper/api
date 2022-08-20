@@ -31,5 +31,6 @@ ENV CONNECTIONSTRING=mongodb://mongodb:27017/taggerkeeper
 ENV ELASTICSEARCH=http://elasticsearch:9200
 RUN npm ci --only=production
 COPY dist ./dist
+COPY emails ./emails
 EXPOSE 8080
 CMD ["dumb-init", "node", "dist/server.js"]
