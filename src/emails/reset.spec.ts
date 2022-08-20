@@ -1,12 +1,9 @@
-import chai, { expect } from 'chai'
+import { expect } from 'chai'
 import * as sinon from 'sinon'
-import sinonChai from 'sinon-chai'
 import Email from '../models/email/email.js'
 import User from '../models/user/user.js'
 import PasswordReset from '../models/password-reset/password-reset.js'
 import sendReset from './reset.js'
-
-chai.use(sinonChai)
 
 describe('sendReset', () => {
   let sender = sinon.stub().resolves(true)

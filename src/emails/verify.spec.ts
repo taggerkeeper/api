@@ -1,10 +1,7 @@
-import chai, { expect } from 'chai'
+import { expect } from 'chai'
 import * as sinon from 'sinon'
-import sinonChai from 'sinon-chai'
 import Email from '../models/email/email.js'
 import sendVerification from './verify.js'
-
-chai.use(sinonChai)
 
 describe('sendVerification', () => {
   let sender = sinon.stub().resolves(true)

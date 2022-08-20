@@ -1,9 +1,6 @@
-import chai, { expect } from 'chai'
+import { expect } from 'chai'
 import * as sinon from 'sinon'
-import sinonChai from 'sinon-chai'
 import sendResetFail from './reset-fail.js'
-
-chai.use(sinonChai)
 
 describe('sendReset', () => {
   let sender = sinon.stub().resolves(true)
