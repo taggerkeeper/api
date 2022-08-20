@@ -67,6 +67,23 @@ describe('User', () => {
       expect(JSON.stringify(user.emails)).to.equal('[]')
     })
 
+    it('lets you set the number of emails', () => {
+      const user = new User({ name, emails: [{ addr: 'test1@testing.com' }, { addr: 'test2@testing.com' }] })
+      expect(user.emails).to.have.lengthOf(2)
+    })
+
+    it('turns each email into an Email instance', () => {
+      const user = new User({ name, emails: [{ addr: 'test1@testing.com' }, { addr: 'test2@testing.com' }] })
+      expect(user.emails[0]).to.be.an.instanceOf(Email)
+      expect(user.emails[1]).to.be.an.instanceOf(Email)
+    })
+
+    it('lets you set the email addresses', () => {
+      const user = new User({ name, emails: [{ addr: 'test1@testing.com' }, { addr: 'test2@testing.com' }] })
+      const actual = user.emails.map(email => email.addr).join(' ')
+      expect(actual).to.equal('test1@testing.com test2@testing.com')
+    })
+
     it('sets OTP to not enabled by default', () => {
       const user = new User()
       expect(user.otp.enabled).to.equal(false)

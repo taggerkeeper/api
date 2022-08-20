@@ -22,7 +22,7 @@ class User {
     this.active = getFirstVal(data?.active, true)
     this.admin = getFirstVal(data?.admin, false)
     this.password = new Password()
-    this.emails = []
+    this.emails = data?.emails?.map(data => new Email(data)) ?? []
     this.otp = new OTP(data?.otp)
     if (data?.password !== undefined) this.password.hash = data.password
     const id = getId(data)
