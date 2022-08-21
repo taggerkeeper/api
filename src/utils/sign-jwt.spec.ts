@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import jwt from 'jsonwebtoken'
-import loadPackage from './load-package.js'
+import loadPackage, { NPMPackage } from './load-package.js'
 import getFirstVal from './get-first-val.js'
 import getAPIInfo from './get-api-info.js'
 import getEnvVar from './get-env-var.js'
@@ -12,9 +12,11 @@ describe('signJWT', () => {
   const expiresIn = 300
   const secret = getFirstVal(getEnvVar('JWT_SECRET'), 'load a secret as an environment variable named JWT_SECRET')
   let actual: string
+  let pkg: NPMPackage
 
   beforeEach(async () => {
-    actual = await signJWT(payload, subject, expiresIn)
+    pkg = await loadPackage() as NPMPackage
+    actual = signJWT(payload, subject, expiresIn, pkg)
   })
 
   it('returns a string', () => {
@@ -32,7 +34,6 @@ describe('signJWT', () => {
   })
 
   it('contains the domain', async () => {
-    const pkg = await loadPackage()
     const info = getAPIInfo(pkg)
     const decoded = jwt.decode(actual) as any
     expect(decoded.iss).to.equal(info.host)
