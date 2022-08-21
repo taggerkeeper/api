@@ -215,6 +215,36 @@ describe('isUserData', () => {
     expect(isUserData(cpy)).to.equal(false)
   })
 
+  it('returns true if refresh is a string', () => {
+    const cpy = Object.assign({}, min, { refresh: 'refreshing' })
+    expect(isUserData(cpy)).to.equal(true)
+  })
+
+  it('returns false if refresh is a number', () => {
+    const cpy = Object.assign({}, min, { refresh: 42 })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if refresh is true', () => {
+    const cpy = Object.assign({}, min, { refresh: true })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if refresh is false', () => {
+    const cpy = Object.assign({}, min, { refresh: false })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if refresh is an object', () => {
+    const cpy = Object.assign({}, min, { refresh: {} })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
+  it('returns false if refresh is an array', () => {
+    const cpy = Object.assign({}, min, { refresh: [] })
+    expect(isUserData(cpy)).to.equal(false)
+  })
+
   it('returns true if emails is an array of EmailData', () => {
     const cpy = Object.assign({}, min, { emails: [email1, email2] })
     expect(isUserData(cpy)).to.equal(true)

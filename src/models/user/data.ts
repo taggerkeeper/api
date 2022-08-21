@@ -11,13 +11,14 @@ interface UserData {
   active?: boolean
   admin?: boolean
   password?: string
+  refresh?: string
   emails?: EmailData[]
   otp?: OTPData
 }
 
 const isUserData = (obj: any): obj is UserData => {
   if (!exists(obj) || typeof obj !== 'object' || Array.isArray(obj)) return false
-  const { _id, id, name, active, admin, password, emails, otp } = obj
+  const { _id, id, name, active, admin, password, refresh, emails, otp } = obj
   const e = emails === undefined || !Array.isArray(emails)
     ? [false]
     : emails.map((data: any) => isEmailData(data))
@@ -28,6 +29,7 @@ const isUserData = (obj: any): obj is UserData => {
     checkAny([!exists(active), active === true, active === false]),
     checkAny([!exists(admin), admin === true, admin === false]),
     checkAny([!exists(password), typeof password === 'string']),
+    checkAny([!exists(refresh), typeof refresh === 'string']),
     checkAny([!exists(emails), checkAll(e)]),
     checkAny([!exists(otp), isOTPData(otp)])
   ])
