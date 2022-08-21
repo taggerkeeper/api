@@ -28,6 +28,7 @@ const schema = new Schema<UserData>({
   active: { type: Boolean, default: true },
   admin: { type: Boolean, default: false },
   password: String,
+  refresh: String,
   emails: [
     {
       addr: String,

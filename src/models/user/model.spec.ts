@@ -49,6 +49,17 @@ describe('UserModel', () => {
       expect(actual.password).to.equal(password)
     })
 
+    it('defaults to no refresh', () => {
+      const actual = new UserModel()
+      expect(actual.refresh).to.equal(undefined)
+    })
+
+    it('can set a refresh', () => {
+      const refresh = 'abc123'
+      const actual = new UserModel({ refresh })
+      expect(actual.refresh).to.equal(refresh)
+    })
+
     it('defaults to an empty array of emails', () => {
       const actual = new UserModel()
       expect(JSON.stringify(actual.emails)).to.equal('[]')
