@@ -16,7 +16,7 @@ const issueTokens = async function (req: Request, res: Response, next: NextFunct
     req.user.generateRefresh()
     const refreshExpires = getFirstVal(getEnvVar('REFRESH_EXPIRES'), 86400000)
     const token = signJWT(req.user.getPublicObj(), subject, getFirstVal(getEnvVar('JWT_EXPIRES'), 300), pkg)
-    const refresh = signJWT({ refresh: req.user.refresh }, subject, refreshExpires, pkg)
+    const refresh = signJWT({ uid: req.user.id, refresh: req.user.refresh }, subject, refreshExpires, pkg)
     res.cookie('refresh', refresh, { domain: host, httpOnly: true, maxAge: refreshExpires })
     res.status(200).send({ token })
   }

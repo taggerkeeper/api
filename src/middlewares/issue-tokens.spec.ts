@@ -38,7 +38,12 @@ describe('issueTokens', () => {
     expect(mockRes.cookie.firstCall.args[0]).to.equal('refresh')
   })
 
-  it('issues the user\'s refresh token as a JWT in the refresh cookie', () => {
+  it('issues the user\'s refresh code in a JWT in the refresh cookie', () => {
+    const obj = jwt.verify(mockRes.cookie.firstCall.args[1], secret) as any
+    expect(obj.uid).to.equal(uid)
+  })
+
+  it('issues the user\'s ID in a JWT in the refresh cookie', () => {
     const obj = jwt.verify(mockRes.cookie.firstCall.args[1], secret) as any
     expect(obj.refresh).to.equal(mockReq.user?.refresh)
   })
