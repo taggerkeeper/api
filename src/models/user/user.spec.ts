@@ -62,6 +62,17 @@ describe('User', () => {
       expect(user.password.hash).to.equal(password)
     })
 
+    it('doesn\'t set a refresh by default', () => {
+      const user = new User()
+      expect(user.refresh).to.equal(undefined)
+    })
+
+    it('lets you set the refresh', () => {
+      const refresh = 'refreshing'
+      const user = new User({ name, refresh })
+      expect(user.refresh).to.equal(refresh)
+    })
+
     it('creates an empty array for emails by default', () => {
       const user = new User()
       expect(JSON.stringify(user.emails)).to.equal('[]')

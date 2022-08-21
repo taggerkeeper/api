@@ -14,6 +14,7 @@ class User {
   active: boolean
   admin: boolean
   password: Password
+  refresh?: string
   emails: Email[]
   otp: OTP
 
@@ -22,6 +23,7 @@ class User {
     this.active = getFirstVal(data?.active, true)
     this.admin = getFirstVal(data?.admin, false)
     this.password = new Password()
+    this.refresh = data?.refresh
     this.emails = data?.emails?.map(data => new Email(data)) ?? []
     this.otp = new OTP(data?.otp)
     if (data?.password !== undefined) this.password.hash = data.password
@@ -35,6 +37,7 @@ class User {
       active: this.active,
       admin: this.admin,
       password: this.password.hash,
+      refresh: this.refresh,
       emails: this.emails.map(email => email.getObj()),
       otp: { enabled: this.otp.enabled }
     }
