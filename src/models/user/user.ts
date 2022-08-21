@@ -60,6 +60,12 @@ class User {
     this.refresh = cryptoRandomString({ length: 64 })
   }
 
+  checkRefresh (token: string): boolean {
+    const match = this.refresh !== undefined && this.refresh === token
+    if (match) this.generateRefresh()
+    return match
+  }
+
   async save (): Promise<void> {
     if (this.id === undefined) {
       const record = await UserModel.create(this.getObj())
