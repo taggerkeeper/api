@@ -11,7 +11,7 @@ import getAPIInfo from './utils/get-api-info.js'
 
 const pkg = await loadPackage()
 const port: number = getEnvVar('PORT') as number
-const connectionString: string = getEnvVar('CONNECTIONSTRING') as string
+const connectionString: string = getEnvVar('CONNECTION_STRING') as string
 const { root, base } = getAPIInfo(pkg)
 
 // Connect to MongoDB

@@ -27,9 +27,9 @@ describe('getAPIInfo', () => {
   })
 
   it('includes the path', () => {
-    process.env.APIPATH = '/path/to/api'
+    process.env.API_PATH = '/path/to/api'
     const { root } = getAPIInfo(pkg)
-    delete process.env.APIPATH
+    delete process.env.API_PATH
     expect(root).to.equal('https://localhost:8080/path/to/api/v1')
   })
 })
