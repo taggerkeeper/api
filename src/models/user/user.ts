@@ -1,3 +1,4 @@
+import cryptoRandomString from 'crypto-random-string'
 import UserModel from './model.js'
 import UserData from './data.js'
 import PublicUserData from './public.js'
@@ -53,6 +54,10 @@ class User {
       active: this.active ?? true,
       admin: this.admin ?? false
     }
+  }
+
+  generateRefresh (): void {
+    this.refresh = cryptoRandomString({ length: 64 })
   }
 
   async save (): Promise<void> {

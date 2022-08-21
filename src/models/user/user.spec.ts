@@ -195,6 +195,20 @@ describe('User', () => {
       })
     })
 
+    describe('generateRefresh', () => {
+      it('generates a refresh token', () => {
+        const user = new User()
+        user.generateRefresh()
+        expect(user.refresh).to.be.a('string')
+      })
+
+      it('generates a 64-character refresh token', () => {
+        const user = new User()
+        user.generateRefresh()
+        expect(user.refresh).to.have.lengthOf(64)
+      })
+    })
+
     describe('save', () => {
       const _id = 'abc123'
 
