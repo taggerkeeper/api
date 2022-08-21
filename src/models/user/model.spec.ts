@@ -1,9 +1,8 @@
-import chai from 'chai'
+import chai, { expect } from 'chai'
 import chaiString from 'chai-string'
 import UserModel from './model.js'
 
 chai.use(chaiString)
-const { expect } = chai
 
 describe('UserModel', () => {
   describe('constructor', () => {
