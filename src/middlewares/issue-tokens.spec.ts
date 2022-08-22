@@ -18,7 +18,7 @@ describe('issueTokens', () => {
   let mockNext = (): void => {}
   const name = 'Tester'
   const uid = '0123456789abcdef12345678'
-  const secret = getFirstVal(getEnvVar('JWT_SECRET'), 'load a secret as an environment variable named JWT_SECRET')
+  const secret = getEnvVar('JWT_SECRET') as string
 
   beforeEach(async () => {
     mockReq = mockRequest()

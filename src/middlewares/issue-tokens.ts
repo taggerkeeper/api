@@ -1,6 +1,5 @@
 import { Request, Response, NextFunction } from 'express'
 import expressAsyncHandler from 'express-async-handler'
-import getFirstVal from '../utils/get-first-val.js'
 import getEnvVar from '../utils/get-env-var.js'
 import loadPackage, { NPMPackage } from '../utils/load-package.js'
 import getAPIInfo from '../utils/get-api-info.js'
@@ -14,8 +13,8 @@ const issueTokens = async function (req: Request, res: Response, next: NextFunct
     const { root, host } = getAPIInfo(pkg)
     const subject = `${root}/users/${req.user.id as string}`
     req.user.generateRefresh()
-    const refreshExpires = getFirstVal(getEnvVar('REFRESH_EXPIRES'), 86400000)
-    const token = signJWT(req.user.getPublicObj(), subject, getFirstVal(getEnvVar('JWT_EXPIRES'), 300), pkg)
+    const refreshExpires = getEnvVar('REFRESH_EXPIRES') as number
+    const token = signJWT(req.user.getPublicObj(), subject, getEnvVar('JWT_EXPIRES') as number, pkg)
     const refresh = signJWT({ uid: req.user.id, refresh: req.user.refresh }, subject, refreshExpires, pkg)
     res.cookie('refresh', refresh, { domain: host, httpOnly: true, maxAge: refreshExpires })
     res.status(200).send({ token })
