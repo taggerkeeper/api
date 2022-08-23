@@ -1,0 +1,8 @@
+exit: true
+extension: ['ts']
+loader: 'ts-node/esm'
+recursive: true
+require:
+  - 'ts-node/register'
+  - 'env-test'
+spec: './src/routes/tests/*.ts'
