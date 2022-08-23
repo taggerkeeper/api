@@ -13,25 +13,19 @@ describe('loadUserById', () => {
   afterEach(() => sinon.restore())
 
   it('returns null if not given a valid ID', async () => {
-    sinon.stub(UserModel, 'findById').callsFake((): any => {
-      return new Promise(resolve => resolve(null))
-    })
+    sinon.stub(UserModel, 'findById').resolves(null)
     const actual = await loadUserById(id)
     expect(actual).to.equal(null)
   })
 
   it('returns null if given a valid ID that does not exist', async () => {
-    sinon.stub(UserModel, 'findById').callsFake((): any => {
-      return new Promise(resolve => resolve(null))
-    })
+    sinon.stub(UserModel, 'findById').resolves(null)
     const actual = await loadUserById(id)
     expect(actual).to.equal(null)
   })
 
   it('returns a user if given a valid, existing ID', async () => {
-    sinon.stub(UserModel, 'findById').callsFake((): any => {
-      return new Promise(resolve => resolve(record))
-    })
+    sinon.stub(UserModel, 'findById').resolves(record)
     const actual = await loadUserById(id)
     expect(actual).to.be.an.instanceOf(User)
   })
