@@ -6,7 +6,7 @@ const envVarDefaults: any = {
   DOMAIN: { type: 'string', value: 'localhost' },
   PORT: { type: 'number', value: 8080 },
   API_PATH: { type: 'string', value: '/' },
-  CONNECTION_STRING: { type: 'string', value: 'mongodb://localhost/taggerkeeper' },
+  CONNECTION_STRING: { type: 'string', value: 'mongodb://localhost:27017/taggerkeeper' },
   DEFAULT_READ_PERMISSIONS: { type: 'string', value: PermissionLevel.anyone },
   DEFAULT_WRITE_PERMISSIONS: { type: 'string', value: PermissionLevel.anyone },
   DEFAULT_QUERY_LIMIT: { type: 'number', value: 50 },
