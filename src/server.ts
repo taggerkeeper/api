@@ -71,3 +71,5 @@ const closeGracefully = (signal: any): void => {
 
 process.on('SIGINT', closeGracefully)
 process.on('SIGTERM', closeGracefully)
+
+export default api
