@@ -7,6 +7,8 @@ const getClient = (): any => {
   const key = getEnvVar('MAILGUN_APIKEY') as string
   const url = getEnvVar('MAILGUN_API') as string
 
+  if (process.env.NODE_ENV === 'test') return { messages: { create: async () => true } }
+
   const mailgun = new Mailgun(formData)
   return mailgun.client({ username, key, url })
 }
