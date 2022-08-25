@@ -7,6 +7,7 @@ import addEmail from '../middlewares/add-email.js'
 import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
 import loadSubject from '../middlewares/load-subject.js'
+import requireBodyParts from '../middlewares/require-body-parts.js'
 import requireSubject from '../middlewares/require-subject.js'
 import saveSubject from '../middlewares/save-subject.js'
 import sendEmailVerification from '../middlewares/send-email-verification.js'
@@ -120,7 +121,7 @@ router.options('/', collection.options)
  *               $ref: "#/components/schemas/User"
  */
 
-router.post('/', createUser, setPassword, addEmail, saveSubject, sendEmailVerification, requireSubject, collection.post)
+router.post('/', requireBodyParts('name', 'email', 'password') as any, createUser, setPassword, addEmail, saveSubject, sendEmailVerification, requireSubject, collection.post)
 
 // /users/:uid
 
