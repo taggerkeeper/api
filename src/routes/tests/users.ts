@@ -156,5 +156,22 @@ describe('Users API', () => {
         expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET')
       })
     })
+
+    describe('GET /users/:uid', () => {
+      beforeEach(async () => {
+        res = await request(api).get(`${base}/users/${user._id}`)
+      })
+
+      it('returns 200', () => {
+        expect(res.status).to.equal(200)
+      })
+
+      it('returns a user object', () => {
+        expect(res.body.name).to.equal(name)
+        expect(res.body.active).to.equal(true)
+        expect(res.body.admin).to.equal(false)
+        expect(res.body.id).not.to.equal(undefined)
+      })
+    })
   })
 })
