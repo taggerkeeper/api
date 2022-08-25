@@ -1,6 +1,6 @@
 import mongoose from 'mongoose'
 
-const clearDatabase = async () => {
+const clearDatabase = async (): Promise<void> => {
   await Promise.all(Object.values(mongoose.connection.collections).map(async (coll) => { await coll.deleteMany({}) }))
 }
 

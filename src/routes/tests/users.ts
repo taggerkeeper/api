@@ -1,4 +1,4 @@
-import chai, { expect } from 'chai'
+import { expect } from 'chai'
 import request from 'supertest'
 import UserData, { isUserData } from '../../models/user/data.js'
 import UserModel from '../../models/user/model.js'
@@ -32,7 +32,7 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers['allow']).to.equal('OPTIONS, POST')
+        expect(res.headers.allow).to.equal('OPTIONS, POST')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
@@ -141,7 +141,7 @@ describe('Users API', () => {
 
     describe('OPTIONS /users/:uid', () => {
       beforeEach(async () => {
-        res = await request(api).options(`${base}/users/${user._id}`)
+        res = await request(api).options(`${base}/users/${user._id?.toString() ?? 'fail'}`)
       })
 
       it('returns 204', () => {
@@ -149,7 +149,7 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers['allow']).to.equal('OPTIONS, GET')
+        expect(res.headers.allow).to.equal('OPTIONS, GET')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
@@ -159,7 +159,7 @@ describe('Users API', () => {
 
     describe('GET /users/:uid', () => {
       beforeEach(async () => {
-        res = await request(api).get(`${base}/users/${user._id}`)
+        res = await request(api).get(`${base}/users/${user._id?.toString() ?? 'fail'}`)
       })
 
       it('returns 200', () => {
