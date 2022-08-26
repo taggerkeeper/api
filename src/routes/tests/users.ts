@@ -149,11 +149,21 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET')
+        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD')
+      })
+    })
+
+    describe('HEAD /users/:uid', () => {
+      beforeEach(async () => {
+        res = await request(api).head(`${base}/users/${user._id?.toString() ?? 'fail'}`)
+      })
+
+      it('returns 204', () => {
+        expect(res.status).to.equal(204)
       })
     })
 

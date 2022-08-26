@@ -132,6 +132,9 @@ const item = {
   get: (req: Request, res: Response) => {
     const { subject } = req
     res.status(200).send(subject?.getPublicObj())
+  },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
   }
 }
 
@@ -168,9 +171,32 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
 /**
  * @openapi
  * /users/{uid}:
- *   post:
- *     summary: "Create a new user."
- *     description: "Create a new user."
+ *   head:
+ *     summary: "Return headers for a user."
+ *     description: "Return headers for a user."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       204:
+ *         description: "THe user requested was found."
+ */
+
+router.head('/:uid', loadSubject, requireSubject, item.head)
+
+/**
+ * @openapi
+ * /users/{uid}:
+ *   get:
+ *     summary: "Return a user."
+ *     description: "Return a user."
  *     tags:
  *       - "Users"
  *     parameters:
