@@ -25,6 +25,24 @@ describe('API Root', () => {
     root = info.root
   })
 
+  describe('OPTIONS /', () => {
+    beforeEach(async () => {
+      res = await request(api).options(base)
+    })
+
+    it('returns 204', () => {
+      expect(res.status).to.equal(204)
+    })
+
+    it('returns Allow header', () => {
+      expect(res.headers.allow).to.equal('OPTIONS, GET')
+    })
+
+    it('returns Access-Control-Allow-Methods header', () => {
+      expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET')
+    })
+  })
+
   describe('GET /', () => {
     beforeEach(async () => {
       res = await request(api).get(base)

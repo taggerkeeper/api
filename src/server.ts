@@ -42,6 +42,13 @@ api.get(`${base}/`, (req, res) => {
   })
 })
 
+// OPTIONS /
+api.options(`${base}/`, (req, res) => {
+  res.set('Allow', 'OPTIONS, GET')
+  res.set('Access-Control-Allow-Methods', 'OPTIONS, GET')
+  res.sendStatus(204)
+})
+
 // Start server
 const server = api.listen(port, () => {
   console.log(`Tagger Keeper API is now running at port ${port}`)
