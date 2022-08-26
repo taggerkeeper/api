@@ -1,6 +1,7 @@
 import express, { Router } from 'express'
 import mongoose from 'mongoose'
 
+import tokenRouter from './routes/tokens.js'
 import userRouter from './routes/users.js'
 
 import setupSwagger from './swagger.js'
@@ -27,6 +28,7 @@ await setupSwagger(api)
 
 // Connect routes
 const endpoints: { [key: string]: Router } = {
+  tokens: tokenRouter,
   users: userRouter
 }
 
