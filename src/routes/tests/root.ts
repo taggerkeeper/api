@@ -43,6 +43,16 @@ describe('API Root', () => {
     })
   })
 
+  describe('HEAD /', () => {
+    beforeEach(async () => {
+      res = await request(api).head(base)
+    })
+
+    it('returns 204', () => {
+      expect(res.status).to.equal(204)
+    })
+  })
+
   describe('GET /', () => {
     beforeEach(async () => {
       res = await request(api).get(base)

@@ -34,6 +34,11 @@ for (const endpoint of Object.keys(endpoints)) {
   api.use(`${base}/${endpoint}`, endpoints[endpoint])
 }
 
+// HEAD /
+api.head(`${base}/`, (req, res) => {
+  res.sendStatus(204)
+})
+
 // GET /
 api.get(`${base}/`, (req, res) => {
   res.status(200).send({
