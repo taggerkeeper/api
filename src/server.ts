@@ -36,7 +36,7 @@ for (const endpoint of Object.keys(endpoints)) {
 
 // GET /
 api.get(`${base}/`, (req, res) => {
-  res.send({
+  res.status(200).send({
     endpoints: Object.keys(endpoints).map(endpoint => `${root}/${endpoint}`),
     documentation: `${root}/docs`
   })
