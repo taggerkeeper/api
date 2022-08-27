@@ -13,6 +13,7 @@ declare global {
         access: string
         refresh: string
         refreshExpires: number
+        domain: string
       }
     }
   }

@@ -4,7 +4,7 @@ import * as sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 import jwt from 'jsonwebtoken'
 import User from '../models/user/user.js'
-import loadPackage from '../utils/load-package.js'
+import loadPackage, { NPMPackage } from '../utils/load-package.js'
 import getAPIInfo from '../utils/get-api-info.js'
 import getFirstVal from '../utils/get-first-val.js'
 import getEnvVar from '../utils/get-env-var.js'
@@ -93,10 +93,16 @@ describe('generateTokens', () => {
     expect(obj.exp).to.be.at.most(limit)
   })
 
-  it('generates the expiration for the refresh', async () => {
+  it('generates the expiration for the refresh cookie', async () => {
     const now = new Date()
     const tokenExpires = getFirstVal(getEnvVar('JWT_EXPIRES'), 300) as number
     const limit = (now.getTime() / 1000) + tokenExpires + 5
     expect(mockReq.tokens.refreshExpires).to.be.at.most(limit)
+  })
+
+  it('generates the domain for the refresh cookie', async () => {
+    const pkg = await loadPackage()
+    const { host } = getAPIInfo(pkg as NPMPackage)
+    expect(mockReq.tokens.domain).to.equal(host)
   })
 })

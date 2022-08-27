@@ -17,7 +17,8 @@ const generateTokens = async function (req: Request, res: Response, next: NextFu
     req.tokens = {
       access: signJWT(req.user.getPublicObj(), subject, getEnvVar('JWT_EXPIRES') as number, pkg),
       refresh: signJWT({ uid: req.user.id, refresh: req.user.refresh }, subject, refreshExpires, pkg),
-      refreshExpires
+      refreshExpires,
+      domain: host
     }
     next()
   }
