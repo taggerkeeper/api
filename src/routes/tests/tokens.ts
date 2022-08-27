@@ -20,8 +20,10 @@ describe('Tokens API', () => {
   const verifiedData = { name: 'User with Verified Email', emails: [{ addr: 'verified@testing.com', verified: true }] }
   const unverifiedData = { name: 'User with Unverified Email', emails: [{ addr: 'unverified@testing.com' }] }
   const enabledData = { name: 'User with OTP Enabled', emails: [{ addr: 'enabled@testing.com', verified: true }], otp: { enabled: true, secret: 'test secret' } }
+  let users: User[] = []
 
   beforeEach(async () => {
+    users = []
     pkg = await loadPackage() as NPMPackage
     const info = getAPIInfo(pkg)
     base = info.base
@@ -32,6 +34,7 @@ describe('Tokens API', () => {
       const user = new User(data)
       user.password.change(password)
       await user.save()
+      users.push(user)
     }
   })
 
@@ -131,6 +134,30 @@ describe('Tokens API', () => {
         const passcode = speakeasy.totp({ secret: enabledData.otp.secret, encoding: 'base32' })
         res = await request(api).post(`${base}/tokens`).send({ addr: enabledData.emails[0].addr, password, passcode })
         expect(res.status).to.equal(200)
+      })
+    })
+  })
+
+  describe('/tokens/:uid', () => {
+    describe('OPTIONS /tokens/:uid', () => {
+      beforeEach(async () => {
+        const user = users[0]
+        user.generateRefresh()
+        await user.save()
+        const { id, refresh } = user
+        res = await request(api).options(`${base}/tokens/${id}`).send({ refresh })
+      })
+
+      it('returns 204', () => {
+        expect(res.status).to.equal(204)
+      })
+
+      it('returns Allow header', () => {
+        expect(res.headers.allow).to.equal('OPTIONS, POST')
+      })
+
+      it('returns Access-Control-Allow-Methods header', () => {
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, POST')
       })
     })
   })

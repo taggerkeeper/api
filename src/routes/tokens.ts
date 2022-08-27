@@ -3,6 +3,8 @@ import { Request, Response, Router } from 'express'
 import allow from '../middlewares/allow.js'
 import loadUserFromLogin from '../middlewares/load-user-from-login.js'
 import issueTokens from '../middlewares/issue-tokens.js'
+import requireBodyParts from '../middlewares/require-body-parts.js'
+import requireRefreshToken from '../middlewares/require-refresh-token.js'
 import requireUser from '../middlewares/require-user.js'
 
 const router = Router()
@@ -114,5 +116,36 @@ router.options('/', collection.options)
  */
 
 router.post('/', loadUserFromLogin, requireUser, collection.post)
+
+// /tokens/:uid
+
+const item = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  },
+  post: issueTokens
+}
+
+router.all('/:uid', allow(item))
+
+/**
+ * @openapi
+ * /tokens/{uid}:
+ *   options:
+ *     summary: "Return options on how to use an individual Token resource."
+ *     description: "Return which options are permissible for an individual Token resource."
+ *     tags:
+ *       - "Tokens"
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual token endpoint."
+ *               example: "OPTIONS, POST"
+ */
+
+router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken, item.options)
 
 export default router
