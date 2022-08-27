@@ -8,6 +8,7 @@ const requireRefreshToken = async function (req: Request, res: Response, next: N
   if (user === null) {
     res.status(400).send({ message: 'Could not verify refresh token.' })
   } else {
+    req.user = user
     next()
   }
 }

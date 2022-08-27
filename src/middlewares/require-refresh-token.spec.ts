@@ -41,4 +41,12 @@ describe('requireRefreshToken', () => {
     await requireRefreshToken(mockReq, mockRes, mockNext)
     expect(mockNext).to.have.callCount(1)
   })
+
+  it('sets the user on the Request if everything checks out', async () => {
+    sinon.stub(UserModel, 'findOne').resolves({ id: uid, name: 'Tester', refresh })
+    mockReq.params = { uid }
+    mockReq.body = { refresh }
+    await requireRefreshToken(mockReq, mockRes, mockNext)
+    expect(mockReq.user).not.to.equal(undefined)
+  })
 })
