@@ -5,7 +5,7 @@ import loadPackage, { NPMPackage } from '../utils/load-package.js'
 import getAPIInfo from '../utils/get-api-info.js'
 import signJWT from '../utils/sign-jwt.js'
 
-const issueTokens = async function (req: Request, res: Response, next: NextFunction): Promise<void> {
+const generateTokens = async function (req: Request, res: Response, next: NextFunction): Promise<void> {
   if (req.user === undefined) {
     res.status(401).send({ message: 'This method requires authentication' })
   } else {
@@ -14,11 +14,12 @@ const issueTokens = async function (req: Request, res: Response, next: NextFunct
     const subject = `${root}/users/${req.user.id as string}`
     req.user.generateRefresh()
     const refreshExpires = getEnvVar('REFRESH_EXPIRES') as number
-    const token = signJWT(req.user.getPublicObj(), subject, getEnvVar('JWT_EXPIRES') as number, pkg)
-    const refresh = signJWT({ uid: req.user.id, refresh: req.user.refresh }, subject, refreshExpires, pkg)
-    res.cookie('refresh', refresh, { domain: host, httpOnly: true, maxAge: refreshExpires })
-    res.status(200).send({ token })
+    req.tokens = {
+      access: signJWT(req.user.getPublicObj(), subject, getEnvVar('JWT_EXPIRES') as number, pkg),
+      refresh: signJWT({ uid: req.user.id, refresh: req.user.refresh }, subject, refreshExpires, pkg)
+    }
+    next()
   }
 }
 
-export default expressAsyncHandler(issueTokens)
+export default expressAsyncHandler(generateTokens)
