@@ -9,6 +9,10 @@ declare global {
       subject?: User
       email?: Email
       emailer?: Function | sinon.SinonStub
+      tokens: {
+        access: string
+        refresh: string
+      }
     }
   }
 }
