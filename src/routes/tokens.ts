@@ -1,6 +1,9 @@
 import { Request, Response, Router } from 'express'
 
 import allow from '../middlewares/allow.js'
+import loadUserFromLogin from '../middlewares/load-user-from-login.js'
+import issueTokens from '../middlewares/issue-tokens.js'
+import requireUser from '../middlewares/require-user.js'
 
 const router = Router()
 
@@ -41,7 +44,8 @@ const router = Router()
 const collection = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
-  }
+  },
+  post: issueTokens
 }
 
 router.all('/', allow(collection))
@@ -65,5 +69,50 @@ router.all('/', allow(collection))
  */
 
 router.options('/', collection.options)
+
+/**
+ * @openapi
+ * /tokens:
+ *   post:
+ *     summary: "Authenticate a user."
+ *     description: "Authenticare a user."
+ *     tags:
+ *       - "Tokens"
+ *     requestBody:
+ *       description: "The information that the user must provide to authenticate."
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/AuthenticationInput"
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: "#/components/schemas/AuthenticationInput"
+ *     responses:
+ *       200:
+ *         description: "THe user was authenticated."
+ *         headers:
+ *           Set-Cookie:
+ *             schema:
+ *               $ref: "#/components/schemas/RefreshToken"
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/AccessToken"
+ *       401:
+ *         description: "Authentication failed."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               description: "Authentication failed."
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error."
+ *                   example: "You are not authoried."
+ */
+
+router.post('/', loadUserFromLogin, requireUser, collection.post)
 
 export default router
