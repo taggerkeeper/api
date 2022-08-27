@@ -12,6 +12,16 @@ interface CookieInfo {
   sameSite?: string
 }
 
+const parseCookieExpires = (cookie: CookieInfo, crumb: Record<string, string>): void => {
+  const expires = new Date(crumb?.value)
+  if (crumb?.value !== undefined && expires instanceof Date) cookie.expires = new Date(crumb?.value)
+}
+
+const parseCookieMaxAge = (cookie: CookieInfo, crumb: Record<string, string>): void => {
+  const maxAge = crumb?.value === undefined ? NaN : parseInt(crumb.value)
+  if (!isNaN(maxAge)) cookie.maxAge = maxAge
+}
+
 const parseCookie = (set: string): CookieInfo | undefined => {
   const crumbs = set.split(';').map(crumb => crumb.trim())
   const basic = parseKeyValPair(crumbs[0], false)
@@ -25,14 +35,8 @@ const parseCookie = (set: string): CookieInfo | undefined => {
       case 'httponly': cookie.httpOnly = true; break
       default:
         switch (parsed?.key.toLowerCase()) {
-          case 'expires':
-            const expires = new Date(parsed?.value)
-            if (parsed?.value !== undefined && expires instanceof Date) cookie.expires = expires
-            break
-          case 'max-age':
-            const maxAge = parsed?.value === undefined ? NaN : parseInt(parsed.value)
-            if (maxAge !== NaN) cookie.maxAge = maxAge
-            break
+          case 'expires': parseCookieExpires(cookie, parsed); break
+          case 'max-age': parseCookieMaxAge(cookie, parsed); break
           case 'domain': cookie.domain = parsed?.value; break
           case 'path': cookie.path = parsed?.value; break
           case 'samesite': cookie.sameSite = parsed?.value; break
