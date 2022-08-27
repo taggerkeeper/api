@@ -7,7 +7,7 @@ import signJWT from '../utils/sign-jwt.js'
 
 const issueTokens = async function (req: Request, res: Response, next: NextFunction): Promise<void> {
   if (req.user === undefined) {
-    res.status(401).send({ message: 'You are not authoried.' })
+    res.status(401).send({ message: 'This method requires authentication' })
   } else {
     const pkg = await loadPackage() as NPMPackage
     const { root, host } = getAPIInfo(pkg)
