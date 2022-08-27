@@ -4,6 +4,7 @@ import jwt from 'jsonwebtoken'
 import speakeasy from 'speakeasy'
 import OTP from '../../models/otp/otp.js'
 import User from '../../models/user/user.js'
+import loadUserById from '../../models/user/loaders/by-id.js'
 import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import getEnvVar from '../../utils/get-env-var.js'
@@ -139,13 +140,18 @@ describe('Tokens API', () => {
   })
 
   describe('/tokens/:uid', () => {
+    let user: User
+
+    beforeEach(async () => {
+      user = users[0]
+      user.generateRefresh()
+      await user.save()
+    })
+
     describe('OPTIONS /tokens/:uid', () => {
       beforeEach(async () => {
-        const user = users[0]
-        user.generateRefresh()
-        await user.save()
         const { id, refresh } = user
-        res = await request(api).options(`${base}/tokens/${id}`).send({ refresh })
+        res = await request(api).options(`${base}/tokens/${id ?? ''}`).send({ refresh })
       })
 
       it('returns 204', () => {
@@ -158,6 +164,76 @@ describe('Tokens API', () => {
 
       it('returns Access-Control-Allow-Methods header', () => {
         expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, POST')
+      })
+    })
+
+    describe('POST /tokens/:uid', () => {
+      it('returns 400 if not given a refresh', async () => {
+        const { id } = user
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`)
+        expect(res.status).to.equal(400)
+      })
+
+      it('provides an error message if not given a refresh', async () => {
+        const { id } = user
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`)
+        expect(res.body.message).to.equal('This method requires a body with elements \'refresh\'')
+      })
+
+      it('returns 401 if the refresh is incorrect', async () => {
+        const { id } = user
+        const refresh = user.refresh === '111111' ? '000000' : '111111'
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
+        expect(res.status).to.equal(400)
+      })
+
+      it('provides an error message if the refresh is incorrect', async () => {
+        const { id } = user
+        const refresh = user.refresh === '111111' ? '000000' : '111111'
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
+        expect(res.body.message).to.equal('Could not verify refresh token.')
+      })
+
+      it('returns 200 if the refresh is correct', async () => {
+        const { id, refresh } = user
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
+        expect(res.status).to.equal(200)
+      })
+
+      it('returns an access token', async () => {
+        const { id, refresh } = user
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
+        expect(res.body.token).to.be.a('string')
+      })
+
+      it('returns a JSON web token with the user\'s data', async () => {
+        const { id, refresh } = user
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
+        const obj = jwt.verify(res.body.token, secret) as any
+        expect(obj.name).to.equal(user.name)
+      })
+
+      it('returns a refresh token as a cookie', async () => {
+        const { id, refresh } = user
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
+        const cookie = parseCookie(res.headers['set-cookie'][0])
+        expect(cookie?.name).to.equal('refresh')
+      })
+
+      it('returns a JSON web token as a cookie', async () => {
+        const { id, refresh } = user
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
+        const cookie = parseCookie(res.headers['set-cookie'][0])
+        const obj = jwt.verify(cookie?.value ?? '', secret) as any
+        expect(obj.uid).to.equal(id)
+        expect(obj.refresh).not.to.equal(undefined)
+      })
+
+      it('sets a new refresh', async () => {
+        const { id, refresh } = user
+        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
+        const after = id !== undefined ? await loadUserById(id) : null
+        expect(after?.refresh).not.to.equal(refresh)
       })
     })
   })
