@@ -209,47 +209,6 @@ describe('User', () => {
       })
     })
 
-    describe('checkRefresh', () => {
-      it('returns false if the user doesn\'t have a refresh token', () => {
-        const user = new User()
-        expect(user.checkRefresh('check')).to.equal(false)
-      })
-
-      it('doesn\'t generate a new token if the user didn\'t have one to begin with', () => {
-        const user = new User()
-        user.checkRefresh('check')
-        expect(user.refresh).to.equal(undefined)
-      })
-
-      it('returns false if the token is incorrect', () => {
-        const user = new User()
-        user.generateRefresh()
-        expect(user.checkRefresh('check')).to.equal(false)
-      })
-
-      it('doesn\'t generate a new refresh if the token is incorrect', () => {
-        const user = new User()
-        user.generateRefresh()
-        const before = user.refresh
-        user.checkRefresh('check')
-        expect(user.refresh).to.equal(before)
-      })
-
-      it('returns true if the token is correct', () => {
-        const user = new User()
-        user.generateRefresh()
-        expect(user.checkRefresh(user.refresh as string)).to.equal(true)
-      })
-
-      it('generates a new refresh if the token is correct', () => {
-        const user = new User()
-        user.generateRefresh()
-        const before = user.refresh
-        user.checkRefresh(user.refresh as string)
-        expect(user.refresh).not.to.equal(before)
-      })
-    })
-
     describe('save', () => {
       const _id = 'abc123'
 
