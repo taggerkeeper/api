@@ -2,9 +2,9 @@ import { expect } from 'chai'
 import * as sinon from 'sinon'
 import User from '../user.js'
 import UserModel from '../model.js'
-import loadUserById from './by-id.js'
+import loadUserByIdAndRefresh from './by-id-and-refresh.js'
 
-describe('loadUserById', () => {
+describe('loadUserByIdAndRefresh', () => {
   const id = '0123456789abcdef12345678'
   const refresh = 'my-refresh-token'
   const emails = [{ addr: 'test1@testing.com', verified: true }, { addr: 'test2@testing.com', verified: false }]
@@ -15,19 +15,19 @@ describe('loadUserById', () => {
 
   it('returns null if not given a valid ID', async () => {
     sinon.stub(UserModel, 'findOne').resolves(null)
-    const actual = await loadUserById(id)
+    const actual = await loadUserByIdAndRefresh(id, refresh)
     expect(actual).to.equal(null)
   })
 
   it('returns null if given a valid ID and refresh combination that does not exist', async () => {
     sinon.stub(UserModel, 'findOne').resolves(null)
-    const actual = await loadUserById(id)
+    const actual = await loadUserByIdAndRefresh(id, refresh)
     expect(actual).to.equal(null)
   })
 
   it('returns a user if given a valid, existing ID and refresh combination', async () => {
     sinon.stub(UserModel, 'findOne').resolves(record)
-    const actual = await loadUserById(id)
+    const actual = await loadUserByIdAndRefresh(id, refresh)
     expect(actual).to.be.an.instanceOf(User)
   })
 })
