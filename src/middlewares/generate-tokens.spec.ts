@@ -92,4 +92,11 @@ describe('generateTokens', () => {
     const obj = jwt.verify(mockReq.tokens.access, secret) as any
     expect(obj.exp).to.be.at.most(limit)
   })
+
+  it('generates the expiration for the refresh', async () => {
+    const now = new Date()
+    const tokenExpires = getFirstVal(getEnvVar('JWT_EXPIRES'), 300) as number
+    const limit = (now.getTime() / 1000) + tokenExpires + 5
+    expect(mockReq.tokens.refreshExpires).to.be.at.most(limit)
+  })
 })

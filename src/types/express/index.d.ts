@@ -12,6 +12,7 @@ declare global {
       tokens: {
         access: string
         refresh: string
+        refreshExpires: number
       }
     }
   }

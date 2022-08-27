@@ -16,7 +16,8 @@ const generateTokens = async function (req: Request, res: Response, next: NextFu
     const refreshExpires = getEnvVar('REFRESH_EXPIRES') as number
     req.tokens = {
       access: signJWT(req.user.getPublicObj(), subject, getEnvVar('JWT_EXPIRES') as number, pkg),
-      refresh: signJWT({ uid: req.user.id, refresh: req.user.refresh }, subject, refreshExpires, pkg)
+      refresh: signJWT({ uid: req.user.id, refresh: req.user.refresh }, subject, refreshExpires, pkg),
+      refreshExpires
     }
     next()
   }
