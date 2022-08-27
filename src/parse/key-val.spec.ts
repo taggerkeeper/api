@@ -35,4 +35,10 @@ describe('parseKeyValPair', () => {
     const pair = parseKeyValPair('test=‘yes’')
     expect(pair?.test).to.equal('yes')
   })
+
+  it('can return as a uniform object', () => {
+    const pair = parseKeyValPair('test=‘yes’', false)
+    expect(pair?.key).to.equal('test')
+    expect(pair?.value).to.equal('yes')
+  })
 })
