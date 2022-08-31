@@ -9,14 +9,14 @@ import setupSwagger from './swagger.js'
 import getEnvVar from './utils/get-env-var.js'
 import loadPackage from './utils/load-package.js'
 import getAPIInfo from './utils/get-api-info.js'
+import getConnStr from './utils/get-conn-str.js'
 
 const pkg = await loadPackage()
-const port: number = getEnvVar('PORT') as number
-const connectionString: string = getEnvVar('CONNECTION_STRING') as string
+const port = getEnvVar('PORT') as number
 const { root, base } = getAPIInfo(pkg)
 
 // Connect to MongoDB
-await mongoose.connect(connectionString)
+await mongoose.connect(getConnStr())
 
 // Create server
 const api = express()
