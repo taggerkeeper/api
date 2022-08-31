@@ -6,7 +6,6 @@ const envVarDefaults: any = {
   DOMAIN: { type: 'string', value: 'localhost' },
   PORT: { type: 'number', value: 8080 },
   API_PATH: { type: 'string', value: '/' },
-  CONNECTION_STRING: { type: 'string', value: 'mongodb://localhost:27017/taggerkeeper' },
   DEFAULT_READ_PERMISSIONS: { type: 'string', value: PermissionLevel.anyone },
   DEFAULT_WRITE_PERMISSIONS: { type: 'string', value: PermissionLevel.anyone },
   DEFAULT_QUERY_LIMIT: { type: 'number', value: 50 },
@@ -20,7 +19,11 @@ const envVarDefaults: any = {
   MAILGUN_USERNAME: { type: 'string', value: 'your-mailgun-username' },
   MAILGUN_APIKEY: { type: 'string', value: 'your-mailgun-api-key' },
   MAILGUN_DOMAIN: { type: 'string', value: 'sandbox12345.mailgun.org' },
-  MAILGUN_API: { type: 'string', value: 'https://api.mailgun.net' }
+  MAILGUN_API: { type: 'string', value: 'https://api.mailgun.net' },
+  MONGO_SERVER: { type: 'string', value: 'localhost' },
+  MONGO_USERNAME: { type: 'string', value: 'root' },
+  MONGO_PASSWORD: { type: 'string', value: 'password' },
+  MONGO_COLLECTION: { type: 'string', value: 'taggerkeeper' }
 }
 
 const getEnvVar = (varName: string): string | number | undefined => {
