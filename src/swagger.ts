@@ -33,7 +33,7 @@ const setupSwagger = async (api: Express): Promise<void> => {
           }
         ]
       },
-      apis: ['./src/routes/*.ts']
+      apis: ['./dist/routes/*.js']
     })))
   }
 }
