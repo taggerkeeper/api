@@ -5,9 +5,20 @@ import PublicUserData from './public.js'
 import Password from '../password/password.js'
 import Email from '../email/email.js'
 import OTP from '../otp/otp.js'
+import exists from '../../utils/exists.js'
+import getAPIInfo from '../../utils/get-api-info.js'
+import getEnvVar from '../../utils/get-env-var.js'
 import getFirstVal from '../../utils/get-first-val.js'
 import getId from '../../utils/get-id.js'
-import exists from '../../utils/exists.js'
+import loadPackage, { NPMPackage } from '../../utils/load-package.js'
+import signJWT from '../../utils/sign-jwt.js'
+
+interface TokenSet {
+  access: string
+  refresh: string
+  refreshExpires: number
+  domain: string
+}
 
 class User {
   id?: string
@@ -56,8 +67,18 @@ class User {
     }
   }
 
-  generateRefresh (): void {
+  async generateTokens (): Promise<TokenSet> {
+    const pkg = await loadPackage() as NPMPackage
+    const { root, host } = getAPIInfo(pkg)
+    const subject = `${root}/users/${this.id as string}`
     this.refresh = cryptoRandomString({ length: 64 })
+    const refreshExpires = getEnvVar('REFRESH_EXPIRES') as number
+    return {
+      access: signJWT(this.getPublicObj(), subject, getEnvVar('JWT_EXPIRES') as number, pkg),
+      refresh: signJWT({ uid: this.id, refresh: this.refresh }, subject, refreshExpires, pkg),
+      refreshExpires,
+      domain: host
+    }
   }
 
   async save (): Promise<void> {
@@ -72,3 +93,4 @@ class User {
 }
 
 export default User
+export { TokenSet }

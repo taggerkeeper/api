@@ -144,7 +144,7 @@ describe('Tokens API', () => {
 
     beforeEach(async () => {
       user = users[0]
-      user.generateRefresh()
+      await user.generateTokens()
       await user.save()
     })
 

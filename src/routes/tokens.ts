@@ -49,9 +49,13 @@ const collection = {
     res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
-    const { access, refresh, refreshExpires, domain } = req.tokens
-    res.cookie('refresh', refresh, { domain, httpOnly: true, maxAge: refreshExpires })
-    res.status(200).send({ token: access })
+    if (req.tokens === undefined) {
+      res.status(500).send({ message: 'Tokens could not be generated.' })
+    } else {
+      const { access, refresh, refreshExpires, domain } = req.tokens
+      res.cookie('refresh', refresh, { domain, httpOnly: true, maxAge: refreshExpires })
+      res.status(200).send({ token: access })
+    }
   }
 }
 
@@ -129,9 +133,13 @@ const item = {
     res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
-    const { access, refresh, refreshExpires, domain } = req.tokens
-    res.cookie('refresh', refresh, { domain, httpOnly: true, maxAge: refreshExpires })
-    res.status(200).send({ token: access })
+    if (req.tokens === undefined) {
+      res.status(500).send({ message: 'Tokens could not be generated.' })
+    } else {
+      const { access, refresh, refreshExpires, domain } = req.tokens
+      res.cookie('refresh', refresh, { domain, httpOnly: true, maxAge: refreshExpires })
+      res.status(200).send({ token: access })
+    }
   }
 }
 
