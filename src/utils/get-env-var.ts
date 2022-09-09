@@ -24,7 +24,7 @@ const envVarDefaults: any = {
   MONGO_USERNAME: { type: 'string', value: 'root' },
   MONGO_PASSWORD: { type: 'string', value: 'password' },
   MONGO_COLLECTION: { type: 'string', value: 'taggerkeeper' },
-  MONGO_CONN_STR: { type: 'string', value: 'mongodb://localhost/taggerkeeper' }
+  MONGO_CONN_STR: { type: 'string', value: undefined }
 }
 
 const getEnvVar = (varName: string): string | number | undefined => {
