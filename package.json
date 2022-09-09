@@ -26,7 +26,7 @@
   "homepage": "https://github.com/taggerkeeper/api#readme",
   "scripts": {
     "test": "mocha --require ts-node/register",
-    "test:integration": "NODE_ENV=test CONNECTION_STRING=mongodb://127.0.0.1:27017/taggerkeeper-test mocha --require ts-node/register --config .mocharc.integration.yml",
+    "test:integration": "NODE_ENV=test MONGO_CONN_STR=mongodb://127.0.0.1:27017/taggerkeeper-test mocha --require ts-node/register --config .mocharc.integration.yml",
     "lint": "ts-standard",
     "build": "tsc --project ./",
     "dev:start": "npm-run-all build dev:server",
