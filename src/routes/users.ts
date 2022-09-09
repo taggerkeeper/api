@@ -57,6 +57,17 @@ const router = Router()
  *           type: string
  *           description: "The password that the user would like to use to authenticate. This is submitted in plaintext and then hashed on the server before it is stored, so user creation requests **must** be submitted over an SSL-protected connection to be secure."
  *           example: "Longer passwords are better passwords."
+ *     Email:
+ *       type: object
+ *       description: The records we have for any one of a user's email addresses.
+ *       properties:
+ *         addr:
+ *           type: string
+ *           description: "The user's email address."
+ *           example: "user@taggerkeeper.com"
+ *         verified:
+ *           type: boolean
+ *           description: "A boolean flag that indicates if the user has verified this address."
  */
 
 // /users
