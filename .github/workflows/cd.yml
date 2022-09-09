@@ -117,7 +117,7 @@ jobs:
         run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker rm ${{ env.CONTAINER }}"
 
       - name: Start latest container
-        run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker-compose -p taggerkeeper up --build"
+        run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker-compose -p taggerkeeper up --build --detach"
 
       - name: Log out from the GitHub Container Registry
         run: ssh ${{ secrets.DIGITALOCEAN_SSH_USER }}@${{ secrets.DIGITALOCEAN_SSH_HOST }} "docker logout ${{ env.REGISTRY }}"
