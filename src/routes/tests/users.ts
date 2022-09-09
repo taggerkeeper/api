@@ -184,4 +184,30 @@ describe('Users API', () => {
       })
     })
   })
+
+  describe('/users/:uid/emails', () => {
+    let user: UserData
+
+    beforeEach(async () => {
+      user = await UserModel.create({ name })
+    })
+
+    describe('OPTIONS /users/:uid/emails', () => {
+      beforeEach(async () => {
+        res = await request(api).options(`${base}/users/${user._id?.toString() ?? 'fail'}/emails`)
+      })
+
+      it('returns 204', () => {
+        expect(res.status).to.equal(204)
+      })
+
+      it('returns Allow header', () => {
+        expect(res.headers.allow).to.equal('OPTIONS')
+      })
+
+      it('returns Access-Control-Allow-Methods header', () => {
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS')
+      })
+    })
+  })
 })

@@ -174,7 +174,7 @@ router.all('/:uid', allow(item))
  *             schema:
  *               type: string
  *               description: "The methods allowed for the users endpoint."
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, GET, HEAD"
  */
 
 router.options('/:uid', loadSubject, requireSubject, item.options)
@@ -228,5 +228,43 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  */
 
 router.get('/:uid', loadSubject, requireSubject, item.get)
+
+// /users/:uid/emails
+
+const emailCollection = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  }
+}
+
+router.all('/:uid/emails', allow(emailCollection))
+
+/**
+ * @openapi
+ * /users/{uid}/emails:
+ *   options:
+ *     summary: "Return options on how to use a User's emails collection."
+ *     description: "Return which options are permissible for a User's emails collection."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the users endpoint."
+ *               example: "OPTIONS, GET, HEAD"
+ */
+
+router.options('/:uid/emails', loadSubject, requireSubject, emailCollection.options)
 
 export default router
