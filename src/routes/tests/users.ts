@@ -854,7 +854,6 @@ describe('Users API', () => {
           await other.save()
           tokens = await other.generateTokens()
           await other.save()
-          await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
@@ -873,7 +872,6 @@ describe('Users API', () => {
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           const { code } = user.emails[0]
-          await user.save()
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).send({ code })
         })
 
