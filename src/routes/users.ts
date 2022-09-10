@@ -426,7 +426,7 @@ router.all('/:uid/emails/:addr', allow(emailItem))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's individual eamil endpoint."
+ *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
  */
 
@@ -623,7 +623,7 @@ router.all('/:uid/admin', allow(admin))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's individual eamil endpoint."
+ *               description: "The methods allowed for the user's individual email endpoint."
  *               example: "OPTIONS, POST, DELETE"
  */
 
