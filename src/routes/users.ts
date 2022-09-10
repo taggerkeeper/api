@@ -360,4 +360,49 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
 
 router.post('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, addEmail, sendEmailVerification, saveSubject, emailCollection.post)
 
+// /users/:uid/emails/:addr
+
+const emailItem = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  }
+}
+
+router.all('/:uid/emails/:addr', allow(emailItem))
+
+/**
+ * @openapi
+ * /users/{uid}/emails/{addr}:
+ *   options:
+ *     summary: "Return options on how to use a User's individual email record."
+ *     description: "Return which options are permissible for a User's individual email record."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *       - in: path
+ *         name: addr
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's email address that you're interested in."
+ *         example: "tester@testing.com"
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's individual eamil endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ */
+
+router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailItem.options)
+
 export default router
