@@ -14,7 +14,7 @@ describe('addEmail', () => {
     mockReq = mockRequest()
     mockRes = mockResponse()
     mockNext = () => {}
-    mockReq.subject = new User({ name, emails: [{ addr }] })
+    mockReq.subject = new User({ name, emails: [{ addr, verified: false }] })
     mockReq.email = mockReq.subject.emails[0]
     mockReq.email.generateVerificationCode()
   })
