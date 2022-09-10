@@ -187,15 +187,19 @@ describe('Users API', () => {
   })
 
   describe('/users/:uid/emails', () => {
-    let user: UserData
+    const addr = 'tester@testing.com'
+    const verified = true
+    const emails = [{ addr, verified }]
+    const user = new User({ name: 'Subject', emails })
+    let tokens: TokenSet
 
     beforeEach(async () => {
-      user = await UserModel.create({ name })
+      await user.save()
     })
 
     describe('OPTIONS /users/:uid/emails', () => {
       beforeEach(async () => {
-        res = await request(api).options(`${base}/users/${user._id?.toString() ?? 'fail'}/emails`)
+        res = await request(api).options(`${base}/users/${user.id}/emails`)
       })
 
       it('returns 204', () => {
@@ -212,12 +216,6 @@ describe('Users API', () => {
     })
 
     describe('GET /users/:uid/emails', () => {
-      const addr = 'tester@testing.com'
-      const verified = true
-      const emails = [{ addr, verified }]
-      const user = new User({ name: 'Subject', emails })
-      let tokens: TokenSet
-
       describe('Self calls', () => {
         beforeEach(async () => {
           await user.save()
@@ -284,12 +282,6 @@ describe('Users API', () => {
     })
 
     describe('HEAD /users/:uid/emails', () => {
-      const addr = 'tester@testing.com'
-      const verified = true
-      const emails = [{ addr, verified }]
-      const user = new User({ name: 'Subject', emails })
-      let tokens: TokenSet
-
       describe('Self calls', () => {
         beforeEach(async () => {
           await user.save()
