@@ -202,7 +202,7 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *         example: "0123456789abcdef12345678"
  *     responses:
  *       204:
- *         description: "THe user requested was found."
+ *         description: "The user requested was found."
  */
 
 router.head('/:uid', loadSubject, requireSubject, item.head)
@@ -225,7 +225,7 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *         example: "0123456789abcdef12345678"
  *     responses:
  *       200:
- *         description: "THe user requested was found."
+ *         description: "The user requested was found."
  *         content:
  *           application/json:
  *             schema:
@@ -435,10 +435,11 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *         example: "tester@testing.com"
  *     responses:
  *       200:
- *         headers:
- *           'Allow':
+ *         description: "The user requested was found."
+ *         content:
+ *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Email"
+ *               $ref: "#/components/schemas/User"
  */
 
 router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.get)
