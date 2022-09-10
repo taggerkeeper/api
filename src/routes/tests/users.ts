@@ -992,7 +992,7 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/admin', () => {
-      const expected = 'OPTIONS, GET'
+      const expected = 'OPTIONS, GET, HEAD'
 
       describe('Self calls', () => {
         beforeEach(async () => {
@@ -1106,6 +1106,20 @@ describe('Users API', () => {
 
       it('returns true if the user is an admin', () => {
         expect(results.admin.body).to.equal(true)
+      })
+    })
+
+    describe('HEAD /users/:uid/admin', () => {
+      beforeEach(async () => {
+        res = await request(api).head(`${base}/users/${user.id ?? ''}/admin`)
+      })
+
+      it('returns 204', () => {
+        expect(res.status).to.equal(204)
+      })
+
+      it('returns no content', () => {
+        expect(JSON.stringify(res.body)).to.equal('{}')
       })
     })
   })

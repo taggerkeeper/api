@@ -583,6 +583,9 @@ const admin = {
   get: (req: Request, res: Response) => {
     const { subject } = req
     res.status(200).send(subject?.admin)
+  },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
   }
 }
 
@@ -619,7 +622,30 @@ router.options('/:uid/admin', loadUserFromAccessToken, requireUser, loadSubject,
 /**
  * @openapi
  * /users/{uid}/admin:
- *   options:
+ *   head:
+ *     summary: "Return the headers that you would receive if you requested a user's admin status."
+ *     description: "Return the headers that you would receive if you requested a user's admin status."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       204:
+ *         description: "The user requested was found."
+ */
+
+router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
+
+/**
+ * @openapi
+ * /users/{uid}/admin:
+ *   get:
  *     summary: "Return a boolean flag that indicates if the user is an administrator or not."
  *     description: "Return a boolean flag that indicates if the user is an administrator or not."
  *     tags:
