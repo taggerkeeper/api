@@ -207,11 +207,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD')
+        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD, POST')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD, POST')
       })
     })
 
@@ -327,6 +327,93 @@ describe('Users API', () => {
 
         it('returns 401', () => {
           expect(res.status).to.equal(401)
+        })
+      })
+    })
+
+    describe('POST /users/:uid/emails', () => {
+      const email = 'newemail@testing.com'
+
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id}/emails`).set(auth).send({ email })
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns an array of your emails', () => {
+          expect(res.body).to.have.lengthOf(2)
+          expect(res.body[0].addr).to.equal(addr)
+          expect(res.body[0].verified).to.equal(verified)
+          expect(res.body[1].addr).to.equal(email)
+          expect(res.body[1].verified).to.equal(false)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id}/emails`).set(auth).send({ email })
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns an array of the user\'s emails', () => {
+          expect(res.body).to.have.lengthOf(2)
+          expect(res.body[0].addr).to.equal(addr)
+          expect(res.body[0].verified).to.equal(verified)
+          expect(res.body[1].addr).to.equal(email)
+          expect(res.body[1].verified).to.equal(false)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id}/emails`).set(auth).send({ email })
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('does not return the user\'s emails', () => {
+          expect(Array.isArray(res.body)).to.equal(false)
+        })
+      })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          res = await request(api).post(`${base}/users/${user.id}/emails`).send({ email })
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('does not return the user\'s emails', () => {
+          expect(Array.isArray(res.body)).to.equal(false)
         })
       })
     })

@@ -243,6 +243,9 @@ const emailCollection = {
   },
   head: (req: Request, res: Response) => {
     res.sendStatus(201)
+  },
+  post: (req: Request, res: Response) => {
+    res.status(200).send(req.subject?.emails)
   }
 }
 
@@ -327,5 +330,34 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  */
 
 router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.get)
+
+/**
+ * @openapi
+ * /users/{uid}/emails:
+ *   post:
+ *     summary: "Add a new email to a user."
+ *     description: "Add a new email to a user."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "The email was added to the user record."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/Email"
+ */
+
+router.post('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, addEmail, sendEmailVerification, saveSubject, emailCollection.post)
 
 export default router
