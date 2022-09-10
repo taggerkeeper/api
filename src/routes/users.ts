@@ -6,6 +6,7 @@ import getAPIInfo from '../utils/get-api-info.js'
 import addEmail from '../middlewares/add-email.js'
 import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
+import dropEmail from '../middlewares/drop-email.js'
 import getEmail from '../middlewares/get-email.js'
 import loadSubject from '../middlewares/load-subject.js'
 import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.js'
@@ -385,6 +386,9 @@ const emailItem = {
   },
   post: (req: Request, res: Response) => {
     res.status(200).send(req.email)
+  },
+  delete: (req: Request, res: Response) => {
+    res.status(200).send(req.subject?.emails)
   }
 }
 
@@ -532,5 +536,41 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  */
 
 router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, verifyEmail, saveSubject, emailItem.get)
+
+/**
+ * @openapi
+ * /users/{uid}/emails/{addr}:
+ *   delete:
+ *     summary: "Deletes an email address."
+ *     description: "Delete an email address."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *       - in: path
+ *         name: addr
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's email address that you're interested in."
+ *         example: "tester@testing.com"
+ *     responses:
+ *       200:
+ *         description: "The user's email has been deleted."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/Email"
+ */
+
+router.delete('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, dropEmail, saveSubject, emailItem.delete)
 
 export default router

@@ -534,7 +534,7 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/emails/:addr', () => {
-      const expected = 'OPTIONS, GET, HEAD, POST'
+      const expected = 'OPTIONS, GET, HEAD, POST, DELETE'
 
       describe('Self calls', () => {
         beforeEach(async () => {
@@ -885,6 +885,101 @@ describe('Users API', () => {
           const record = await UserModel.findById(user.id) as UserData
           const emails = record.emails ?? []
           expect(emails[0].verified).to.equal(false)
+        })
+      })
+    })
+
+    describe('DELETE /users/:uid/emails/:addr', () => {
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns the user\'s new email records', () => {
+          expect(Array.isArray(res.body)).to.equal(true)
+          expect(res.body).to.have.lengthOf(0)
+        })
+
+        it('saves the updated user record to the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const emails = record.emails ?? []
+          expect(emails).to.have.lengthOf(0)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          await user.save()
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns the user\'s new email records', () => {
+          expect(Array.isArray(res.body)).to.equal(true)
+          expect(res.body).to.have.lengthOf(0)
+        })
+
+        it('saves the updated user record to the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const emails = record.emails ?? []
+          expect(emails).to.have.lengthOf(0)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          await user.save()
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('doesn\'t delete the email from the user record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const emails = record.emails ?? []
+          expect(emails).to.have.lengthOf(1)
+        })
+      })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('doesn\'t delete the email from the user record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const emails = record.emails ?? []
+          expect(emails).to.have.lengthOf(1)
         })
       })
     })
