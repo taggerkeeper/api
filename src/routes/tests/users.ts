@@ -950,7 +950,7 @@ describe('Users API', () => {
           tokens = await other.generateTokens()
           await other.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
+          res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
         it('returns 401', () => {
@@ -967,7 +967,7 @@ describe('Users API', () => {
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           await user.save()
-          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`)
+          res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
         it('returns 401', () => {
