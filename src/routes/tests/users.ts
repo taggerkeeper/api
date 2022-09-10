@@ -982,4 +982,108 @@ describe('Users API', () => {
       })
     })
   })
+
+  describe('/users/:uid/admin', () => {
+    const user = new User()
+    let tokens: TokenSet
+
+    beforeEach(async () => {
+      await user.save()
+    })
+
+    describe('OPTIONS /users/:uid/admin', () => {
+      const expected = 'OPTIONS'
+
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('returns Allow header', () => {
+          expect(res.headers.allow).to.equal(expected)
+        })
+
+        it('returns Access-Control-Allow-Methods header', () => {
+          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`).set(auth)
+        })
+
+        it('returns 204', () => {
+          expect(res.status).to.equal(204)
+        })
+
+        it('returns Allow header', () => {
+          expect(res.headers.allow).to.equal(expected)
+        })
+
+        it('returns Access-Control-Allow-Methods header', () => {
+          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('returns Allow header', () => {
+          expect(res.headers.allow).to.equal(expected)
+        })
+
+        it('returns Access-Control-Allow-Methods header', () => {
+          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        })
+      })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('returns Allow header', () => {
+          expect(res.headers.allow).to.equal(expected)
+        })
+
+        it('returns Access-Control-Allow-Methods header', () => {
+          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        })
+      })
+    })
+  })
 })

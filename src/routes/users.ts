@@ -13,6 +13,7 @@ import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.
 import requireBodyParts from '../middlewares/require-body-parts.js'
 import requireSubject from '../middlewares/require-subject.js'
 import saveSubject from '../middlewares/save-subject.js'
+import requireAdmin from '../middlewares/require-admin.js'
 import requireEmail from '../middlewares/require-email.js'
 import requireSelfOrAdmin from '../middlewares/require-self-or-admin.js'
 import requireUser from '../middlewares/require-user.js'
@@ -572,5 +573,43 @@ router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  */
 
 router.delete('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, dropEmail, saveSubject, emailItem.delete)
+
+// /users/:uid/admin
+
+const admin = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  }
+}
+
+router.all('/:uid/admin', allow(admin))
+
+/**
+ * @openapi
+ * /users/{uid}/admin:
+ *   options:
+ *     summary: "Return options on how to use a User's admin endpoint."
+ *     description: "Return options on how to use a User's admin endpoint."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's individual eamil endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ */
+
+router.options('/:uid/admin', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireAdmin, admin.options)
 
 export default router
