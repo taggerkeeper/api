@@ -206,7 +206,7 @@ describe('Users API', () => {
           tokens = await user.generateTokens()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).options(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 204', () => {
@@ -231,7 +231,7 @@ describe('Users API', () => {
           await admin.save()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).options(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 204', () => {
@@ -256,7 +256,7 @@ describe('Users API', () => {
           await other.save()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).options(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 401', () => {
@@ -275,7 +275,7 @@ describe('Users API', () => {
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           await user.save()
-          res = await request(api).options(`${base}/users/${user.id}/emails`)
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`)
         })
 
         it('returns 401', () => {
@@ -299,7 +299,7 @@ describe('Users API', () => {
           tokens = await user.generateTokens()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).get(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 200', () => {
@@ -322,7 +322,7 @@ describe('Users API', () => {
           await admin.save()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).get(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 200', () => {
@@ -345,7 +345,7 @@ describe('Users API', () => {
           await other.save()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).get(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 401', () => {
@@ -360,7 +360,7 @@ describe('Users API', () => {
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           await user.save()
-          res = await request(api).get(`${base}/users/${user.id}/emails`)
+          res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`)
         })
 
         it('returns 401', () => {
@@ -380,7 +380,7 @@ describe('Users API', () => {
           tokens = await user.generateTokens()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).head(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 201', () => {
@@ -397,7 +397,7 @@ describe('Users API', () => {
           await admin.save()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).head(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 201', () => {
@@ -414,7 +414,7 @@ describe('Users API', () => {
           await other.save()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).head(`${base}/users/${user.id}/emails`).set(auth)
+          res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
         it('returns 401', () => {
@@ -425,7 +425,7 @@ describe('Users API', () => {
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           await user.save()
-          res = await request(api).head(`${base}/users/${user.id}/emails`)
+          res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`)
         })
 
         it('returns 401', () => {
@@ -443,7 +443,7 @@ describe('Users API', () => {
           tokens = await user.generateTokens()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id}/emails`).set(auth).send({ email })
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
         it('returns 200', () => {
@@ -468,7 +468,7 @@ describe('Users API', () => {
           await admin.save()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id}/emails`).set(auth).send({ email })
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
         it('returns 200', () => {
@@ -493,7 +493,7 @@ describe('Users API', () => {
           await other.save()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id}/emails`).set(auth).send({ email })
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
         it('returns 401', () => {
@@ -508,7 +508,7 @@ describe('Users API', () => {
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           await user.save()
-          res = await request(api).post(`${base}/users/${user.id}/emails`).send({ email })
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).send({ email })
         })
 
         it('returns 401', () => {
@@ -541,8 +541,8 @@ describe('Users API', () => {
           await user.save()
           tokens = await user.generateTokens()
           await user.save()
-          const auth = {Authorization: `Bearer ${tokens.access}`}
-          res = await request(api).options(`${base}/users/${user.id}/emails/${addr}`).set(auth)
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
         it('returns 204', () => {
@@ -566,8 +566,8 @@ describe('Users API', () => {
           tokens = await admin.generateTokens()
           await admin.save()
           await user.save()
-          const auth = {Authorization: `Bearer ${tokens.access}`}
-          res = await request(api).options(`${base}/users/${user.id}/emails/${addr}`).set(auth)
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
         it('returns 204', () => {
@@ -591,8 +591,8 @@ describe('Users API', () => {
           tokens = await other.generateTokens()
           await other.save()
           await user.save()
-          const auth = {Authorization: `Bearer ${tokens.access}`}
-          res = await request(api).options(`${base}/users/${user.id}/emails/${addr}`).set(auth)
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
         it('returns 401', () => {
@@ -611,7 +611,7 @@ describe('Users API', () => {
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           await user.save()
-          res = await request(api).options(`${base}/users/${user.id}/emails/${addr}`)
+          res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
         it('returns 401', () => {
