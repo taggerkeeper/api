@@ -739,6 +739,10 @@ router.delete('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin,
 const active = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  get: (req: Request, res: Response) => {
+    const { subject } = req
+    res.status(200).send(subject?.active)
   }
 }
 
@@ -771,5 +775,33 @@ router.all('/:uid/active', allow(active))
  */
 
 router.options('/:uid/active', loadSubject, requireSubject, active.options)
+
+/**
+ * @openapi
+ * /users/{uid}/active:
+ *   get:
+ *     summary: "Return a boolean flag that indicates if the user is active or not."
+ *     description: "Return a boolean flag that indicates if the user is active or not."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "A boolean flag that indicates if the user is active or not."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: boolean
+ *               description: "A boolean flag that indicates if the user is active or not."
+ */
+
+router.get('/:uid/active', loadSubject, requireSubject, active.get)
 
 export default router

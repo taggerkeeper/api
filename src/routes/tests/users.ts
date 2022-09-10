@@ -1021,6 +1021,7 @@ describe('Users API', () => {
 
       it('returns 200', () => {
         expect(results.user.status).to.equal(200)
+        expect(results.admin.status).to.equal(200)
       })
 
       it('returns false if the user is not an admin', () => {
@@ -1248,11 +1249,35 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS')
+        expect(res.headers.allow).to.equal('OPTIONS, GET')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET')
+      })
+    })
+
+    describe('GET /users/:uid/active', () => {
+      const results: { active?: any, inactive?: any } = {}
+
+      beforeEach(async () => {
+        const inactive = new User({ name: 'Admin', active: false })
+        await inactive.save()
+        results.active = await request(api).get(`${base}/users/${user.id ?? ''}/active`)
+        results.inactive = await request(api).get(`${base}/users/${inactive.id ?? ''}/active`)
+      })
+
+      it('returns 200', () => {
+        expect(results.active.status).to.equal(200)
+        expect(results.inactive.status).to.equal(200)
+      })
+
+      it('returns true if the user is active', () => {
+        expect(results.active.body).to.equal(true)
+      })
+
+      it('returns false if the user is not active', () => {
+        expect(results.inactive.body).to.equal(false)
       })
     })
   })
