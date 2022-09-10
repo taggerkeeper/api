@@ -2,6 +2,7 @@ import { expect } from 'chai'
 import request from 'supertest'
 import UserData, { isUserData } from '../../models/user/data.js'
 import UserModel from '../../models/user/model.js'
+import User, { TokenSet } from '../../models/user/user.js'
 import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import api from '../../server.js'
@@ -202,11 +203,83 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS')
+        expect(res.headers.allow).to.equal('OPTIONS, GET')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET')
+      })
+    })
+
+    describe('GET /users/:uid/emails', () => {
+      const addr = 'tester@testing.com'
+      const verified = true
+      const emails = [{ addr, verified }]
+      const user = new User({ name: 'Subject', emails })
+      let tokens: TokenSet
+
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).get(`${base}/users/${user.id}/emails`).set(auth)
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns an array of your emails', () => {
+          expect(res.body).to.have.lengthOf(1)
+          expect(res.body[0].addr).to.equal(addr)
+          expect(res.body[0].verified).to.equal(verified)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).get(`${base}/users/${user.id}/emails`).set(auth)
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns an array of the user\'s emails', () => {
+          expect(res.body).to.have.lengthOf(1)
+          expect(res.body[0].addr).to.equal(addr)
+          expect(res.body[0].verified).to.equal(verified)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).get(`${base}/users/${user.id}/emails`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('does not return the user\'s emails', () => {
+          expect(Array.isArray(res.body)).to.equal(false)
+        })
       })
     })
   })

@@ -7,9 +7,12 @@ import addEmail from '../middlewares/add-email.js'
 import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
 import loadSubject from '../middlewares/load-subject.js'
+import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.js'
 import requireBodyParts from '../middlewares/require-body-parts.js'
 import requireSubject from '../middlewares/require-subject.js'
 import saveSubject from '../middlewares/save-subject.js'
+import requireSelfOrAdmin from '../middlewares/require-self-or-admin.js'
+import requireUser from '../middlewares/require-user.js'
 import sendEmailVerification from '../middlewares/send-email-verification.js'
 import setPassword from '../middlewares/set-password.js'
 
@@ -234,6 +237,9 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
 const emailCollection = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  get: (req: Request, res: Response) => {
+    res.status(200).send(req.subject?.emails)
   }
 }
 
@@ -266,5 +272,34 @@ router.all('/:uid/emails', allow(emailCollection))
  */
 
 router.options('/:uid/emails', loadSubject, requireSubject, emailCollection.options)
+
+/**
+ * @openapi
+ * /users/{uid}/emails:
+ *   get:
+ *     summary: "Return an array of a User's emails."
+ *     description: "Return an array of a User's emails."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "The user requested was found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/Email"
+ */
+
+router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.get)
 
 export default router
