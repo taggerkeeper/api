@@ -274,10 +274,10 @@ router.all('/:uid/emails', allow(emailCollection))
  *             schema:
  *               type: string
  *               description: "The methods allowed for the user's emails collection endpoint."
- *               example: "OPTIONS, GET, HEAD"
+ *               example: "OPTIONS, GET, HEAD, POST"
  */
 
-router.options('/:uid/emails', loadSubject, requireSubject, emailCollection.options)
+router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.options)
 
 /**
  * @openapi
