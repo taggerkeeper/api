@@ -17,6 +17,7 @@ import requireSelfOrAdmin from '../middlewares/require-self-or-admin.js'
 import requireUser from '../middlewares/require-user.js'
 import sendEmailVerification from '../middlewares/send-email-verification.js'
 import setPassword from '../middlewares/set-password.js'
+import verifyEmail from '../middlewares/verify-email.js'
 
 const pkg = await loadPackage()
 const { root } = getAPIInfo(pkg)
@@ -73,6 +74,14 @@ const router = Router()
  *         verified:
  *           type: boolean
  *           description: "A boolean flag that indicates if the user has verified this address."
+ *     EmailVerification:
+ *       type: object
+ *       description: "The code to provide to verify your email address."
+ *       properties:
+ *         code:
+ *           type: string
+ *           description: "The email verification code."
+ *           example: "abcde12345"
  */
 
 // /users
@@ -373,6 +382,9 @@ const emailItem = {
   },
   head: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  post: (req: Request, res: Response) => {
+    res.status(200).send(req.email)
   }
 }
 
@@ -476,5 +488,49 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  */
 
 router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.get)
+
+/**
+ * @openapi
+ * /users/{uid}/emails/{addr}:
+ *   post:
+ *     summary: "Verify an email address."
+ *     description: "Verify an email address."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *       - in: path
+ *         name: addr
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's email address that you're interested in."
+ *         example: "tester@testing.com"
+ *     requestBody:
+ *       description: "Your verification code."
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: "#/components/schemas/EmailVerification"
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: "#/components/schemas/EmailVerification"
+ *     responses:
+ *       200:
+ *         description: "The user's email was verified."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Email"
+ */
+
+router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, verifyEmail, saveSubject, emailItem.get)
 
 export default router

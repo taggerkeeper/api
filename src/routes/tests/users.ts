@@ -534,7 +534,7 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/emails/:addr', () => {
-      const expected = 'OPTIONS, GET, HEAD'
+      const expected = 'OPTIONS, GET, HEAD, POST'
 
       describe('Self calls', () => {
         beforeEach(async () => {
@@ -782,6 +782,109 @@ describe('Users API', () => {
 
         it('doesn\'t return any content', () => {
           expect(JSON.stringify(res.body)).to.equal('{}')
+        })
+      })
+    })
+
+    describe('POST /users/:uid/emails/:addr', () => {
+      beforeEach(async () => {
+        user.emails[0].verified = false
+        user.emails[0].generateVerificationCode()
+        await user.save()
+      })
+
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          const { code } = user.emails[0]
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns the verified email record', () => {
+          expect(res.body.addr).to.equal(addr)
+          expect(res.body.verified).to.equal(true)
+        })
+
+        it('saves the verified record to the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const emails = record.emails ?? []
+          expect(emails[0].verified).to.equal(true)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          const { code } = user.emails[0]
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns the verified email record', () => {
+          expect(res.body.addr).to.equal(addr)
+          expect(res.body.verified).to.equal(true)
+        })
+
+        it('saves the verified record to the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const emails = record.emails ?? []
+          expect(emails[0].verified).to.equal(true)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          const { code } = user.emails[0]
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('doesn\'t verify the record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const emails = record.emails ?? []
+          expect(emails[0].verified).to.equal(false)
+        })
+      })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          const { code } = user.emails[0]
+          await user.save()
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).send({ code })
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('doesn\'t verify the record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const emails = record.emails ?? []
+          expect(emails[0].verified).to.equal(false)
         })
       })
     })
