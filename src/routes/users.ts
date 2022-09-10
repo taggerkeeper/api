@@ -439,7 +439,7 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/User"
+ *               $ref: "#/components/schemas/Email"
  */
 
 router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.get)
