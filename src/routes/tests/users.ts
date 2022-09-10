@@ -279,6 +279,21 @@ describe('Users API', () => {
           expect(Array.isArray(res.body)).to.equal(false)
         })
       })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          res = await request(api).get(`${base}/users/${user.id}/emails`)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('does not return the user\'s emails', () => {
+          expect(Array.isArray(res.body)).to.equal(false)
+        })
+      })
     })
 
     describe('HEAD /users/:uid/emails', () => {
@@ -323,6 +338,17 @@ describe('Users API', () => {
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).head(`${base}/users/${user.id}/emails`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+      })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          res = await request(api).head(`${base}/users/${user.id}/emails`)
         })
 
         it('returns 401', () => {
