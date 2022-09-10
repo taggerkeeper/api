@@ -176,7 +176,7 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the users endpoint."
+ *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
  */
 
@@ -270,7 +270,7 @@ router.all('/:uid/emails', allow(emailCollection))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the users endpoint."
+ *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD"
  */
 
