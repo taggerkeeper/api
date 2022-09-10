@@ -734,4 +734,42 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
 
 router.delete('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, demote, saveSubject, admin.post)
 
+// /users/:uid/active
+
+const active = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  }
+}
+
+router.all('/:uid/active', allow(active))
+
+/**
+ * @openapi
+ * /users/{uid}/active:
+ *   options:
+ *     summary: "Return options on how to use a User's active endpoint."
+ *     description: "Return options on how to use a User's active endpoint."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ */
+
+router.options('/:uid/active', loadSubject, requireSubject, active.options)
+
 export default router

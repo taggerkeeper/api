@@ -1230,4 +1230,30 @@ describe('Users API', () => {
       })
     })
   })
+
+  describe('/users/:uid/active', () => {
+    const user = new User()
+
+    beforeEach(async () => {
+      await user.save()
+    })
+
+    describe('OPTIONS /users/:uid/active', () => {
+      beforeEach(async () => {
+        res = await request(api).options(`${base}/users/${user.id ?? ''}/active`)
+      })
+
+      it('returns 204', () => {
+        expect(res.status).to.equal(204)
+      })
+
+      it('returns Allow header', () => {
+        expect(res.headers.allow).to.equal('OPTIONS')
+      })
+
+      it('returns Access-Control-Allow-Methods header', () => {
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS')
+      })
+    })
+  })
 })
