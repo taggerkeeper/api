@@ -617,7 +617,7 @@ router.all('/:uid/admin', allow(admin))
  *               example: "OPTIONS, POST, DELETE"
  */
 
-router.options('/:uid/admin', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireAdmin, admin.options)
+router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
 
 /**
  * @openapi

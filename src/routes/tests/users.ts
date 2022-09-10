@@ -992,57 +992,59 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/admin', () => {
-      const expected = 'OPTIONS, GET, HEAD'
-
-      describe('Self calls', () => {
-        beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
-          const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`).set(auth)
-        })
-
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
-        })
+      beforeEach(async () => {
+        res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`)
       })
 
-      describe('Admin calls', () => {
+      it('returns 204', () => {
+        expect(res.status).to.equal(204)
+      })
+
+      it('returns Allow header', () => {
+        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD')
+      })
+
+      it('returns Access-Control-Allow-Methods header', () => {
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD')
+      })
+    })
+
+    describe('GET /users/:uid/admin', () => {
+      const results: { user?: any, admin?: any } = {}
+
+      beforeEach(async () => {
         const admin = new User({ name: 'Admin', admin: true })
-
-        beforeEach(async () => {
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
-          await user.save()
-          const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`).set(auth)
-        })
-
-        it('returns 204', () => {
-          expect(res.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
-        })
+        await admin.save()
+        results.user = await request(api).get(`${base}/users/${user.id ?? ''}/admin`)
+        results.admin = await request(api).get(`${base}/users/${admin.id ?? ''}/admin`)
       })
 
-      describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
+      it('returns 200', () => {
+        expect(results.user.status).to.equal(200)
+      })
+
+      it('returns false if the user is not an admin', () => {
+        expect(results.user.body).to.equal(false)
+      })
+
+      it('returns true if the user is an admin', () => {
+        expect(results.admin.body).to.equal(true)
+      })
+    })
+
+    describe('HEAD /users/:uid/admin', () => {
+      beforeEach(async () => {
+        res = await request(api).head(`${base}/users/${user.id ?? ''}/admin`)
+      })
+
+      it('returns 204', () => {
+        expect(res.status).to.equal(204)
+      })
+
+      it('returns no content', () => {
+        expect(JSON.stringify(res.body)).to.equal('{}')
+      })
+    })
 
         beforeEach(async () => {
           await other.save()
