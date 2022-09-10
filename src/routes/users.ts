@@ -13,6 +13,7 @@ import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.
 import requireBodyParts from '../middlewares/require-body-parts.js'
 import requireSubject from '../middlewares/require-subject.js'
 import saveSubject from '../middlewares/save-subject.js'
+import promote from '../middlewares/promote.js'
 import requireAdmin from '../middlewares/require-admin.js'
 import requireEmail from '../middlewares/require-email.js'
 import requireSelfOrAdmin from '../middlewares/require-self-or-admin.js'
@@ -586,6 +587,10 @@ const admin = {
   },
   head: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  post: (req: Request, res: Response) => {
+    const { subject } = req
+    res.status(200).send(subject?.getPublicObj())
   }
 }
 
@@ -669,5 +674,32 @@ router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
  */
 
 router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
+
+/**
+ * @openapi
+ * /users/{uid}/admin:
+ *   post:
+ *     summary: "Promote a user to an administrator."
+ *     description: "Promote a user to an administrator."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "The user requested was found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/User"
+ */
+
+router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, promote, saveSubject, admin.post)
 
 export default router

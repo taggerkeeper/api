@@ -1046,82 +1046,90 @@ describe('Users API', () => {
       })
     })
 
+    describe('POST /users/:uid/admin', () => {
+      describe('Self calls', () => {
         beforeEach(async () => {
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
+          await user.save()
+          tokens = await user.generateTokens()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`).set(auth)
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
         it('returns 401', () => {
           expect(res.status).to.equal(401)
         })
 
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
+        it('does not promote the user record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          expect(record.admin).to.equal(false)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          await user.save()
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns the user\'s updated record', () => {
+          expect(res.body.id).to.equal(user.id)
+          expect(res.body.name).to.equal(user.name)
+          expect(res.body.admin).to.equal(true)
+        })
+
+        it('saves the updated user record to the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          expect(record.admin).to.equal(true)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          await user.save()
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('does not promote the user record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          expect(record.admin).to.equal(false)
         })
       })
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           await user.save()
-          res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`)
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`)
         })
 
         it('returns 401', () => {
           expect(res.status).to.equal(401)
         })
 
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
+        it('does not promote the user record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          expect(record.admin).to.equal(false)
         })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
-        })
-      })
-    })
-
-    describe('GET /users/:uid/admin', () => {
-      const results: { user?: any, admin?: any } = {}
-
-      beforeEach(async () => {
-        const admin = new User({ name: 'Admin', admin: true })
-        await admin.save()
-        results.user = await request(api).get(`${base}/users/${user.id ?? ''}/admin`)
-        results.admin = await request(api).get(`${base}/users/${admin.id ?? ''}/admin`)
-      })
-
-      it('returns 200', () => {
-        expect(results.user.status).to.equal(200)
-      })
-
-      it('returns false if the user is not an admin', () => {
-        expect(results.user.body).to.equal(false)
-      })
-
-      it('returns true if the user is an admin', () => {
-        expect(results.admin.body).to.equal(true)
-      })
-    })
-
-    describe('HEAD /users/:uid/admin', () => {
-      beforeEach(async () => {
-        res = await request(api).head(`${base}/users/${user.id ?? ''}/admin`)
-      })
-
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns no content', () => {
-        expect(JSON.stringify(res.body)).to.equal('{}')
       })
     })
   })
