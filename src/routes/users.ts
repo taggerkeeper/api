@@ -743,6 +743,9 @@ const active = {
   get: (req: Request, res: Response) => {
     const { subject } = req
     res.status(200).send(subject?.active)
+  },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
   }
 }
 
@@ -775,6 +778,29 @@ router.all('/:uid/active', allow(active))
  */
 
 router.options('/:uid/active', loadSubject, requireSubject, active.options)
+
+/**
+ * @openapi
+ * /users/{uid}/active:
+ *   get:
+ *     summary: "Return a boolean flag that indicates if the user is active or not."
+ *     description: "Return a boolean flag that indicates if the user is active or not."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       204:
+ *         description: "The user requested was found."
+ */
+
+router.head('/:uid/active', loadSubject, requireSubject, active.head)
 
 /**
  * @openapi

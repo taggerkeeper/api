@@ -1249,11 +1249,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET')
+        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD')
       })
     })
 
@@ -1278,6 +1278,20 @@ describe('Users API', () => {
 
       it('returns false if the user is not active', () => {
         expect(results.inactive.body).to.equal(false)
+      })
+    })
+
+    describe('HEAD /users/:uid/active', () => {
+      beforeEach(async () => {
+        res = await request(api).head(`${base}/users/${user.id ?? ''}/active`)
+      })
+
+      it('returns 204', () => {
+        expect(res.status).to.equal(204)
+      })
+
+      it('returns no content', () => {
+        expect(JSON.stringify(res.body)).to.equal('{}')
       })
     })
   })
