@@ -87,7 +87,7 @@ class User {
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       this.id = record._id?.toString()
     } else {
-      await UserModel.findOneAndUpdate({ _id: this.id }, this.getObj())
+      await UserModel.findOneAndUpdate({ _id: this.id }, this.getObj(), { upsert: true })
     }
   }
 }
