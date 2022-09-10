@@ -6,6 +6,7 @@ import getAPIInfo from '../utils/get-api-info.js'
 import addEmail from '../middlewares/add-email.js'
 import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
+import demote from '../middlewares/demote.js'
 import dropEmail from '../middlewares/drop-email.js'
 import getEmail from '../middlewares/get-email.js'
 import loadSubject from '../middlewares/load-subject.js'
@@ -591,6 +592,10 @@ const admin = {
   post: (req: Request, res: Response) => {
     const { subject } = req
     res.status(200).send(subject?.getPublicObj())
+  },
+  delete: (req: Request, res: Response) => {
+    const { subject } = req
+    res.status(200).send(subject?.getPublicObj())
   }
 }
 
@@ -701,5 +706,32 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  */
 
 router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, promote, saveSubject, admin.post)
+
+/**
+ * @openapi
+ * /users/{uid}/admin:
+ *   delete:
+ *     summary: "Demote an administrator."
+ *     description: "Demote an administrator."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "The user requested was found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/User"
+ */
+
+router.delete('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, demote, saveSubject, admin.post)
 
 export default router
