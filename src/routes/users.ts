@@ -579,6 +579,10 @@ router.delete('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSu
 const admin = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  get: (req: Request, res: Response) => {
+    const { subject } = req
+    res.status(200).send(subject?.admin)
   }
 }
 
@@ -611,5 +615,33 @@ router.all('/:uid/admin', allow(admin))
  */
 
 router.options('/:uid/admin', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireAdmin, admin.options)
+
+/**
+ * @openapi
+ * /users/{uid}/admin:
+ *   options:
+ *     summary: "Return a boolean flag that indicates if the user is an administrator or not."
+ *     description: "Return a boolean flag that indicates if the user is an administrator or not."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "A boolean flag that indicates if the user is an administrator or not."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: boolean
+ *               description: "A boolean flag that indicates if the user is an administrator or not."
+ */
+
+router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
 
 export default router

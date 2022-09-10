@@ -992,7 +992,7 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/admin', () => {
-      const expected = 'OPTIONS'
+      const expected = 'OPTIONS, GET'
 
       describe('Self calls', () => {
         beforeEach(async () => {
@@ -1083,6 +1083,29 @@ describe('Users API', () => {
         it('returns Access-Control-Allow-Methods header', () => {
           expect(res.headers['access-control-allow-methods']).to.equal(expected)
         })
+      })
+    })
+
+    describe('GET /users/:uid/admin', () => {
+      const results: { user?: any, admin?: any } = {}
+
+      beforeEach(async () => {
+        const admin = new User({ name: 'Admin', admin: true })
+        await admin.save()
+        results.user = await request(api).get(`${base}/users/${user.id ?? ''}/admin`)
+        results.admin = await request(api).get(`${base}/users/${admin.id ?? ''}/admin`)
+      })
+
+      it('returns 200', () => {
+        expect(results.user.status).to.equal(200)
+      })
+
+      it('returns false if the user is not an admin', () => {
+        expect(results.user.body).to.equal(false)
+      })
+
+      it('returns true if the user is an admin', () => {
+        expect(results.admin.body).to.equal(true)
       })
     })
   })
