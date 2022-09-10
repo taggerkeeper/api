@@ -6,11 +6,13 @@ import getAPIInfo from '../utils/get-api-info.js'
 import addEmail from '../middlewares/add-email.js'
 import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
+import getEmail from '../middlewares/get-email.js'
 import loadSubject from '../middlewares/load-subject.js'
 import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.js'
 import requireBodyParts from '../middlewares/require-body-parts.js'
 import requireSubject from '../middlewares/require-subject.js'
 import saveSubject from '../middlewares/save-subject.js'
+import requireEmail from '../middlewares/require-email.js'
 import requireSelfOrAdmin from '../middlewares/require-self-or-admin.js'
 import requireUser from '../middlewares/require-user.js'
 import sendEmailVerification from '../middlewares/send-email-verification.js'
@@ -365,6 +367,9 @@ router.post('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
 const emailItem = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  get: (req: Request, res: Response) => {
+    res.status(200).send(req.email)
   }
 }
 
@@ -404,5 +409,38 @@ router.all('/:uid/emails/:addr', allow(emailItem))
  */
 
 router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailItem.options)
+
+/**
+ * @openapi
+ * /users/{uid}/emails/{addr}:
+ *   get:
+ *     summary: "Get a User's individual email record."
+ *     description: "Get a User's individual email record."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *       - in: path
+ *         name: addr
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's email address that you're interested in."
+ *         example: "tester@testing.com"
+ *     responses:
+ *       200:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               $ref: "#/components/schemas/Email"
+ */
+
+router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.get)
 
 export default router
