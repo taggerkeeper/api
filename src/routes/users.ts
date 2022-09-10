@@ -244,7 +244,7 @@ const emailCollection = {
     res.status(200).send(req.subject?.emails)
   },
   head: (req: Request, res: Response) => {
-    res.sendStatus(201)
+    res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
     res.status(200).send(req.subject?.emails)
@@ -298,7 +298,7 @@ router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
  *     responses:
- *       201:
+ *       204:
  *         description: "The user requested was found."
  */
 

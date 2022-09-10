@@ -383,8 +383,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 201', () => {
-          expect(res.status).to.equal(201)
+        it('returns 204', () => {
+          expect(res.status).to.equal(204)
         })
       })
 
@@ -400,8 +400,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 201', () => {
-          expect(res.status).to.equal(201)
+        it('returns 204', () => {
+          expect(res.status).to.equal(204)
         })
       })
 
