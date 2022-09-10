@@ -3,6 +3,7 @@ import { Request, Response, Router } from 'express'
 import loadPackage from '../utils/load-package.js'
 import getAPIInfo from '../utils/get-api-info.js'
 
+import activate from '../middlewares/activate.js'
 import addEmail from '../middlewares/add-email.js'
 import allow from '../middlewares/allow.js'
 import createUser from '../middlewares/create-user.js'
@@ -746,6 +747,10 @@ const active = {
   },
   head: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  post: (req: Request, res: Response) => {
+    const { subject } = req
+    res.status(200).send(subject?.getPublicObj())
   }
 }
 
@@ -829,5 +834,32 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  */
 
 router.get('/:uid/active', loadSubject, requireSubject, active.get)
+
+/**
+ * @openapi
+ * /users/{uid}/active:
+ *   post:
+ *     summary: "Activate a user."
+ *     description: "Activate a user."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "The user requested was found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/User"
+ */
+
+router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, activate, saveSubject, active.post)
 
 export default router

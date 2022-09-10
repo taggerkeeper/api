@@ -1234,6 +1234,7 @@ describe('Users API', () => {
 
   describe('/users/:uid/active', () => {
     const user = new User()
+    let tokens: TokenSet
 
     beforeEach(async () => {
       await user.save()
@@ -1249,11 +1250,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD')
+        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD, POST')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD, POST')
       })
     })
 
@@ -1292,6 +1293,97 @@ describe('Users API', () => {
 
       it('returns no content', () => {
         expect(JSON.stringify(res.body)).to.equal('{}')
+      })
+    })
+
+    describe('POST /users/:uid/active', () => {
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          user.active = false
+          await user.save()
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('does not activate the user record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          expect(record.active).to.equal(false)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          user.active = false
+          await user.save()
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('returns the user\'s updated record', () => {
+          expect(res.body.id).to.equal(user.id)
+          expect(res.body.name).to.equal(user.name)
+          expect(res.body.active).to.equal(true)
+        })
+
+        it('saves the updated user record to the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          expect(record.active).to.equal(true)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          user.active = false
+          await user.save()
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('does not activate the user record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          expect(record.active).to.equal(false)
+        })
+      })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          user.active = false
+          await user.save()
+          res = await request(api).post(`${base}/users/${user.id ?? ''}/active`)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('does not activate the user record in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          expect(record.active).to.equal(false)
+        })
       })
     })
   })
