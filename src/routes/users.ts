@@ -370,6 +370,9 @@ const emailItem = {
   },
   get: (req: Request, res: Response) => {
     res.status(200).send(req.email)
+  },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
   }
 }
 
@@ -413,6 +416,36 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
 /**
  * @openapi
  * /users/{uid}/emails/{addr}:
+ *   head:
+ *     summary: "Get a User's individual email record."
+ *     description: "Get the headers that you would receive if you were to request a User's individual email record."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *       - in: path
+ *         name: addr
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's email address that you're interested in."
+ *         example: "tester@testing.com"
+ *     responses:
+ *       204:
+ *         description: "The user's requested email record was found."
+ */
+
+router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.head)
+
+/**
+ * @openapi
+ * /users/{uid}/emails/{addr}:
  *   get:
  *     summary: "Get a User's individual email record."
  *     description: "Get a User's individual email record."
@@ -435,7 +468,7 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *         example: "tester@testing.com"
  *     responses:
  *       200:
- *         description: "The user requested was found."
+ *         description: "The user's requested email record was found."
  *         content:
  *           application/json:
  *             schema:

@@ -534,7 +534,7 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/emails/:addr', () => {
-      const expected = 'OPTIONS, GET'
+      const expected = 'OPTIONS, GET, HEAD'
 
       describe('Self calls', () => {
         beforeEach(async () => {
@@ -705,6 +705,83 @@ describe('Users API', () => {
         it('doesn\'t return the email', () => {
           expect(res.body.addr).to.equal(undefined)
           expect(res.body.verified).to.equal(undefined)
+        })
+      })
+    })
+
+    describe('HEAD /users/:uid/emails/:addr', () => {
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
+        })
+
+        it('returns 204', () => {
+          expect(res.status).to.equal(204)
+        })
+
+        it('doesn\'t return any content', () => {
+          expect(JSON.stringify(res.body)).to.equal('{}')
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
+        })
+
+        it('returns 204', () => {
+          expect(res.status).to.equal(204)
+        })
+
+        it('doesn\'t return any content', () => {
+          expect(JSON.stringify(res.body)).to.equal('{}')
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('doesn\'t return any content', () => {
+          expect(JSON.stringify(res.body)).to.equal('{}')
+        })
+      })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('doesn\'t return any content', () => {
+          expect(JSON.stringify(res.body)).to.equal('{}')
         })
       })
     })
