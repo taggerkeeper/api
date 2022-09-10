@@ -240,6 +240,9 @@ const emailCollection = {
   },
   get: (req: Request, res: Response) => {
     res.status(200).send(req.subject?.emails)
+  },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(201)
   }
 }
 
@@ -272,6 +275,29 @@ router.all('/:uid/emails', allow(emailCollection))
  */
 
 router.options('/:uid/emails', loadSubject, requireSubject, emailCollection.options)
+
+/**
+ * @openapi
+ * /users/{uid}/emails:
+ *   head:
+ *     summary: "Returns the headers you would receive if you were to request an array of a User's emails."
+ *     description: "Returns the headers you would receive if you were to request an array of a User's emails."
+ *     tags:
+ *       - "Users"
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       201:
+ *         description: "The user requested was found."
+ */
+
+router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.head)
 
 /**
  * @openapi

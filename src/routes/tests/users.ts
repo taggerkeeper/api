@@ -203,11 +203,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET')
+        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD')
       })
     })
 
@@ -279,6 +279,62 @@ describe('Users API', () => {
 
         it('does not return the user\'s emails', () => {
           expect(Array.isArray(res.body)).to.equal(false)
+        })
+      })
+    })
+
+    describe('HEAD /users/:uid/emails', () => {
+      const addr = 'tester@testing.com'
+      const verified = true
+      const emails = [{ addr, verified }]
+      const user = new User({ name: 'Subject', emails })
+      let tokens: TokenSet
+
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          await user.save()
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).head(`${base}/users/${user.id}/emails`).set(auth)
+        })
+
+        it('returns 201', () => {
+          expect(res.status).to.equal(201)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).head(`${base}/users/${user.id}/emails`).set(auth)
+        })
+
+        it('returns 201', () => {
+          expect(res.status).to.equal(201)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).head(`${base}/users/${user.id}/emails`).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
         })
       })
     })
