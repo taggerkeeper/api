@@ -35,7 +35,7 @@ const router = Router()
  *   schemas:
  *     User:
  *       type: object
- *       description: This is the data model that the API uses when returning user data.
+ *       description: "This is the data model that the API uses when returning user data."
  *       properties:
  *         id:
  *           type: string
@@ -55,7 +55,7 @@ const router = Router()
  *           example: false
  *     UserCreate:
  *       type: object
- *       description: This is the data model that you can use to submit data to the API to create a new user.
+ *       description: "This is the data model that you can use to submit data to the API to create a new user."
  *       properties:
  *         name:
  *           type: string
@@ -71,7 +71,7 @@ const router = Router()
  *           example: "Longer passwords are better passwords."
  *     Email:
  *       type: object
- *       description: The records we have for any one of a user's email addresses.
+ *       description: "The records we have for any one of a user's email addresses."
  *       properties:
  *         addr:
  *           type: string
@@ -256,13 +256,15 @@ const emailCollection = {
     res.sendStatus(204)
   },
   get: (req: Request, res: Response) => {
-    res.status(200).send(req.subject?.emails)
+    const emails = req.subject?.emails.map(email => ({ addr: email.addr, verified: email.verified }))
+    res.status(200).send(emails)
   },
   head: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
-    res.status(200).send(req.subject?.emails)
+    const emails = req.subject?.emails.map(email => ({ addr: email.addr, verified: email.verified }))
+    res.status(200).send(emails)
   }
 }
 
@@ -384,16 +386,27 @@ const emailItem = {
     res.sendStatus(204)
   },
   get: (req: Request, res: Response) => {
-    res.status(200).send(req.email)
+    if (req.email === undefined) {
+      res.status(500).send({ message: 'No email address provided.' })
+    } else {
+      const { addr, verified } = req.email
+      res.status(200).send({ addr, verified })
+    }
   },
   head: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
-    res.status(200).send(req.email)
+    if (req.email === undefined) {
+      res.status(500).send({ message: 'No email address provided.' })
+    } else {
+      const { addr, verified } = req.email
+      res.status(200).send({ addr, verified })
+    }
   },
   delete: (req: Request, res: Response) => {
-    res.status(200).send(req.subject?.emails)
+    const emails = req.subject?.emails.map(email => ({ addr: email.addr, verified: email.verified }))
+    res.status(200).send(emails)
   }
 }
 

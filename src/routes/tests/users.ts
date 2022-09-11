@@ -311,6 +311,10 @@ describe('Users API', () => {
           expect(res.body[0].addr).to.equal(addr)
           expect(res.body[0].verified).to.equal(verified)
         })
+
+        it('does not send verification codes', () => {
+          expect(res.body[0].code).to.equal(undefined)
+        })
       })
 
       describe('Admin calls', () => {
@@ -333,6 +337,10 @@ describe('Users API', () => {
           expect(res.body).to.have.lengthOf(1)
           expect(res.body[0].addr).to.equal(addr)
           expect(res.body[0].verified).to.equal(verified)
+        })
+
+        it('does not send verification codes', () => {
+          expect(res.body[0].code).to.equal(undefined)
         })
       })
 
@@ -457,6 +465,11 @@ describe('Users API', () => {
           expect(res.body[1].addr).to.equal(email)
           expect(res.body[1].verified).to.equal(false)
         })
+
+        it('does not send verification codes', () => {
+          expect(res.body[0].code).to.equal(undefined)
+          expect(res.body[1].code).to.equal(undefined)
+        })
       })
 
       describe('Admin calls', () => {
@@ -481,6 +494,11 @@ describe('Users API', () => {
           expect(res.body[0].verified).to.equal(verified)
           expect(res.body[1].addr).to.equal(email)
           expect(res.body[1].verified).to.equal(false)
+        })
+
+        it('does not send verification codes', () => {
+          expect(res.body[0].code).to.equal(undefined)
+          expect(res.body[1].code).to.equal(undefined)
         })
       })
 
@@ -646,6 +664,10 @@ describe('Users API', () => {
           expect(res.body.addr).to.equal(addr)
           expect(res.body.verified).to.equal(verified)
         })
+
+        it('does not return the verification code', () => {
+          expect(res.body.code).to.equal(undefined)
+        })
       })
 
       describe('Admin calls', () => {
@@ -667,6 +689,10 @@ describe('Users API', () => {
         it('returns the email', () => {
           expect(res.body.addr).to.equal(addr)
           expect(res.body.verified).to.equal(verified)
+        })
+
+        it('does not return the verification code', () => {
+          expect(res.body.code).to.equal(undefined)
         })
       })
 
@@ -811,6 +837,10 @@ describe('Users API', () => {
           expect(res.body.verified).to.equal(true)
         })
 
+        it('does not return the verification code', () => {
+          expect(res.body.code).to.equal(undefined)
+        })
+
         it('saves the verified record to the database', async () => {
           const record = await UserModel.findById(user.id) as UserData
           const emails = record.emails ?? []
@@ -837,6 +867,10 @@ describe('Users API', () => {
         it('returns the verified email record', () => {
           expect(res.body.addr).to.equal(addr)
           expect(res.body.verified).to.equal(true)
+        })
+
+        it('does not return the verification code', () => {
+          expect(res.body.code).to.equal(undefined)
         })
 
         it('saves the verified record to the database', async () => {
