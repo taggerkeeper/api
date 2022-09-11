@@ -77,6 +77,11 @@ router.all('/', allow(collection))
  *               type: string
  *               description: "The methods allowed for the tokens endpoint."
  *               example: "OPTIONS, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the tokens endpoint."
+ *               example: "OPTIONS, POST"
  */
 
 router.options('/', collection.options)
@@ -103,9 +108,19 @@ router.options('/', collection.options)
  *       200:
  *         description: "THe user was authenticated."
  *         headers:
- *           Set-Cookie:
+ *           'Set-Cookie':
  *             schema:
  *               $ref: "#/components/schemas/RefreshToken"
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the tokens endpoint."
+ *               example: "OPTIONS, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the tokens endpoint."
+ *               example: "OPTIONS, POST"
  *         content:
  *           application/json:
  *             schema:
@@ -161,6 +176,11 @@ router.all('/:uid', allow(item))
  *               type: string
  *               description: "The methods allowed for the individual token endpoint."
  *               example: "OPTIONS, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual token endpoint."
+ *               example: "OPTIONS, POST"
  *       400:
  *         description: "The refresh token was not included as the 'refresh' property in the body, or the refresh could not be verified."
  *         content:
@@ -202,6 +222,16 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *           Set-Cookie:
  *             schema:
  *               $ref: "#/components/schemas/RefreshToken"
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual token endpoint."
+ *               example: "OPTIONS, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual token endpoint."
+ *               example: "OPTIONS, POST"
  *         content:
  *           application/json:
  *             schema:

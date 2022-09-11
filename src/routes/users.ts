@@ -153,6 +153,11 @@ router.all('/', allow(collection))
  *               type: string
  *               description: "The methods allowed for the users endpoint."
  *               example: "OPTIONS, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the users endpoint."
+ *               example: "OPTIONS, POST"
  */
 
 router.options('/', collection.options)
@@ -178,6 +183,17 @@ router.options('/', collection.options)
  *     responses:
  *       201:
  *         description: "A new user was created."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the users endpoint."
+ *               example: "OPTIONS, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the users endpoint."
+ *               example: "OPTIONS, POST"
  *         content:
  *           application/json:
  *             schema:
@@ -233,6 +249,11 @@ router.all('/:uid', allow(item))
  *               type: string
  *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual user endpoint."
+ *               example: "OPTIONS, GET, HEAD"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -268,6 +289,17 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *     responses:
  *       204:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual user endpoint."
+ *               example: "OPTIONS, GET, HEAD"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual user endpoint."
+ *               example: "OPTIONS, GET, HEAD"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -303,6 +335,17 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *     responses:
  *       200:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual user endpoint."
+ *               example: "OPTIONS, GET, HEAD"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the individual user endpoint."
+ *               example: "OPTIONS, GET, HEAD"
  *         content:
  *           application/json:
  *             schema:
@@ -368,6 +411,11 @@ router.all('/:uid/emails', allow(emailCollection))
  *               type: string
  *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's emails collection endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -415,6 +463,17 @@ router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject
  *     responses:
  *       204:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's emails collection endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's emails collection endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -462,6 +521,17 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *     responses:
  *       200:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's emails collection endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's emails collection endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST"
  *         content:
  *           application/json:
  *             schema:
@@ -515,6 +585,17 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *     responses:
  *       200:
  *         description: "The email was added to the user record."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's emails collection endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's emails collection endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST"
  *         content:
  *           application/json:
  *             schema:
@@ -613,6 +694,11 @@ router.all('/:uid/emails/:addr', allow(emailItem))
  *               type: string
  *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -667,6 +753,17 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *     responses:
  *       204:
  *         description: "The user's requested email record was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -721,6 +818,17 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *     responses:
  *       200:
  *         description: "The user's requested email record was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
@@ -789,6 +897,17 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *     responses:
  *       200:
  *         description: "The user's email was verified."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
@@ -847,6 +966,17 @@ router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *     responses:
  *       200:
  *         description: "The user's email has been deleted."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's admin endpoint."
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
@@ -928,7 +1058,12 @@ router.all('/:uid/admin', allow(admin))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's individual email endpoint."
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
  *               example: "OPTIONS, POST, DELETE"
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -965,6 +1100,17 @@ router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
  *     responses:
  *       204:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -1000,6 +1146,17 @@ router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
  *     responses:
  *       200:
  *         description: "A boolean flag that indicates if the user is an administrator or not."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
@@ -1040,6 +1197,17 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  *     responses:
  *       200:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
@@ -1091,6 +1259,17 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  *     responses:
  *       200:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's administrator endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
@@ -1172,6 +1351,11 @@ router.all('/:uid/active', allow(active))
  *               type: string
  *               description: "The methods allowed for the user's active endpoint."
  *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -1207,6 +1391,17 @@ router.options('/:uid/active', loadSubject, requireSubject, active.options)
  *     responses:
  *       204:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
@@ -1242,6 +1437,17 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  *     responses:
  *       200:
  *         description: "A boolean flag that indicates if the user is active or not."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
@@ -1282,6 +1488,17 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  *     responses:
  *       200:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
@@ -1333,6 +1550,17 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *     responses:
  *       200:
  *         description: "The user requested was found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               description: "The methods allowed for the user's active endpoint."
+ *               example: "OPTIONS, POST, DELETE"
  *         content:
  *           application/json:
  *             schema:
