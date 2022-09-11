@@ -68,7 +68,7 @@ router.all('/', allow(collection))
  *     summary: "Return options on how to use the Tokens collection."
  *     description: "Return which options are permissible for the Tokens collection."
  *     tags:
- *       - "Tokens"
+ *       - tokens
  *     responses:
  *       204:
  *         headers:
@@ -88,7 +88,7 @@ router.options('/', collection.options)
  *     summary: "Authenticate a user."
  *     description: "Authenticare a user."
  *     tags:
- *       - "Tokens"
+ *       - tokens
  *     requestBody:
  *       description: "The information that the user must provide to authenticate."
  *       required: true
@@ -152,7 +152,7 @@ router.all('/:uid', allow(item))
  *     summary: "Return options on how to use an individual Token resource."
  *     description: "Return which options are permissible for an individual Token resource."
  *     tags:
- *       - "Tokens"
+ *       - tokens
  *     responses:
  *       204:
  *         headers:
@@ -178,7 +178,7 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *     summary: "Exchange a refresh token for a new access token."
  *     description: "Exchange a refresh token for a new access token."
  *     tags:
- *       - "Tokens"
+ *       - tokens
  *     requestBody:
  *       description: "The refresh token that the user would like to exchange."
  *       required: true

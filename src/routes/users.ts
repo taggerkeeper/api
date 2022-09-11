@@ -144,7 +144,7 @@ router.all('/', allow(collection))
  *     summary: "Return options on how to use the Users collection."
  *     description: "Return which options are permissible for the Users collection."
  *     tags:
- *       - "Users"
+ *       - users
  *     responses:
  *       204:
  *         headers:
@@ -162,7 +162,7 @@ router.options('/', collection.options)
  * /users:
  *   post:
  *     tags:
- *       - "Users"
+ *       - users
  *     summary: "Create a new user."
  *     description: "Create a new user."
  *     requestBody:
@@ -216,7 +216,7 @@ router.all('/:uid', allow(item))
  *     summary: "Return options on how to use an individual User."
  *     description: "Return which options are permissible for an individual User."
  *     tags:
- *       - "Users"
+ *       - users
  *     parameters:
  *       - in: path
  *         name: uid
@@ -256,7 +256,7 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *     summary: "Return headers for a user."
  *     description: "Return headers for a user."
  *     tags:
- *       - "Users"
+ *       - users
  *     parameters:
  *       - in: path
  *         name: uid
@@ -291,7 +291,7 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *     summary: "Return a user."
  *     description: "Return a user."
  *     tags:
- *       - "Users"
+ *       - users
  *     parameters:
  *       - in: path
  *         name: uid
@@ -351,7 +351,7 @@ router.all('/:uid/emails', allow(emailCollection))
  *     summary: "Return options on how to use a User's emails collection."
  *     description: "Return which options are permissible for a User's emails collection."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -403,7 +403,7 @@ router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject
  *     summary: "Returns the headers you would receive if you were to request an array of a User's emails."
  *     description: "Returns the headers you would receive if you were to request an array of a User's emails."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -450,7 +450,7 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *     summary: "Return an array of a User's emails."
  *     description: "Return an array of a User's emails."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -503,7 +503,7 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *     summary: "Add a new email to a user."
  *     description: "Add a new email to a user."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -589,7 +589,7 @@ router.all('/:uid/emails/:addr', allow(emailItem))
  *     summary: "Return options on how to use a User's individual email record."
  *     description: "Return which options are permissible for a User's individual email record."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -648,7 +648,7 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *     summary: "Get a User's individual email record."
  *     description: "Get the headers that you would receive if you were to request a User's individual email record."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -702,7 +702,7 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *     summary: "Get a User's individual email record."
  *     description: "Get a User's individual email record."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -760,7 +760,7 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *     summary: "Verify an email address."
  *     description: "Verify an email address."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -828,7 +828,7 @@ router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *     summary: "Deletes an email address."
  *     description: "Delete an email address."
  *     tags:
- *       - "Users"
+ *       - emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -913,7 +913,7 @@ router.all('/:uid/admin', allow(admin))
  *     summary: "Return options on how to use a User's admin endpoint."
  *     description: "Return options on how to use a User's admin endpoint."
  *     tags:
- *       - "Users"
+ *       - admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -953,7 +953,7 @@ router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
  *     summary: "Return the headers that you would receive if you requested a user's admin status."
  *     description: "Return the headers that you would receive if you requested a user's admin status."
  *     tags:
- *       - "Users"
+ *       - admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -988,7 +988,7 @@ router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
  *     summary: "Return a boolean flag that indicates if the user is an administrator or not."
  *     description: "Return a boolean flag that indicates if the user is an administrator or not."
  *     tags:
- *       - "Users"
+ *       - admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1028,7 +1028,7 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  *     summary: "Promote a user to an administrator."
  *     description: "Promote a user to an administrator."
  *     tags:
- *       - "Users"
+ *       - admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1079,7 +1079,7 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  *     summary: "Demote an administrator."
  *     description: "Demote an administrator."
  *     tags:
- *       - "Users"
+ *       - admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1155,7 +1155,7 @@ router.all('/:uid/active', allow(active))
  *     summary: "Return options on how to use a User's active endpoint."
  *     description: "Return options on how to use a User's active endpoint."
  *     tags:
- *       - "Users"
+ *       - active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1195,7 +1195,7 @@ router.options('/:uid/active', loadSubject, requireSubject, active.options)
  *     summary: "Return a boolean flag that indicates if the user is active or not."
  *     description: "Return a boolean flag that indicates if the user is active or not."
  *     tags:
- *       - "Users"
+ *       - active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1230,7 +1230,7 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  *     summary: "Return a boolean flag that indicates if the user is active or not."
  *     description: "Return a boolean flag that indicates if the user is active or not."
  *     tags:
- *       - "Users"
+ *       - active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1270,7 +1270,7 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  *     summary: "Activate a user."
  *     description: "Activate a user."
  *     tags:
- *       - "Users"
+ *       - active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1321,7 +1321,7 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *     summary: "Deactivate a user."
  *     description: "Deactivate a user."
  *     tags:
- *       - "Users"
+ *       - active
  *     parameters:
  *       - in: path
  *         name: uid
