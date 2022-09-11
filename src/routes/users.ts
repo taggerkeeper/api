@@ -184,6 +184,10 @@ router.options('/', collection.options)
  *       201:
  *         description: "A new user was created."
  *         headers:
+ *           'Location':
+ *             type: string
+ *             description: "Where the new resource can be found."
+ *             example: "https://taggerkeeper.com/v1/users/0123456789abcdef12345678"
  *           'Allow':
  *             schema:
  *               type: string
