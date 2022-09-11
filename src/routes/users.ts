@@ -1544,7 +1544,7 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
 
 /**
  * @openapi
- * /users/{uid}/admin:
+ * /users/{uid}/active:
  *   delete:
  *     summary: "Deactivate a user."
  *     description: "Deactivate a user."
