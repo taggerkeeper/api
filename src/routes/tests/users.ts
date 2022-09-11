@@ -259,8 +259,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('returns Allow header', () => {
@@ -356,8 +356,8 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not return the user\'s emails', () => {
@@ -425,8 +425,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
       })
 
@@ -514,8 +514,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not return the user\'s emails', () => {
@@ -613,8 +613,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('returns Allow header', () => {
@@ -708,8 +708,8 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('doesn\'t return the email', () => {
@@ -787,8 +787,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('doesn\'t return any content', () => {
@@ -892,8 +892,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('doesn\'t verify the record in the database', async () => {
@@ -987,8 +987,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('doesn\'t delete the email from the user record in the database', async () => {
@@ -1091,8 +1091,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not promote the user record in the database', async () => {
@@ -1141,8 +1141,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not promote the user record in the database', async () => {
@@ -1237,8 +1237,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not demote the user record in the database', async () => {
@@ -1341,8 +1341,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not activate the user record in the database', async () => {
@@ -1393,8 +1393,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not activate the user record in the database', async () => {
@@ -1432,8 +1432,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not deactivate the user record in the database', async () => {
@@ -1484,8 +1484,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
         })
 
         it('does not deactivate the user record in the database', async () => {

@@ -26,21 +26,21 @@ describe('requireSelfOrAdmin', () => {
 
   it('returns an error if there\'s no user or subject', () => {
     requireSelfOrAdmin(mockReq, mockRes, mockNext)
-    expect(mockRes.status.firstCall.args[0]).to.equal(401)
+    expect(mockRes.status.firstCall.args[0]).to.equal(403)
     expect(mockRes.send.firstCall.args[0].message).to.equal('This method requires authentication by the subject or an administrator.')
   })
 
   it('returns an error if there\'s no user', () => {
     mockReq.subject = subject
     requireSelfOrAdmin(mockReq, mockRes, mockNext)
-    expect(mockRes.status.firstCall.args[0]).to.equal(401)
+    expect(mockRes.status.firstCall.args[0]).to.equal(403)
     expect(mockRes.send.firstCall.args[0].message).to.equal('This method requires authentication by the subject or an administrator.')
   })
 
   it('returns an error if there\'s no subject', () => {
     mockReq.user = user
     requireSelfOrAdmin(mockReq, mockRes, mockNext)
-    expect(mockRes.status.firstCall.args[0]).to.equal(401)
+    expect(mockRes.status.firstCall.args[0]).to.equal(403)
     expect(mockRes.send.firstCall.args[0].message).to.equal('This method requires authentication by the subject or an administrator.')
   })
 
@@ -48,7 +48,7 @@ describe('requireSelfOrAdmin', () => {
     mockReq.user = other
     mockReq.subject = subject
     requireSelfOrAdmin(mockReq, mockRes, mockNext)
-    expect(mockRes.status.firstCall.args[0]).to.equal(401)
+    expect(mockRes.status.firstCall.args[0]).to.equal(403)
     expect(mockRes.send.firstCall.args[0].message).to.equal('This method requires authentication by the subject or an administrator.')
   })
 

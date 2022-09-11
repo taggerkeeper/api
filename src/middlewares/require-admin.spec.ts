@@ -18,9 +18,9 @@ describe('requireAdmin', () => {
     mockNext = sinon.spy()
   })
 
-  it('returns 401 if there\'s no user', () => {
+  it('returns 403 if there\'s no user', () => {
     requireAdmin(mockReq, mockRes, mockNext)
-    expect(mockRes.status.firstCall.args[0]).to.equal(401)
+    expect(mockRes.status.firstCall.args[0]).to.equal(403)
   })
 
   it('returns a message if there\'s no user', () => {
@@ -28,10 +28,10 @@ describe('requireAdmin', () => {
     expect(mockRes.send.firstCall.args[0].message).to.equal('This method requires authentication by an administrator.')
   })
 
-  it('returns 401 if there\'s a non-admin user', () => {
+  it('returns 403 if there\'s a non-admin user', () => {
     mockReq.user = new User()
     requireAdmin(mockReq, mockRes, mockNext)
-    expect(mockRes.status.firstCall.args[0]).to.equal(401)
+    expect(mockRes.status.firstCall.args[0]).to.equal(403)
   })
 
   it('returns a message if there\'s a non-admin user', () => {
