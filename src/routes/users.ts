@@ -380,8 +380,10 @@ const emailCollection = {
     res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
-    const emails = req.subject?.emails.map(email => ({ addr: email.addr, verified: email.verified }))
-    res.status(200).send(emails)
+    const { subject } = req
+    const emails = subject?.emails.map(email => ({ addr: email.addr, verified: email.verified }))
+    res.set('Location', `${root}/users/${subject?.id ?? ''}/emails/${req.body.email as string}`)
+    res.status(201).send(emails)
   }
 }
 
@@ -586,6 +588,11 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *       200:
  *         description: "The email was added to the user record."
  *         headers:
+ *           'Location':
+ *             schema:
+ *               type: string
+ *               description: "Where the new email can be found."
+ *               example: "https://taggerkeeper.com/v1/users/0123456789abcdef12345678/emails/user@taggerkeeper.com"
  *           'Allow':
  *             schema:
  *               type: string
@@ -603,7 +610,7 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *               items:
  *                 $ref: "#/components/schemas/Email"
  *       400:
- *         description: "No user ID (uid) was provided."
+ *         description: "No user ID (uid) was provided, or no email address was provided."
  *         content:
  *           application/json:
  *             schema:
@@ -628,7 +635,7 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *               $ref: "#/components/schemas/Error404"
  */
 
-router.post('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, addEmail, sendEmailVerification, saveSubject, emailCollection.post)
+router.post('/:uid/emails', loadUserFromAccessToken, requireUser, requireBodyParts('email') as any, loadSubject, requireSubject, requireSelfOrAdmin, addEmail, sendEmailVerification, saveSubject, emailCollection.post)
 
 // /users/:uid/emails/:addr
 

@@ -10,6 +10,7 @@ import api from '../../server.js'
 describe('Users API', () => {
   let pkg: NPMPackage
   let base: string
+  let root: string
   let res: any
 
   const name = 'Tester'
@@ -20,6 +21,7 @@ describe('Users API', () => {
     pkg = await loadPackage() as NPMPackage
     const info = getAPIInfo(pkg)
     base = info.base
+    root = info.root
   })
 
   describe('/users', () => {
@@ -454,8 +456,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
+        it('returns 201', () => {
+          expect(res.status).to.equal(201)
         })
 
         it('returns an array of your emails', () => {
@@ -464,6 +466,10 @@ describe('Users API', () => {
           expect(res.body[0].verified).to.equal(verified)
           expect(res.body[1].addr).to.equal(email)
           expect(res.body[1].verified).to.equal(false)
+        })
+
+        it('provides a Location header', () => {
+          expect(res.headers.location).to.equal(`${root}/users/${user.id ?? ''}/emails/${email}`)
         })
 
         it('does not send verification codes', () => {
@@ -484,8 +490,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
+        it('returns 201', () => {
+          expect(res.status).to.equal(201)
         })
 
         it('returns an array of the user\'s emails', () => {
@@ -494,6 +500,10 @@ describe('Users API', () => {
           expect(res.body[0].verified).to.equal(verified)
           expect(res.body[1].addr).to.equal(email)
           expect(res.body[1].verified).to.equal(false)
+        })
+
+        it('provides a Location header', () => {
+          expect(res.headers.location).to.equal(`${root}/users/${user.id ?? ''}/emails/${email}`)
         })
 
         it('does not send verification codes', () => {
