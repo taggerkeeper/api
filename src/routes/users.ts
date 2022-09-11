@@ -120,6 +120,14 @@ const router = Router()
  *           type: string
  *           description: "An error message describing the error."
  *           example: "No user found with the ID 0123456789abcdef12345678."
+ *     Error500:
+ *       type: object
+ *       description: "An unexpected error occurred."
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: "An error message describing the error."
+ *           example: "An unexpected error occurred."
  */
 
 // /users
@@ -947,6 +955,12 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/Error404"
+ *       500:
+ *         description: "An unexpected error occurred."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error500"
  */
 
 router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, verifyEmail, saveSubject, emailItem.get)
