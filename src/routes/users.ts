@@ -88,6 +88,38 @@ const router = Router()
  *           type: string
  *           description: "The email verification code."
  *           example: "abcde12345"
+ *     Error400:
+ *       type: object
+ *       description: "This request cannot or will not be processed due to something a client error."
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: "An error message describing the client error."
+ *           example: "No user ID (uid) provided."
+ *     Error401:
+ *       type: object
+ *       description: "You must authenticate to complete this request."
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: "An error message describing the error."
+ *           example: "This method requires authentication."
+ *     Error403:
+ *       type: object
+ *       description: "You are not authorized to complete this request."
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: "An error message describing the error."
+ *           example: "This method requires authentication by the subject or an administrator."
+ *     Error404:
+ *       type: object
+ *       description: "The requested resource could not be found."
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: "An error message describing the error."
+ *           example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 // /users
@@ -150,6 +182,12 @@ router.options('/', collection.options)
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/User"
+ *       400:
+ *         description: "This method requires 'name', 'email'. and 'password' properties in the body. You will receive this error if one or more of these properties is missing from the request."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
  */
 
 router.post('/', requireBodyParts('name', 'email', 'password') as any, createUser, setPassword, addEmail, saveSubject, sendEmailVerification, requireSubject, collection.post)
@@ -195,6 +233,18 @@ router.all('/:uid', allow(item))
  *               type: string
  *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.options('/:uid', loadSubject, requireSubject, item.options)
@@ -218,6 +268,18 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *     responses:
  *       204:
  *         description: "The user requested was found."
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.head('/:uid', loadSubject, requireSubject, item.head)
@@ -245,6 +307,18 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/User"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.get('/:uid', loadSubject, requireSubject, item.get)
@@ -294,6 +368,30 @@ router.all('/:uid/emails', allow(emailCollection))
  *               type: string
  *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.options)
@@ -317,6 +415,30 @@ router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject
  *     responses:
  *       204:
  *         description: "The user requested was found."
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.head)
@@ -346,6 +468,30 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *               type: array
  *               items:
  *                 $ref: "#/components/schemas/Email"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.get)
@@ -375,6 +521,30 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *               type: array
  *               items:
  *                 $ref: "#/components/schemas/Email"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.post('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, addEmail, sendEmailVerification, saveSubject, emailCollection.post)
@@ -443,6 +613,30 @@ router.all('/:uid/emails/:addr', allow(emailItem))
  *               type: string
  *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailItem.options)
@@ -473,6 +667,30 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *     responses:
  *       204:
  *         description: "The user's requested email record was found."
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.head)
@@ -507,6 +725,30 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/Email"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.get)
@@ -551,6 +793,30 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/Email"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, verifyEmail, saveSubject, emailItem.get)
@@ -587,6 +853,30 @@ router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *               type: array
  *               items:
  *                 $ref: "#/components/schemas/Email"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.delete('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, dropEmail, saveSubject, emailItem.delete)
@@ -640,6 +930,18 @@ router.all('/:uid/admin', allow(admin))
  *               type: string
  *               description: "The methods allowed for the user's individual email endpoint."
  *               example: "OPTIONS, POST, DELETE"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
@@ -663,6 +965,18 @@ router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
  *     responses:
  *       204:
  *         description: "The user requested was found."
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
@@ -691,6 +1005,18 @@ router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
  *             schema:
  *               type: boolean
  *               description: "A boolean flag that indicates if the user is an administrator or not."
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
@@ -718,6 +1044,30 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/User"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, promote, saveSubject, admin.post)
@@ -745,6 +1095,30 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/User"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.delete('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, demote, saveSubject, admin.post)
@@ -798,6 +1172,18 @@ router.all('/:uid/active', allow(active))
  *               type: string
  *               description: "The methods allowed for the user's active endpoint."
  *               example: "OPTIONS, POST, DELETE"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.options('/:uid/active', loadSubject, requireSubject, active.options)
@@ -821,6 +1207,18 @@ router.options('/:uid/active', loadSubject, requireSubject, active.options)
  *     responses:
  *       204:
  *         description: "The user requested was found."
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.head('/:uid/active', loadSubject, requireSubject, active.head)
@@ -849,6 +1247,18 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  *             schema:
  *               type: boolean
  *               description: "A boolean flag that indicates if the user is active or not."
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.get('/:uid/active', loadSubject, requireSubject, active.get)
@@ -876,6 +1286,30 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/User"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, activate, saveSubject, active.post)
@@ -903,6 +1337,30 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/User"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
+ *       401:
+ *         description: "You must be authenticated to use this endpoint."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error401"
+ *       403:
+ *         description: "This endpoint can only be used by an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error403"
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error404"
  */
 
 router.delete('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, deactivate, saveSubject, active.post)

@@ -161,6 +161,12 @@ router.all('/:uid', allow(item))
  *               type: string
  *               description: "The methods allowed for the individual token endpoint."
  *               example: "OPTIONS, POST"
+ *       400:
+ *         description: "The refresh token was not included as the 'refresh' property in the body, or the refresh could not be verified."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Error400"
  */
 
 router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken, item.options)
@@ -201,29 +207,17 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *             schema:
  *               $ref: "#/components/schemas/AccessToken"
  *       400:
- *         description: "No refresh token was provided."
+ *         description: "The refresh token was not included as the 'refresh' property in the post body."
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               description: "No refresh token was provided."
- *               properties:
- *                 message:
- *                   type: string
- *                   description: "A description of the error."
- *                   example: "This method requires a body with elements 'refresh'"
+ *               $ref: "#/components/schemas/Error400"
  *       401:
- *         description: "Could not verify refresh token."
+ *         description: "The refresh token could not be verified."
  *         content:
  *           application/json:
  *             schema:
- *               type: object
- *               description: "Could not verify refresh token."
- *               properties:
- *                 message:
- *                   type: string
- *                   description: "A description of the error."
- *                   example: "Could not verify refresh token."
+ *               $ref: "#/components/schemas/Error401"
  */
 
 router.post('/:uid', requireBodyParts('refresh') as any, requireRefreshToken, generateTokens, saveUser, item.post)
