@@ -35,7 +35,7 @@ const router = Router()
  *   schemas:
  *     User:
  *       type: object
- *       description: "This is the data model that the API uses when returning user data."
+ *       description: "The data model that the API uses when returning user data."
  *       properties:
  *         id:
  *           type: string
@@ -55,7 +55,7 @@ const router = Router()
  *           example: false
  *     UserCreate:
  *       type: object
- *       description: "This is the data model that you can use to submit data to the API to create a new user."
+ *       description: "The model that you can use to submit data to the API to create a new user."
  *       properties:
  *         name:
  *           type: string
@@ -71,7 +71,7 @@ const router = Router()
  *           example: "Longer passwords are better passwords."
  *     Email:
  *       type: object
- *       description: "The records we have for any one of a user's email addresses."
+ *       description: "The record for any one of a user's email addresses."
  *       properties:
  *         addr:
  *           type: string
@@ -90,7 +90,7 @@ const router = Router()
  *           example: "abcde12345"
  *     Error400:
  *       type: object
- *       description: "This request cannot or will not be processed due to something a client error."
+ *       description: "This request cannot or will not be processed due to a client error."
  *       properties:
  *         message:
  *           type: string
@@ -141,8 +141,8 @@ router.all('/', allow(collection))
  * @openapi
  * /users:
  *   options:
- *     summary: "Return options on how to use the Users collection."
- *     description: "Return which options are permissible for the Users collection."
+ *     summary: "How to use the Users collection."
+ *     description: "Return which methods are permissible for the Users collection."
  *     tags:
  *       - users
  *     responses:
@@ -1386,9 +1386,9 @@ router.options('/:uid/active', loadSubject, requireSubject, active.options)
 /**
  * @openapi
  * /users/{uid}/active:
- *   get:
- *     summary: "Return a boolean flag that indicates if the user is active or not."
- *     description: "Return a boolean flag that indicates if the user is active or not."
+ *   head:
+ *     summary: "Is this user active?"
+ *     description: "Return only the headers that a user would receive if hen requested a boolean flag that indicates if the user is active or not."
  *     tags:
  *       - active
  *     parameters:
@@ -1433,7 +1433,7 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  * @openapi
  * /users/{uid}/active:
  *   get:
- *     summary: "Return a boolean flag that indicates if the user is active or not."
+ *     summary: "Is this user active?"
  *     description: "Return a boolean flag that indicates if the user is active or not."
  *     tags:
  *       - active
