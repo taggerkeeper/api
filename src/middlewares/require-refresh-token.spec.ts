@@ -22,10 +22,10 @@ describe('requireRefreshToken', () => {
 
   afterEach(() => sinon.restore())
 
-  it('returns 400 if no user is found', async () => {
+  it('returns 401 if no user is found', async () => {
     sinon.stub(UserModel, 'findOne').resolves(null)
     await requireRefreshToken(mockReq, mockRes, mockNext)
-    expect(mockRes.status.firstCall.args[0]).to.equal(400)
+    expect(mockRes.status.firstCall.args[0]).to.equal(401)
   })
 
   it('provides an error message if no user is found', async () => {

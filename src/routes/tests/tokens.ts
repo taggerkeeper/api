@@ -8,7 +8,7 @@ import loadUserById from '../../models/user/loaders/by-id.js'
 import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import getEnvVar from '../../utils/get-env-var.js'
-import parseCookie from '../../parse/cookie.js'
+import parseCookie, { CookieInfo } from '../../parse/cookie.js'
 import api from '../../server.js'
 
 describe('Tokens API', () => {
@@ -141,11 +141,14 @@ describe('Tokens API', () => {
 
   describe('/tokens/:uid', () => {
     let user: User
+    let auth: { Authorization: string }
 
     beforeEach(async () => {
       user = users[0]
-      await user.generateTokens()
       await user.save()
+      const tokens = await user.generateTokens()
+      await user.save()
+      auth = { Authorization: `Bearer ${tokens.access}` }
     })
 
     describe('OPTIONS /tokens/:uid', () => {
@@ -168,72 +171,78 @@ describe('Tokens API', () => {
     })
 
     describe('POST /tokens/:uid', () => {
-      it('returns 400 if not given a refresh', async () => {
-        const { id } = user
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`)
-        expect(res.status).to.equal(400)
+      describe('When no refresh is given', () => {
+        beforeEach(async () => {
+          const { id } = user
+          const path = `${base}/tokens/${id ?? ''}`
+          res = await request(api).post(path).set(auth)
+        })
+
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
+        })
+
+        it('provides an error message', () => {
+          expect(res.body.message).to.equal('This method requires a body with elements \'refresh\'')
+        })
       })
 
-      it('provides an error message if not given a refresh', async () => {
-        const { id } = user
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`)
-        expect(res.body.message).to.equal('This method requires a body with elements \'refresh\'')
+      describe('When the refresh is incorrect', () => {
+        beforeEach(async () => {
+          const { id, refresh } = user
+          const path = `${base}/tokens/${id ?? ''}`
+          res = await request(api).post(path).send({ refresh: refresh === '111' ? '000' : '111' }).set(auth)
+        })
+
+        it('returns 401', () => {
+          expect(res.status).to.equal(401)
+        })
+
+        it('provides an error message', () => {
+          expect(res.body.message).to.equal('Could not verify refresh token.')
+        })
       })
 
-      it('returns 401 if the refresh is incorrect', async () => {
-        const { id } = user
-        const refresh = user.refresh === '111111' ? '000000' : '111111'
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
-        expect(res.status).to.equal(400)
-      })
+      describe('When it works', () => {
+        let accessObject: any
+        let cookieObject: any
+        let cookie: CookieInfo
 
-      it('provides an error message if the refresh is incorrect', async () => {
-        const { id } = user
-        const refresh = user.refresh === '111111' ? '000000' : '111111'
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
-        expect(res.body.message).to.equal('Could not verify refresh token.')
-      })
+        beforeEach(async () => {
+          const { id, refresh } = user
+          const path = `${base}/tokens/${id ?? ''}`
+          res = await request(api).post(path).send({ refresh }).set(auth)
+          accessObject = jwt.verify(res.body.token, secret) as any
+          cookie = parseCookie(res.headers['set-cookie'][0]) as CookieInfo
+          cookieObject = jwt.verify(cookie?.value ?? '', secret) as any
+        })
 
-      it('returns 200 if the refresh is correct', async () => {
-        const { id, refresh } = user
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
-        expect(res.status).to.equal(200)
-      })
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
 
-      it('returns an access token', async () => {
-        const { id, refresh } = user
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
-        expect(res.body.token).to.be.a('string')
-      })
+        it('returns an access token', () => {
+          expect(res.body.token).to.be.a('string')
+        })
 
-      it('returns a JSON web token with the user\'s data', async () => {
-        const { id, refresh } = user
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
-        const obj = jwt.verify(res.body.token, secret) as any
-        expect(obj.name).to.equal(user.name)
-      })
+        it('returns a JSON web token with the user\'s data', () => {
+          expect(accessObject.name).to.equal(user.name)
+        })
 
-      it('returns a refresh token as a cookie', async () => {
-        const { id, refresh } = user
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
-        const cookie = parseCookie(res.headers['set-cookie'][0])
-        expect(cookie?.name).to.equal('refresh')
-      })
+        it('returns a refresh token as a cookie', () => {
+          expect(cookie?.name).to.equal('refresh')
+        })
 
-      it('returns a JSON web token as a cookie', async () => {
-        const { id, refresh } = user
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
-        const cookie = parseCookie(res.headers['set-cookie'][0])
-        const obj = jwt.verify(cookie?.value ?? '', secret) as any
-        expect(obj.uid).to.equal(id)
-        expect(obj.refresh).not.to.equal(undefined)
-      })
+        it('returns a JSON web token as a cookie', () => {
+          expect(cookieObject.uid).to.equal(user.id)
+          expect(cookieObject.refresh).not.to.equal(undefined)
+        })
 
-      it('sets a new refresh', async () => {
-        const { id, refresh } = user
-        res = await request(api).post(`${base}/tokens/${id ?? ''}`).send({ refresh })
-        const after = id !== undefined ? await loadUserById(id) : null
-        expect(after?.refresh).not.to.equal(refresh)
+        it('sets a new refresh', async () => {
+          const { id, refresh } = user
+          const record = id !== undefined ? await loadUserById(id) : null
+          expect(record?.refresh).not.to.equal(refresh)
+        })
       })
     })
   })
