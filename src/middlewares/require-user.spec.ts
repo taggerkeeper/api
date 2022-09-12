@@ -18,14 +18,33 @@ describe('requireUser', () => {
     mockNext = sinon.spy()
   })
 
-  it('returns 401 if there\'s no user', () => {
+  it('returns 400 if there\'s no user', () => {
     requireUser(mockReq, mockRes, mockNext)
-    expect(mockRes.status.firstCall.args[0]).to.equal(401)
+    expect(mockRes.status.firstCall.args[0]).to.equal(400)
   })
 
   it('returns a message if there\'s no user', () => {
     requireUser(mockReq, mockRes, mockNext)
     expect(mockRes.send.firstCall.args[0].message).to.equal('This method requires authentication.')
+  })
+
+  it('returns 401 if the not given a valid access token', () => {
+    mockReq.headers = { authorization: 'Bearer lolnope' }
+    requireUser(mockReq, mockRes, mockNext)
+    expect(mockRes.status.firstCall.args[0]).to.equal(401)
+  })
+
+  it('returns a message if not given a valid access token', () => {
+    mockReq.headers = { authorization: 'Bearer lolnope' }
+    requireUser(mockReq, mockRes, mockNext)
+    expect(mockRes.send.firstCall.args[0].message).to.equal('This method requires authentication.')
+  })
+
+  it('sets a WWW-Authenticate header if not given a valid access token', () => {
+    mockReq.headers = { authorization: 'Bearer lolnope' }
+    requireUser(mockReq, mockRes, mockNext)
+    expect(mockRes.set.firstCall.args[0]).to.equal('WWW-Authenticate')
+    expect(mockRes.set.firstCall.args[1]).to.equal('Bearer error="invalid_token" error_description="The access token could not be verified."')
   })
 
   it('returns 403 if the user has been deactivated', () => {
