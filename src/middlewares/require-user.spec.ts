@@ -28,6 +28,18 @@ describe('requireUser', () => {
     expect(mockRes.send.firstCall.args[0].message).to.equal('This method requires authentication.')
   })
 
+  it('returns 403 if the user has been deactivated', () => {
+    mockReq.user = new User({ name: 'Deactivated User', active: false })
+    requireUser(mockReq, mockRes, mockNext)
+    expect(mockRes.status.firstCall.args[0]).to.equal(403)
+  })
+
+  it('returns a message if the user has been deactivated', () => {
+    mockReq.user = new User({ name: 'Deactivated User', active: false })
+    requireUser(mockReq, mockRes, mockNext)
+    expect(mockRes.send.firstCall.args[0].message).to.equal('Your account has been deactivated.')
+  })
+
   it('calls the next middleware if there is a user', () => {
     mockReq.user = new User()
     requireUser(mockReq, mockRes, mockNext)
