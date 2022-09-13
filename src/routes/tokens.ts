@@ -5,7 +5,6 @@ import loadUserFromLogin from '../middlewares/load-user-from-login.js'
 import generateTokens from '../middlewares/generate-tokens.js'
 import requireBodyParts from '../middlewares/require-body-parts.js'
 import requireRefreshToken from '../middlewares/require-refresh-token.js'
-import requireUser from '../middlewares/require-user.js'
 import saveUser from '../middlewares/save-user.js'
 
 const router = Router()
@@ -139,7 +138,7 @@ router.options('/', collection.options)
  *                   example: "You are not authoried."
  */
 
-router.post('/', loadUserFromLogin, requireUser, generateTokens, collection.post)
+router.post('/', loadUserFromLogin, generateTokens, collection.post)
 
 // /tokens/:uid
 

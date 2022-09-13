@@ -280,8 +280,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('returns Allow header', () => {
@@ -373,8 +373,8 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('does not return the user\'s emails', () => {
@@ -438,8 +438,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
       })
     })
@@ -539,8 +539,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).send({ email })
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('does not return the user\'s emails', () => {
@@ -642,8 +642,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('returns Allow header', () => {
@@ -734,8 +734,8 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('doesn\'t return the email', () => {
@@ -812,8 +812,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('doesn\'t return any content', () => {
@@ -919,8 +919,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).send({ code })
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('doesn\'t verify the record in the database', async () => {
@@ -1014,8 +1014,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('doesn\'t delete the email from the user record in the database', async () => {
@@ -1167,8 +1167,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('does not promote the user record in the database', async () => {
@@ -1264,8 +1264,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('does not demote the user record in the database', async () => {
@@ -1420,8 +1420,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('does not activate the user record in the database', async () => {
@@ -1511,8 +1511,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
         })
 
         it('does not deactivate the user record in the database', async () => {

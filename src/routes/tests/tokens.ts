@@ -59,79 +59,54 @@ describe('Tokens API', () => {
     })
 
     describe('POST /tokens', () => {
-      it('returns 401 if not given a body', async () => {
-        res = await request(api).post(`${base}/tokens`)
-        expect(res.status).to.equal(401)
+      it('returns 400 if not given all necessary fields', async () => {
+        const responses = await Promise.all([
+          request(api).post(`${base}/tokens`),
+          request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr }),
+          request(api).post(`${base}/tokens`).send({ password })
+        ])
+        expect(responses.map(res => res.status).join(' ')).to.equal('400 400 400')
       })
 
-      it('returns 401 if only given an email', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr })
-        expect(res.status).to.equal(401)
+      it('returns 400 if not given valid credentials', async () => {
+        const responses = await Promise.all([
+          request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password: 'lolnope' }),
+          request(api).post(`${base}/tokens`).send({ addr: 'nothere@testing.com', password })
+        ])
+        expect(responses.map(res => res.status).join(' ')).to.equal('400 400')
       })
 
-      it('returns 401 if only given a password', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ password })
-        expect(res.status).to.equal(401)
-      })
-
-      it('returns 401 if given a valid email with a bad password', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password: 'lolnope' })
-        expect(res.status).to.equal(401)
-      })
-
-      it('returns 401 if given an email that doesn\'t exist with a password that does', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ addr: 'nothere@testing.com', password })
-        expect(res.status).to.equal(401)
-      })
-
-      it('returns 401 if given a valid email/password combination but the email isn\'t verified', async () => {
+      it('returns 400 if given a valid email/password combination but the email isn\'t verified', async () => {
         res = await request(api).post(`${base}/tokens`).send({ addr: unverifiedData.emails[0].addr, password })
-        expect(res.status).to.equal(401)
+        expect(res.status).to.equal(400)
       })
 
-      it('returns 200 if given a valid, verified email/password combination', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password })
-        expect(res.status).to.equal(200)
-      })
-
-      it('returns an access token', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password })
-        expect(res.body.token).to.be.a('string')
-      })
-
-      it('returns a JSON web token with the user\'s data', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password })
-        const obj = jwt.verify(res.body.token, secret) as any
-        expect(obj.name).to.equal(verifiedData.name)
-      })
-
-      it('returns a refresh token as a cookie', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password })
-        const cookie = parseCookie(res.headers['set-cookie'][0])
-        expect(cookie?.name).to.equal('refresh')
-      })
-
-      it('returns a JSON web token as a cookie', async () => {
-        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password })
-        const cookie = parseCookie(res.headers['set-cookie'][0])
-        const obj = jwt.verify(cookie?.value ?? '', secret) as any
-        expect(obj.uid).not.to.equal(undefined)
-        expect(obj.refresh).not.to.equal(undefined)
-      })
-
-      it('returns 401 if not given a passcode when OTP is enabled', async () => {
+      it('returns 400 if not given a passcode when OTP is enabled', async () => {
         res = await request(api).post(`${base}/tokens`).send({ addr: enabledData.emails[0].addr, password })
-        expect(res.status).to.equal(401)
+        expect(res.status).to.equal(400)
       })
 
-      it('returns 401 if given a bad passcode when OTP is enabled', async () => {
+      it('returns 400 if given a bad passcode when OTP is enabled', async () => {
         const valid = speakeasy.totp({ secret: enabledData.otp.secret, encoding: 'base32' })
         const passcode = valid === 'nope' ? 'lolnope' : 'nope'
         res = await request(api).post(`${base}/tokens`).send({ addr: enabledData.emails[0].addr, password, passcode })
-        expect(res.status).to.equal(401)
+        expect(res.status).to.equal(400)
       })
 
-      it('returns 200 if given a valid passcode when OTP is enabled', async () => {
+      it('authenticates the user if given a valid, verified email/password combination', async () => {
+        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password })
+        const accessObj = jwt.verify(res.body.token, secret) as any
+        const cookie = parseCookie(res.headers['set-cookie'][0])
+        const cookieObj = jwt.verify(cookie?.value ?? '', secret) as any
+        expect(res.status).to.equal(200)
+        expect(res.body.token).to.be.a('string')
+        expect(accessObj.name).to.equal(verifiedData.name)
+        expect(cookie?.name).to.equal('refresh')
+        expect(cookieObj.uid).not.to.equal(undefined)
+        expect(cookieObj.refresh).not.to.equal(undefined)
+      })
+
+      it('authenticates if given a valid passcode when OTP is enabled', async () => {
         const passcode = speakeasy.totp({ secret: enabledData.otp.secret, encoding: 'base32' })
         res = await request(api).post(`${base}/tokens`).send({ addr: enabledData.emails[0].addr, password, passcode })
         expect(res.status).to.equal(200)
