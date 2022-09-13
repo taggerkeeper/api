@@ -41,7 +41,7 @@ describe('loadUserFromLogin', () => {
     })
 
     it('returns an error', () => {
-      expect(mockRes.send.firstCall.args[0].message).to.equal('You must provide a verified email address to authenticate.')
+      expect(mockRes.send.firstCall.args[0].message).to.equal('Authentication failed.')
     })
   })
 
