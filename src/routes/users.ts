@@ -55,7 +55,7 @@ const router = Router()
  *           example: false
  *     UserCreate:
  *       type: object
- *       description: "The model that you can use to submit data to the API to create a new user."
+ *       description: "The model that the API uses to create a new user."
  *       properties:
  *         name:
  *           type: string
@@ -88,46 +88,6 @@ const router = Router()
  *           type: string
  *           description: "The email verification code."
  *           example: "abcde12345"
- *     Error400:
- *       type: object
- *       description: "This request cannot or will not be processed due to a client error."
- *       properties:
- *         message:
- *           type: string
- *           description: "An error message describing the client error."
- *           example: "No user ID (uid) provided."
- *     Error401:
- *       type: object
- *       description: "You must authenticate to complete this request."
- *       properties:
- *         message:
- *           type: string
- *           description: "An error message describing the error."
- *           example: "This method requires authentication."
- *     Error403:
- *       type: object
- *       description: "You are not authorized to complete this request."
- *       properties:
- *         message:
- *           type: string
- *           description: "An error message describing the error."
- *           example: "This method requires authentication by the subject or an administrator."
- *     Error404:
- *       type: object
- *       description: "The requested resource could not be found."
- *       properties:
- *         message:
- *           type: string
- *           description: "An error message describing the error."
- *           example: "No user found with the ID 0123456789abcdef12345678."
- *     Error500:
- *       type: object
- *       description: "An unexpected error occurred."
- *       properties:
- *         message:
- *           type: string
- *           description: "An error message describing the error."
- *           example: "An unexpected error occurred."
  */
 
 // /users
@@ -149,8 +109,8 @@ router.all('/', allow(collection))
  * @openapi
  * /users:
  *   options:
- *     summary: "How to use the Users collection."
- *     description: "Return which methods are permissible for the Users collection."
+ *     summary: "Methods for the Users collection."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
  *       - users
  *     responses:
@@ -159,13 +119,13 @@ router.all('/', allow(collection))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the users endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the users endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  */
 
 router.options('/', collection.options)
@@ -177,7 +137,7 @@ router.options('/', collection.options)
  *     tags:
  *       - users
  *     summary: "Create a new user."
- *     description: "Create a new user."
+ *     description: "Create a new user with the name, email, and password provided."
  *     requestBody:
  *       description: "The information you provide will be used to create a new user."
  *       required: true
@@ -193,19 +153,20 @@ router.options('/', collection.options)
  *         description: "A new user was created."
  *         headers:
  *           'Location':
- *             type: string
+ *             schema:
+ *               type: string
+ *               example: "https://taggerkeeper.com/v1/users/0123456789abcdef12345678"
  *             description: "Where the new resource can be found."
- *             example: "https://taggerkeeper.com/v1/users/0123456789abcdef12345678"
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the users endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the users endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -215,7 +176,12 @@ router.options('/', collection.options)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires a body with elements 'name', 'email', 'password'"
  */
 
 router.post('/', requireBodyParts('name', 'email', 'password') as any, createUser, setPassword, addEmail, saveSubject, sendEmailVerification, requireSubject, collection.post)
@@ -241,8 +207,8 @@ router.all('/:uid', allow(item))
  * @openapi
  * /users/{uid}:
  *   options:
- *     summary: "Return options on how to use an individual User."
- *     description: "Return which options are permissible for an individual User."
+ *     summary: "Methods for a Users item."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
  *       - users
  *     parameters:
@@ -259,25 +225,35 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
+ *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.options('/:uid', loadSubject, requireSubject, item.options)
@@ -287,7 +263,7 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  * /users/{uid}:
  *   head:
  *     summary: "Return headers for a user."
- *     description: "Return headers for a user."
+ *     description: "Returns the headers that a user would receive if requesting a Users item."
  *     tags:
  *       - users
  *     parameters:
@@ -305,25 +281,35 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
+ *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.head('/:uid', loadSubject, requireSubject, item.head)
@@ -351,13 +337,13 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual user endpoint."
  *               example: "OPTIONS, GET, HEAD"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -367,20 +353,30 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.get('/:uid', loadSubject, requireSubject, item.get)
 
 // /users/:uid/emails
 
-const emailCollection = {
+const emails = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
@@ -399,16 +395,16 @@ const emailCollection = {
   }
 }
 
-router.all('/:uid/emails', allow(emailCollection))
+router.all('/:uid/emails', allow(emails))
 
 /**
  * @openapi
  * /users/{uid}/emails:
  *   options:
- *     summary: "Return options on how to use a User's emails collection."
- *     description: "Return which options are permissible for a User's emails collection."
+ *     summary: "Methods for the Emails collection."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -423,49 +419,76 @@ router.all('/:uid/emails', allow(emailCollection))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.options)
+router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emails.options)
 
 /**
  * @openapi
  * /users/{uid}/emails:
  *   head:
- *     summary: "Returns the headers you would receive if you were to request an array of a User's emails."
- *     description: "Returns the headers you would receive if you were to request an array of a User's emails."
+ *     summary: "Returns the headers for the Emails collection."
+ *     description: "Returns the headers that a user would receive if requesting a user's Emails collection."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -481,40 +504,67 @@ router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.head)
+router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emails.head)
 
 /**
  * @openapi
@@ -523,7 +573,7 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *     summary: "Return an array of a User's emails."
  *     description: "Return an array of a User's emails."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -539,13 +589,13 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -557,37 +607,64 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailCollection.get)
+router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emails.get)
 
 /**
  * @openapi
  * /users/{uid}/emails:
  *   post:
- *     summary: "Add a new email to a user."
- *     description: "Add a new email to a user."
+ *     summary: "Add a new email."
+ *     description: "Add a new email to a user's record. This also sends an email to the address given asking the owner to verify it."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -597,61 +674,89 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
  *     responses:
- *       200:
+ *       201:
  *         description: "The email was added to the user record."
  *         headers:
  *           'Location':
  *             schema:
  *               type: string
- *               description: "Where the new email can be found."
  *               example: "https://taggerkeeper.com/v1/users/0123456789abcdef12345678/emails/user@taggerkeeper.com"
+ *             description: "Where the new email can be found."
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's emails collection endpoint."
  *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
  *               type: array
  *               items:
  *                 $ref: "#/components/schemas/Email"
+ *             description: "An array of the user's emails, including the one that was just added."
  *       400:
- *         description: "No user ID (uid) was provided, or no email address was provided."
+ *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.post('/:uid/emails', loadUserFromAccessToken, requireUser, requireBodyParts('email') as any, loadSubject, requireSubject, requireSelfOrAdmin, addEmail, sendEmailVerification, saveSubject, emailCollection.post)
+router.post('/:uid/emails', loadUserFromAccessToken, requireUser, requireBodyParts('email') as any, loadSubject, requireSubject, requireSelfOrAdmin, addEmail, sendEmailVerification, saveSubject, emails.post)
 
 // /users/:uid/emails/:addr
 
-const emailItem = {
+const email = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
@@ -680,16 +785,16 @@ const emailItem = {
   }
 }
 
-router.all('/:uid/emails/:addr', allow(emailItem))
+router.all('/:uid/emails/:addr', allow(email))
 
 /**
  * @openapi
  * /users/{uid}/emails/{addr}:
  *   options:
- *     summary: "Return options on how to use a User's individual email record."
- *     description: "Return which options are permissible for a User's individual email record."
+ *     summary: "Methods for an Emails item."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -711,49 +816,76 @@ router.all('/:uid/emails/:addr', allow(emailItem))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *       400:
- *         description: "No user ID (uid) was provided."
+ *         description: "No user ID (uid) or email address was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
- *         description: "The requested user could not be found."
+ *         description: "The requested user or email address could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, emailItem.options)
+router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, email.options)
 
 /**
  * @openapi
  * /users/{uid}/emails/{addr}:
  *   head:
- *     summary: "Get a User's individual email record."
- *     description: "Get the headers that you would receive if you were to request a User's individual email record."
+ *     summary: "Returns the headers for an Emails item."
+ *     description: "Returns the headers that a user would receive if requesting a user's Email record."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -776,40 +908,67 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *       400:
- *         description: "No user ID (uid) was provided."
+ *         description: "No user ID (uid) or email address was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
- *         description: "The requested user could not be found."
+ *         description: "The requested user or email address could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.head)
+router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, email.head)
 
 /**
  * @openapi
@@ -818,7 +977,7 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *     summary: "Get a User's individual email record."
  *     description: "Get a User's individual email record."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -841,44 +1000,71 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/Email"
  *       400:
- *         description: "No user ID (uid) was provided."
+ *         description: "No user ID (uid) or email address was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
- *         description: "The requested user could not be found."
+ *         description: "The requested user or email address could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, emailItem.get)
+router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, requireEmail, email.get)
 
 /**
  * @openapi
@@ -887,7 +1073,7 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *     summary: "Verify an email address."
  *     description: "Verify an email address."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -920,59 +1106,80 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
  *               $ref: "#/components/schemas/Email"
  *       400:
- *         description: "No user ID (uid) was provided."
+ *         description: "No user ID (uid) or email address was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
- *         description: "The requested user could not be found."
+ *         description: "The requested user or email address could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
- *       500:
- *         description: "An unexpected error occurred."
- *         content:
- *           application/json:
- *             schema:
- *               $ref: "#/components/schemas/Error500"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, verifyEmail, saveSubject, emailItem.get)
+router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, getEmail, verifyEmail, saveSubject, email.get)
 
 /**
  * @openapi
  * /users/{uid}/emails/{addr}:
  *   delete:
- *     summary: "Deletes an email address."
+ *     summary: "Delete an email address."
  *     description: "Delete an email address."
  *     tags:
- *       - emails
+ *       - users/emails
  *     parameters:
  *       - in: path
  *         name: uid
@@ -995,13 +1202,13 @@ router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's admin endpoint."
  *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -1009,32 +1216,59 @@ router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *               items:
  *                 $ref: "#/components/schemas/Email"
  *       400:
- *         description: "No user ID (uid) was provided."
+ *         description: "No user ID (uid) or email address was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
- *         description: "The requested user could not be found."
+ *         description: "The requested user or email address could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.delete('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, dropEmail, saveSubject, emailItem.delete)
+router.delete('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, dropEmail, saveSubject, email.delete)
 
 // /users/:uid/admin
 
@@ -1065,10 +1299,10 @@ router.all('/:uid/admin', allow(admin))
  * @openapi
  * /users/{uid}/admin:
  *   options:
- *     summary: "Return options on how to use a User's admin endpoint."
- *     description: "Return options on how to use a User's admin endpoint."
+ *     summary: "Methods for the Admin endpoint."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
- *       - admin
+ *       - users/admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1083,25 +1317,36 @@ router.all('/:uid/admin', allow(admin))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
@@ -1110,10 +1355,10 @@ router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
  * @openapi
  * /users/{uid}/admin:
  *   head:
- *     summary: "Return the headers that you would receive if you requested a user's admin status."
- *     description: "Return the headers that you would receive if you requested a user's admin status."
+ *     summary: "Return headers for a user's Admin status."
+ *     description: "Returns the headers that a user would receive if requesting Admin status."
  *     tags:
- *       - admin
+ *       - users/admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1129,25 +1374,36 @@ router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
@@ -1156,10 +1412,10 @@ router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
  * @openapi
  * /users/{uid}/admin:
  *   get:
- *     summary: "Return a boolean flag that indicates if the user is an administrator or not."
+ *     summary: "Is this user an administrator?"
  *     description: "Return a boolean flag that indicates if the user is an administrator or not."
  *     tags:
- *       - admin
+ *       - users/admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1175,13 +1431,13 @@ router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -1192,13 +1448,24 @@ router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
@@ -1208,9 +1475,9 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  * /users/{uid}/admin:
  *   post:
  *     summary: "Promote a user to an administrator."
- *     description: "Promote a user to an administrator."
+ *     description: "Promote a user to an administrator. This can only be done by an authenticated administrator."
  *     tags:
- *       - admin
+ *       - users/admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1221,18 +1488,18 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  *         example: "0123456789abcdef12345678"
  *     responses:
  *       200:
- *         description: "The user requested was found."
+ *         description: "The user has been promoted to administrator."
  *         headers:
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -1242,25 +1509,52 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by an administrator."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, promote, saveSubject, admin.post)
@@ -1270,9 +1564,9 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  * /users/{uid}/admin:
  *   delete:
  *     summary: "Demote an administrator."
- *     description: "Demote an administrator."
+ *     description: "Demote an administrator. This can only be done by an authenticated administrator."
  *     tags:
- *       - admin
+ *       - users/admin
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1283,18 +1577,18 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  *         example: "0123456789abcdef12345678"
  *     responses:
  *       200:
- *         description: "The user requested was found."
+ *         description: "The user has been demoted from administrator."
  *         headers:
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's administrator endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -1304,25 +1598,52 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
- *         description: "This endpoint can only be used by an administrator."
+ *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.delete('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, demote, saveSubject, admin.post)
@@ -1356,10 +1677,10 @@ router.all('/:uid/active', allow(active))
  * @openapi
  * /users/{uid}/active:
  *   options:
- *     summary: "Return options on how to use a User's active endpoint."
- *     description: "Return options on how to use a User's active endpoint."
+ *     summary: "Methods for the Active endpoint."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
- *       - active
+ *       - users/active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1374,25 +1695,36 @@ router.all('/:uid/active', allow(active))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.options('/:uid/active', loadSubject, requireSubject, active.options)
@@ -1401,10 +1733,10 @@ router.options('/:uid/active', loadSubject, requireSubject, active.options)
  * @openapi
  * /users/{uid}/active:
  *   head:
- *     summary: "Is this user active?"
- *     description: "Return only the headers that a user would receive if hen requested a boolean flag that indicates if the user is active or not."
+ *     summary: "Return headers for a user's Active status."
+ *     description: "Returns the headers that a user would receive if requesting Active status."
  *     tags:
- *       - active
+ *       - users/active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1420,25 +1752,36 @@ router.options('/:uid/active', loadSubject, requireSubject, active.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.head('/:uid/active', loadSubject, requireSubject, active.head)
@@ -1450,7 +1793,7 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  *     summary: "Is this user active?"
  *     description: "Return a boolean flag that indicates if the user is active or not."
  *     tags:
- *       - active
+ *       - users/active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1466,13 +1809,13 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -1483,13 +1826,24 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.get('/:uid/active', loadSubject, requireSubject, active.get)
@@ -1499,9 +1853,9 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  * /users/{uid}/active:
  *   post:
  *     summary: "Activate a user."
- *     description: "Activate a user."
+ *     description: "Activate a user. This can only be done by an authenticated administrator."
  *     tags:
- *       - active
+ *       - users/active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1512,18 +1866,18 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  *         example: "0123456789abcdef12345678"
  *     responses:
  *       200:
- *         description: "The user requested was found."
+ *         description: "The user has been activated."
  *         headers:
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -1533,25 +1887,52 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
- *         description: "This endpoint can only be used by an administrator."
+ *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, activate, saveSubject, active.post)
@@ -1561,9 +1942,9 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  * /users/{uid}/active:
  *   delete:
  *     summary: "Deactivate a user."
- *     description: "Deactivate a user."
+ *     description: "Deactivate a user. This can only be done by an authenticated administrator."
  *     tags:
- *       - active
+ *       - users/active
  *     parameters:
  *       - in: path
  *         name: uid
@@ -1579,13 +1960,13 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the user's active endpoint."
- *               example: "OPTIONS, POST, DELETE"
+ *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -1595,25 +1976,52 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
  *       401:
- *         description: "You must be authenticated to use this endpoint."
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
  *       403:
- *         description: "This endpoint can only be used by an administrator."
+ *         description: "This endpoint can only be used by the subject or an administrator."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error403"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
  *       404:
  *         description: "The requested user could not be found."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error404"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
 router.delete('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, loadSubject, requireSubject, deactivate, saveSubject, active.post)

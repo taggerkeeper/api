@@ -29,16 +29,6 @@ const router = Router()
  *           type: string
  *           description: "If you have enabled two-factor authentication, you must also supply a passcode."
  *           example: "123456"
- *     AccessToken:
- *       type: object
- *       description: The access token provided to an authenticated user.
- *       properties:
- *         token:
- *           type: string
- *           description: "A JSON web token used to gain access to parts of the API that require authentication."
- *     RefreshToken:
- *       type: string
- *       description: A JSON web token that can be exchanged for a new access token.
  */
 
 // /tokens
@@ -64,8 +54,8 @@ router.all('/', allow(collection))
  * @openapi
  * /tokens:
  *   options:
- *     summary: "Return options on how to use the Tokens collection."
- *     description: "Return which options are permissible for the Tokens collection."
+ *     summary: "Methods for the Tokens collection."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
  *       - tokens
  *     responses:
@@ -74,13 +64,13 @@ router.all('/', allow(collection))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the tokens endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the tokens endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  */
 
 router.options('/', collection.options)
@@ -90,7 +80,7 @@ router.options('/', collection.options)
  * /tokens:
  *   post:
  *     summary: "Authenticate a user."
- *     description: "Authenticare a user."
+ *     description: "This method takes a username and password (and a passcode, if you have enabled one-time passwords) and returns an access token and a refresh token if you can be authenticated with those credentials."
  *     tags:
  *       - tokens
  *     requestBody:
@@ -105,37 +95,49 @@ router.options('/', collection.options)
  *             $ref: "#/components/schemas/AuthenticationInput"
  *     responses:
  *       200:
- *         description: "THe user was authenticated."
+ *         description: "The user was authenticated."
  *         headers:
  *           'Set-Cookie':
  *             schema:
- *               $ref: "#/components/schemas/RefreshToken"
+ *               type: string
+ *             description: "A JSON web token (JWT) which you can submit to the `/tokens/{uid}` endpoint to acquire a new access token and a new refresh token."
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the tokens endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the tokens endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/AccessToken"
- *       401:
+ *               type: string
+ *             description: "A JSON web token (JWT) which can be submitted as a Bearer token to authorize access to secured parts of the API."
+ *       400:
  *         description: "Authentication failed."
  *         content:
  *           application/json:
  *             schema:
  *               type: object
- *               description: "Authentication failed."
  *               properties:
  *                 message:
  *                   type: string
- *                   description: "A description of the error."
- *                   example: "You are not authoried."
+ *                   description: "A description of the error that occurred."
+ *                   example: "Authentication failed."
+ *       500:
+ *         description: "An unexpected error occurred."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "An unexpected error occurred."
  */
 
 router.post('/', loadUserFromLogin, generateTokens, collection.post)
@@ -163,8 +165,8 @@ router.all('/:uid', allow(item))
  * @openapi
  * /tokens/{uid}:
  *   options:
- *     summary: "Return options on how to use an individual Token resource."
- *     description: "Return which options are permissible for an individual Token resource."
+ *     summary: "Methods for a Tokens item."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
  *       - tokens
  *     responses:
@@ -173,19 +175,35 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual token endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual token endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *       400:
- *         description: "The refresh token was not included as the 'refresh' property in the body, or the refresh could not be verified."
+ *         description: "The refresh token was not included as the 'refresh' property in the body."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires a body with elements 'refresh'"
+ *       401:
+ *         description: "The refresh token provided could not be verified."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "Could not verify refresh token."
  */
 
 router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken, item.options)
@@ -207,46 +225,62 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *             type: object
  *             description: "The refresh token that the user would like to exchange."
  *             properties:
- *               $ref: "#/components/schemas/RefreshToken"
+ *               refresh:
+ *                 type: string
+ *                 description: "Your refresh token. This is the JSON web token (JWT) which you received as a cookie when you authenticated, or when you last used this method."
  *         application/x-www-form-urlencoded:
  *           schema:
  *             type: object
  *             description: "The refresh token that the user would like to exchange."
  *             properties:
- *               $ref: "#/components/schemas/RefreshToken"
+ *               refresh:
+ *                 type: string
+ *                 description: "Your refresh token. This is the JSON web token (JWT) which you received as a cookie when you authenticated, or when you last used this method."
  *     responses:
  *       200:
  *         description: "The user is being issued a new access token and a new refresh token."
  *         headers:
- *           Set-Cookie:
+ *           'Set-Cookie':
  *             schema:
- *               $ref: "#/components/schemas/RefreshToken"
+ *               type: string
+ *             description: "A JSON web token (JWT) which you can submit to the `/tokens/{uid}` endpoint to acquire a new access token and a new refresh token."
  *           'Allow':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual token endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               description: "The methods allowed for the individual token endpoint."
  *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/AccessToken"
+ *               type: string
+ *             description: "A JSON web token (JWT) which can be submitted as a Bearer token to authorize access to secured parts of the API."
  *       400:
- *         description: "The refresh token was not included as the 'refresh' property in the post body."
+ *         description: "The refresh token was not included as the 'refresh' property in the body."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error400"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires a body with elements 'refresh'"
  *       401:
- *         description: "The refresh token could not be verified."
+ *         description: "The refresh token provided could not be verified."
  *         content:
  *           application/json:
  *             schema:
- *               $ref: "#/components/schemas/Error401"
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "Could not verify refresh token."
  */
 
 router.post('/:uid', requireBodyParts('refresh') as any, requireRefreshToken, generateTokens, saveUser, item.post)
