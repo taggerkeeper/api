@@ -23,6 +23,8 @@ import requireSelfOrAdmin from '../middlewares/require-self-or-admin.js'
 import requireUser from '../middlewares/require-user.js'
 import sendEmailVerification from '../middlewares/send-email-verification.js'
 import setPassword from '../middlewares/set-password.js'
+import updateSubjectName from '../middlewares/update-subject-name.js'
+import updateSubjectPassword from '../middlewares/update-subject-password.js'
 import verifyEmail from '../middlewares/verify-email.js'
 
 const pkg = await loadPackage()
@@ -198,6 +200,10 @@ const item = {
   },
   head: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  post: (req: Request, res: Response) => {
+    const { subject } = req
+    res.status(200).send(subject?.getPublicObj())
   }
 }
 
@@ -225,12 +231,12 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD"
+ *               example: "OPTIONS, GET, HEAD, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD"
+ *               example: "OPTIONS, GET, HEAD, POST"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -281,12 +287,12 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD"
+ *               example: "OPTIONS, GET, HEAD, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD"
+ *               example: "OPTIONS, GET, HEAD, POST"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -337,12 +343,12 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD"
+ *               example: "OPTIONS, GET, HEAD, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD"
+ *               example: "OPTIONS, GET, HEAD, POST"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -373,6 +379,95 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  */
 
 router.get('/:uid', loadSubject, requireSubject, item.get)
+
+/**
+ * @openapi
+ * /users/{uid}:
+ *   post:
+ *     summary: "Update a user."
+ *     description: "Update a user's name and/or password. This method can only be used while authenticated as the subject or as an administrator."
+ *     tags:
+ *       - users
+ *     parameters:
+ *       - in: path
+ *         name: uid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The user's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       200:
+ *         description: "The user has been updated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, GET, HEAD, POST"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/User"
+ *       400:
+ *         description: "No user ID (uid) was provided."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user ID (uid) provided."
+ *       401:
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
+ *       403:
+ *         description: "This endpoint can only be used by the subject or an administrator."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This endpoint can only be used by the subject or an administrator."
+ *
+ *       404:
+ *         description: "The requested user could not be found."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "No user found with the ID 0123456789abcdef12345678."
+ */
+
+router.post('/:uid', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, updateSubjectName, updateSubjectPassword, saveSubject, item.post)
 
 // /users/:uid/emails
 

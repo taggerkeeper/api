@@ -152,11 +152,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD')
+        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD, POST')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD, POST')
       })
     })
 
@@ -184,6 +184,120 @@ describe('Users API', () => {
         expect(res.body.active).to.equal(true)
         expect(res.body.admin).to.equal(false)
         expect(res.body.id).not.to.equal(undefined)
+      })
+    })
+
+    describe('POST /users/:uid', () => {
+      const user = new User()
+      const name = 'New Name'
+      const password = 'Longer passwords are still better passwords, even when you change them.'
+      let tokens: TokenSet
+
+      describe('Self calls', () => {
+        beforeEach(async () => {
+          user.active = true
+          await user.save()
+          tokens = await user.generateTokens()
+          await user.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('sends the user\'s updated data, including the new name', () => {
+          expect(res.body.name).to.equal(name)
+        })
+
+        it('updates the user\'s name and password in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const after = new User(record)
+          expect(after.name).to.equal(name)
+          expect(after.password.verify(password)).to.equal(true)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+
+        beforeEach(async () => {
+          user.active = true
+          await user.save()
+          await admin.save()
+          tokens = await admin.generateTokens()
+          await admin.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
+        })
+
+        it('returns 200', () => {
+          expect(res.status).to.equal(200)
+        })
+
+        it('sends the user\'s updated data, including the new name', () => {
+          expect(res.body.name).to.equal(name)
+        })
+
+        it('updates the user\'s name and password in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const after = new User(record)
+          expect(after.name).to.equal(name)
+          expect(after.password.verify(password)).to.equal(true)
+        })
+      })
+
+      describe('Another user calls', () => {
+        const other = new User({ name: 'Other' })
+
+        beforeEach(async () => {
+          user.active = true
+          await user.save()
+          await other.save()
+          tokens = await other.generateTokens()
+          await other.save()
+          const auth = { Authorization: `Bearer ${tokens.access}` }
+          res = await request(api).post(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
+        })
+
+        it('returns 403', () => {
+          expect(res.status).to.equal(403)
+        })
+
+        it('sends an error message', () => {
+          expect(res.body.message).to.equal('This method requires authentication by the subject or an administrator.')
+        })
+
+        it('does not update the user\'s name and password in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const after = new User(record)
+          expect(after.name).not.to.equal(name)
+          expect(after.password.verify(password)).to.equal(false)
+        })
+      })
+
+      describe('Anonymous calls', () => {
+        beforeEach(async () => {
+          user.active = true
+          await user.save()
+          res = await request(api).post(`${base}/users/${user.id ?? ''}`).send({ name, password })
+        })
+
+        it('returns 400', () => {
+          expect(res.status).to.equal(400)
+        })
+
+        it('sends an error message', () => {
+          expect(res.body.message).to.equal('This method requires authentication.')
+        })
+
+        it('does not update the user\'s name and password in the database', async () => {
+          const record = await UserModel.findById(user.id) as UserData
+          const after = new User(record)
+          expect(after.name).not.to.equal(name)
+          expect(after.password.verify(password)).to.equal(false)
+        })
       })
     })
   })
