@@ -152,11 +152,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD, POST')
+        expect(res.headers.allow).to.equal('OPTIONS, HEAD, GET, POST')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD, POST')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, HEAD, GET, POST')
       })
     })
 
@@ -314,7 +314,7 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/emails', () => {
-      const expected = 'OPTIONS, GET, HEAD, POST'
+      const expected = 'OPTIONS, HEAD, GET, POST'
 
       describe('Self calls', () => {
         beforeEach(async () => {
@@ -676,7 +676,7 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/emails/:addr', () => {
-      const expected = 'OPTIONS, GET, HEAD, POST, DELETE'
+      const expected = 'OPTIONS, HEAD, GET, POST, DELETE'
 
       describe('Self calls', () => {
         beforeEach(async () => {
@@ -1159,11 +1159,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD, POST, DELETE')
+        expect(res.headers.allow).to.equal('OPTIONS, HEAD, GET, POST, DELETE')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD, POST, DELETE')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, HEAD, GET, POST, DELETE')
       })
     })
 
@@ -1408,11 +1408,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, GET, HEAD, POST, DELETE')
+        expect(res.headers.allow).to.equal('OPTIONS, HEAD, GET, POST, DELETE')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET, HEAD, POST, DELETE')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, HEAD, GET, POST, DELETE')
       })
     })
 

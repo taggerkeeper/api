@@ -194,12 +194,12 @@ const item = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  },
   get: (req: Request, res: Response) => {
     const { subject } = req
     res.status(200).send(subject?.getPublicObj())
-  },
-  head: (req: Request, res: Response) => {
-    res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
     const { subject } = req
@@ -231,12 +231,12 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -287,12 +287,12 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -343,12 +343,12 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -403,12 +403,12 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -475,12 +475,12 @@ const emails = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  },
   get: (req: Request, res: Response) => {
     const emails = req.subject?.emails.map(email => ({ addr: email.addr, verified: email.verified }))
     res.status(200).send(emails)
-  },
-  head: (req: Request, res: Response) => {
-    res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
     const { subject } = req
@@ -514,12 +514,12 @@ router.all('/:uid/emails', allow(emails))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -599,12 +599,12 @@ router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -684,12 +684,12 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -780,12 +780,12 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -855,6 +855,9 @@ const email = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  },
   get: (req: Request, res: Response) => {
     if (req.email === undefined) {
       res.status(500).send({ message: 'No email address provided.' })
@@ -862,9 +865,6 @@ const email = {
       const { addr, verified } = req.email
       res.status(200).send({ addr, verified })
     }
-  },
-  head: (req: Request, res: Response) => {
-    res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
     if (req.email === undefined) {
@@ -911,12 +911,12 @@ router.all('/:uid/emails/:addr', allow(email))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) or email address was provided."
@@ -1003,12 +1003,12 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) or email address was provided."
@@ -1095,12 +1095,12 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -1201,12 +1201,12 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -1297,12 +1297,12 @@ router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -1371,12 +1371,12 @@ const admin = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  },
   get: (req: Request, res: Response) => {
     const { subject } = req
     res.status(200).send(subject?.admin)
-  },
-  head: (req: Request, res: Response) => {
-    res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
     const { subject } = req
@@ -1412,12 +1412,12 @@ router.all('/:uid/admin', allow(admin))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -1469,12 +1469,12 @@ router.options('/:uid/admin', loadSubject, requireSubject, admin.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -1526,12 +1526,12 @@ router.head('/:uid/admin', loadSubject, requireSubject, admin.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -1588,12 +1588,12 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -1677,12 +1677,12 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -1749,12 +1749,12 @@ const active = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  },
   get: (req: Request, res: Response) => {
     const { subject } = req
     res.status(200).send(subject?.active)
-  },
-  head: (req: Request, res: Response) => {
-    res.sendStatus(204)
   },
   post: (req: Request, res: Response) => {
     const { subject } = req
@@ -1790,12 +1790,12 @@ router.all('/:uid/active', allow(active))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -1847,12 +1847,12 @@ router.options('/:uid/active', loadSubject, requireSubject, active.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
@@ -1904,12 +1904,12 @@ router.head('/:uid/active', loadSubject, requireSubject, active.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -1966,12 +1966,12 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -2055,12 +2055,12 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, GET, HEAD, POST, DELETE"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
