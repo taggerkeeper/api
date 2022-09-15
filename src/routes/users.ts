@@ -431,7 +431,7 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -538,7 +538,7 @@ router.all('/:uid/emails', allow(emails))
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -623,7 +623,7 @@ router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -714,7 +714,7 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -811,7 +811,7 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -935,7 +935,7 @@ router.all('/:uid/emails/:addr', allow(email))
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -1027,7 +1027,7 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -1123,7 +1123,7 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -1229,7 +1229,7 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -1327,7 +1327,7 @@ router.post('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -1616,7 +1616,7 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -1705,7 +1705,7 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -1994,7 +1994,7 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -2083,7 +2083,7 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:

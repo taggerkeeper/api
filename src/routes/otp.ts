@@ -88,14 +88,14 @@ router.all('/', allow(otp))
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -105,7 +105,7 @@ router.all('/', allow(otp))
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
  *         content:
@@ -152,14 +152,14 @@ router.options('/', loadUserFromAccessToken, requireUser, otp.options)
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -169,7 +169,7 @@ router.options('/', loadUserFromAccessToken, requireUser, otp.options)
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
  *         content:
@@ -223,14 +223,14 @@ router.head('/', loadUserFromAccessToken, requireUser, otp.head)
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -240,7 +240,7 @@ router.head('/', loadUserFromAccessToken, requireUser, otp.head)
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
  *         content:
@@ -331,14 +331,14 @@ router.get('/', loadUserFromAccessToken, requireUser, otp.get)
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -348,7 +348,7 @@ router.get('/', loadUserFromAccessToken, requireUser, otp.get)
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
  *         content:
@@ -419,14 +419,14 @@ router.post('/', loadUserFromAccessToken, requireUser, otp.post)
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
- *               example: 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
  *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
@@ -436,7 +436,7 @@ router.post('/', loadUserFromAccessToken, requireUser, otp.post)
  *                 message:
  *                   type: string
  *                   description: "A description of the error that occurred."
- *                   example "This method requires authentication."
+ *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
  *         content:
