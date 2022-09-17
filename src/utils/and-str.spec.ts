@@ -17,4 +17,8 @@ describe('andStr', () => {
   it('returns a list if given three or more items (with Oxford comma, of course; we\'re not monsters)', () => {
     expect(andStr(['one', 'two', 'three'])).to.equal('one, two, and three')
   })
+
+  it('can optionally take a different conjunction', () => {
+    expect(andStr(['one', 'two', 'three'], 'or')).to.equal('one, two, or three')
+  })
 })
