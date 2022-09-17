@@ -67,6 +67,8 @@ describe('API Root', () => {
     })
 
     it('lists endpoints', () => {
+      expect(res.body.endpoints).to.include(`${root}/otp`)
+      expect(res.body.endpoints).to.include(`${root}/renderer`)
       expect(res.body.endpoints).to.include(`${root}/tokens`)
       expect(res.body.endpoints).to.include(`${root}/users`)
     })
