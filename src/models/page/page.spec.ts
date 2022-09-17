@@ -204,32 +204,5 @@ describe('Page', () => {
         expect(actual).to.equal('<p><em>italic</em> <strong>bold</strong></p>\n<p>Separate paragraph</p>')
       })
     })
-
-    describe('isValidPath', () => {
-      afterEach(() => { sinon.restore() })
-
-      it('rejects an empty string', async () => {
-        const actual = await Page.isValidPath('')
-        expect(actual).to.equal(false)
-      })
-
-      it('rejects paths that begin with reserved words', async () => {
-        const actual = await Page.isValidPath('/login/something-else')
-        expect(actual).to.equal(false)
-      })
-
-      it('rejects paths that already exist', async () => {
-        const page = new Page()
-        sinon.stub(PageModel, 'findOne').resolves(page.getObj())
-        const actual = await Page.isValidPath('/test')
-        expect(actual).to.equal(false)
-      })
-
-      it('accepts valid paths', async () => {
-        sinon.stub(PageModel, 'findOne').resolves(null)
-        const actual = await Page.isValidPath('/test')
-        expect(actual).to.equal(true)
-      })
-    })
   })
 })

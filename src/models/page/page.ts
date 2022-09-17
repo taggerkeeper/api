@@ -80,15 +80,6 @@ class Page {
     const markup = await renderMarkdown(text)
     return markup
   }
-
-  static async isValidPath (path: string): Promise<boolean> {
-    const reserved = (getEnvVar('RESERVED_PATHS') as string).split(',').map(path => path.trim())
-    const elements = path.split('/').map(el => el.trim()).filter(el => el.length > 0)
-    if (elements.length < 1) return false
-    if (reserved.includes(elements[0])) return false
-    const check = await PageModel.findOne({ path })
-    return check === null
-  }
 }
 
 export default Page
