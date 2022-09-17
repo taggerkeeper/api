@@ -196,4 +196,13 @@ describe('Page', () => {
       })
     })
   })
+
+  describe('Static methods', () => {
+    describe('render', () => {
+      it('renders Markdown', async () => {
+        const actual = await Page.render('_italic_ **bold**\n\nSeparate paragraph')
+        expect(actual).to.equal('<p><em>italic</em> <strong>bold</strong></p>\n<p>Separate paragraph</p>')
+      })
+    })
+  })
 })

@@ -2,6 +2,7 @@ import Revision from '../revision/revision.js'
 import User from '../user/user.js'
 import PageModel from './model.js'
 import PageData from './data.js'
+import renderMarkdown from '../../render/render-markdown.js'
 import exists from '../../utils/exists.js'
 import getId from '../../utils/get-id.js'
 
@@ -72,6 +73,11 @@ class Page {
     } else {
       await PageModel.findOneAndUpdate({ _id: this.id }, this.getObj())
     }
+  }
+
+  static async render (text: string): Promise<string> {
+    const markup = await renderMarkdown(text)
+    return markup
   }
 }
 
