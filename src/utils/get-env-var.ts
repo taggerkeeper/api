@@ -23,7 +23,8 @@ const envVarDefaults: any = {
   MONGO_SERVER: { type: 'string', value: 'localhost' },
   MONGO_USERNAME: { type: 'string', value: 'root' },
   MONGO_PASSWORD: { type: 'string', value: 'password' },
-  MONGO_COLLECTION: { type: 'string', value: 'taggerkeeper' }
+  MONGO_COLLECTION: { type: 'string', value: 'taggerkeeper' },
+  RESERVED_PATHS: { type: 'string', value: 'login,logout,dashboard,connect' }
 }
 
 const getEnvVar = (varName: string): string | number | undefined => {
