@@ -5,6 +5,7 @@ import PageData from './data.js'
 import renderMarkdown from '../../render/render-markdown.js'
 import exists from '../../utils/exists.js'
 import getId from '../../utils/get-id.js'
+import getEnvVar from '../../utils/get-env-var.js'
 
 class Page {
   id?: string
@@ -78,6 +79,15 @@ class Page {
   static async render (text: string): Promise<string> {
     const markup = await renderMarkdown(text)
     return markup
+  }
+
+  static async isValidPath (path: string): Promise<boolean> {
+    const reserved = (getEnvVar('RESERVED_PATHS') as string).split(',').map(path => path.trim())
+    const elements = path.split('/').map(el => el.trim()).filter(el => el.length > 0)
+    if (elements.length < 1) return false
+    if (reserved.includes(elements[0])) return false
+    const check = await PageModel.findOne({ path })
+    return check === null
   }
 }
 
