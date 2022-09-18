@@ -5,7 +5,6 @@ import PageData from './data.js'
 import renderMarkdown from '../../render/render-markdown.js'
 import exists from '../../utils/exists.js'
 import getId from '../../utils/get-id.js'
-import getEnvVar from '../../utils/get-env-var.js'
 
 class Page {
   id?: string
