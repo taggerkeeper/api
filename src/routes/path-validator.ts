@@ -164,10 +164,10 @@ router.head('/', pathValidator.head)
  *                 message:
  *                   type: string
  *                   description: "A description of the outcome of the validation."
- *                   example: "The path /path/to/validate is valid."
+ *                   example: "The path /path/to/validate is already in use."
  *                 path:
  *                   type: string
- *                   description: "The path /path/to/validate is already in use."
+ *                   description: "The path that was validated."
  *                   example: "/path/to/validate"
  */
 
