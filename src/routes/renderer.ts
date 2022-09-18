@@ -107,11 +107,11 @@ router.head('/', loadUserFromAccessToken, renderer.head)
  *               type: string
  *               example: "OPTIONS, HEAD, GET"
  *             description: "The methods that this endpoint allows."
- *           content:
- *             plain/text:
- *               schema:
- *                 type: string
- *                 example: "<p>Some text is <strong>bolded</strong>, and some is in <em>italics</em>.</p>"
+ *         content:
+ *           plain/text:
+ *             schema:
+ *               type: string
+ *               example: "<p>Some text is <strong>bolded</strong>, and some is in <em>italics</em>.</p>"
  *
  */
 
