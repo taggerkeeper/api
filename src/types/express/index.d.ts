@@ -12,7 +12,7 @@ declare global {
       email?: Email
       emailer?: Function | sinon.SinonStub
       tokens?: TokenSet
-      searchResults?: PageQueryResultSet,
+      searchResults?: PageQueryResultSet
       revision?: Revision
     }
   }
