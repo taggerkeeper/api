@@ -107,4 +107,11 @@ describe('addSearchPagination', () => {
     const checks = getLinks(mockRes.set).map(link => link.includes('other=test'))
     expect(checkAll(checks)).to.equal(true)
   })
+
+  it('sends an X-Total-Count header with the total number of pages found', async () => {
+    mockReq.query = { other: 'test' }
+    mockReq.searchResults = { total, start: 4, end: 6, pages }
+    await addSearchPagination(mockReq, mockRes, mockNext)
+    expect(mockRes.set.args[1][1]).to.equal(total.toString())
+  })
 })

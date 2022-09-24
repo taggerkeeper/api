@@ -26,6 +26,7 @@ const addSearchPagination = async (req: Request, res: Response, next: NextFuncti
     if (end < total) links.push(makeLink({ offset: end }, 'next'))
     if (end < total) links.push(makeLink({ offset: last }, 'last'))
     res.set('Link', links.join(', '))
+    res.set('X-Total-Count', total.toString())
   }
   next()
 }
