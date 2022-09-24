@@ -33,21 +33,21 @@ describe('buildQuery', () => {
 
   it('includes created before criteria if it\'s part of the query', () => {
     const actual = buildQuery({ created: { before } })
-    expect(actual.created.$gte).to.equal(before)
+    expect(actual.created.$lte).to.equal(before)
   })
 
   it('includes created after criteria if it\'s part of the query', () => {
     const actual = buildQuery({ created: { after } })
-    expect(actual.created.$lte).to.equal(after)
+    expect(actual.created.$gte).to.equal(after)
   })
 
   it('includes updated before criteria if it\'s part of the query', () => {
     const actual = buildQuery({ updated: { before } })
-    expect(actual.updated.$gte).to.equal(before)
+    expect(actual.updated.$lte).to.equal(before)
   })
 
   it('includes updated after criteria if it\'s part of the query', () => {
     const actual = buildQuery({ updated: { after } })
-    expect(actual.updated.$lte).to.equal(after)
+    expect(actual.updated.$gte).to.equal(after)
   })
 })

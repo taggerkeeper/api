@@ -12,36 +12,36 @@ describe('getTimeSubquery', () => {
   it('creates a subquery for created before a date', () => {
     const query = { created: { before } }
     const actual = getTimeSubquery(query, 'created')
-    expect(JSON.stringify(actual)).to.equal(`{"created":{"$gte":"${before.toJSON()}"}}`)
+    expect(JSON.stringify(actual)).to.equal(`{"created":{"$lte":"${before.toJSON()}"}}`)
   })
 
   it('creates a subquery for created after a date', () => {
     const query = { created: { after } }
     const actual = getTimeSubquery(query, 'created')
-    expect(JSON.stringify(actual)).to.equal(`{"created":{"$lte":"${after.toJSON()}"}}`)
+    expect(JSON.stringify(actual)).to.equal(`{"created":{"$gte":"${after.toJSON()}"}}`)
   })
 
   it('creates a subquery for created before one date and after another date', () => {
     const query = { created: { before, after } }
     const actual = getTimeSubquery(query, 'created')
-    expect(JSON.stringify(actual)).to.equal(`{"created":{"$gte":"${before.toJSON()}","$lte":"${after.toJSON()}"}}`)
+    expect(JSON.stringify(actual)).to.equal(`{"created":{"$lte":"${before.toJSON()}","$gte":"${after.toJSON()}"}}`)
   })
 
   it('creates a subquery for updated before a date', () => {
     const query = { updated: { before } }
     const actual = getTimeSubquery(query, 'updated')
-    expect(JSON.stringify(actual)).to.equal(`{"updated":{"$gte":"${before.toJSON()}"}}`)
+    expect(JSON.stringify(actual)).to.equal(`{"updated":{"$lte":"${before.toJSON()}"}}`)
   })
 
   it('creates a subquery for updated after a date', () => {
     const query = { updated: { after } }
     const actual = getTimeSubquery(query, 'updated')
-    expect(JSON.stringify(actual)).to.equal(`{"updated":{"$lte":"${after.toJSON()}"}}`)
+    expect(JSON.stringify(actual)).to.equal(`{"updated":{"$gte":"${after.toJSON()}"}}`)
   })
 
   it('creates a subquery for updated before one date and after another date', () => {
     const query = { updated: { before, after } }
     const actual = getTimeSubquery(query, 'updated')
-    expect(JSON.stringify(actual)).to.equal(`{"updated":{"$gte":"${before.toJSON()}","$lte":"${after.toJSON()}"}}`)
+    expect(JSON.stringify(actual)).to.equal(`{"updated":{"$lte":"${before.toJSON()}","$gte":"${after.toJSON()}"}}`)
   })
 })
