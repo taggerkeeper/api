@@ -3,6 +3,7 @@ import { isUserData } from '../user/data.js'
 import User from '../user/user.js'
 import PageModel from './model.js'
 import PageData from './data.js'
+import PublicPageData from './public.js'
 import renderMarkdown from '../../render/render-markdown.js'
 import exists from '../../utils/exists.js'
 import getId from '../../utils/get-id.js'
@@ -29,6 +30,18 @@ class Page {
     const obj: PageData = {
       path: this.revisions[0]?.content?.path,
       revisions: this.revisions.map(revision => revision.getObj()),
+      created: this.created,
+      updated: this.updated
+    }
+    if (this.trashed !== undefined) obj.trashed = this.trashed
+    if (this.id !== undefined) obj.id = this.id
+    return obj
+  }
+
+  getPublicObj (): PublicPageData {
+    const obj: PublicPageData = {
+      path: this.revisions[0]?.content?.path,
+      revisions: this.revisions.map(revision => revision.getPublicObj()),
       created: this.created,
       updated: this.updated
     }

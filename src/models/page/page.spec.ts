@@ -6,6 +6,7 @@ import Revision from '../revision/revision.js'
 import Page from './page.js'
 import PageModel from './model.js'
 import { isPageData } from './data.js'
+import { isPublicPageData } from './public.js'
 
 describe('Page', () => {
   const id = '012345abcdef'
@@ -67,6 +68,12 @@ describe('Page', () => {
     describe('getObj', () => {
       it('returns a PageData object', () => {
         expect(isPageData(actual.getObj())).to.equal(true)
+      })
+    })
+
+    describe('getPublicObj', () => {
+      it('returns a PublicPageData object', () => {
+        expect(isPublicPageData(actual.getPublicObj())).to.equal(true)
       })
     })
 
