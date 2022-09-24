@@ -14,7 +14,7 @@ describe('Content', () => {
     })
 
     it('assigns a path', () => {
-      expect(actual.path).to.equal(`/${slugify(title)}`)
+      expect(actual.path).to.equal(`/${slugify(title.toLowerCase())}`)
     })
 
     it('can set a path', () => {

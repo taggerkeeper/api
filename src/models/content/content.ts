@@ -8,7 +8,7 @@ class Content {
 
   constructor (options: ContentData) {
     this.title = options.title
-    this.path = options.path ?? `/${slugify(this.title)}`
+    this.path = options.path ?? `/${slugify(this.title.toLowerCase())}`
     this.body = options.body
   }
 
