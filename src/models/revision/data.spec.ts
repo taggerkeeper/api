@@ -108,9 +108,9 @@ describe('isRevisionData', () => {
     expect(isRevisionData(cpy)).to.equal(true)
   })
 
-  it('returns false if given a string for editor', () => {
+  it('returns true if given a string for editor', () => {
     const cpy = Object.assign({}, min, { editor: '0123456789abcdef12345678' })
-    expect(isRevisionData(cpy)).to.equal(false)
+    expect(isRevisionData(cpy)).to.equal(true)
   })
 
   it('returns false if given a number for editor', () => {
@@ -128,14 +128,9 @@ describe('isRevisionData', () => {
     expect(isRevisionData(cpy)).to.equal(false)
   })
 
-  it('returns false if given an object for editor that isn\'t UserData', () => {
+  it('returns true if given an object for editor', () => {
     const cpy = Object.assign({}, min, { editor: { emails: '777' } })
-    expect(isRevisionData(cpy)).to.equal(false)
-  })
-
-  it('returns false if given an array for editor', () => {
-    const cpy = Object.assign({}, min, { editor: [] })
-    expect(isRevisionData(cpy)).to.equal(false)
+    expect(isRevisionData(cpy)).to.equal(true)
   })
 
   it('returns true if given a string for msg', () => {

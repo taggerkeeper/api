@@ -1,4 +1,5 @@
 import Content from '../content/content.js'
+import { isUserData } from '../user/data.js'
 import User from '../user/user.js'
 import Permissions from '../permissions/permissions.js'
 import RevisionData from './data.js'
@@ -15,7 +16,7 @@ class Revision {
     this.permissions = new Permissions(data.permissions) ?? new Permissions()
     this.msg = data.msg ?? ''
     this.timestamp = data.timestamp ?? new Date()
-    if (data.editor !== undefined) this.editor = new User(data.editor)
+    if (data.editor !== undefined && isUserData(data.editor)) this.editor = new User(data.editor)
   }
 
   getObj (): RevisionData {

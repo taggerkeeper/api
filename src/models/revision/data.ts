@@ -8,7 +8,7 @@ import exists from '../../utils/exists.js'
 interface RevisionData {
   content: ContentData
   permissions?: PermissionsData
-  editor?: UserData
+  editor?: UserData | UserData['_id']
   msg?: string
   timestamp?: Date
 }
@@ -19,7 +19,7 @@ const isRevisionData = (obj: any): obj is RevisionData => {
   return checkAll([
     checkAll([exists(content), isContentData(content)]),
     checkAny([!exists(permissions), isPermissionsData(permissions)]),
-    checkAny([!exists(editor), isUserData(editor)]),
+    checkAny([!exists(editor), isUserData(editor), typeof editor === 'string', typeof editor === 'object']),
     checkAny([!exists(msg), typeof msg === 'string']),
     checkAny([!exists(timestamp), timestamp?.constructor?.name === 'Date'])
   ])

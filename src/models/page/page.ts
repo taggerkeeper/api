@@ -1,4 +1,5 @@
 import Revision from '../revision/revision.js'
+import { isUserData } from '../user/data.js'
 import User from '../user/user.js'
 import PageModel from './model.js'
 import PageData from './data.js'
@@ -66,12 +67,14 @@ class Page {
   }
 
   async save (): Promise<void> {
+    const data = this.getObj()
+    data.revisions.forEach(revision => { if (isUserData(revision.editor)) revision.editor = revision.editor.id })
     if (this.id === undefined) {
-      const record = await PageModel.create(this.getObj())
+      const record = await PageModel.create(data)
       // eslint-disable-next-line @typescript-eslint/no-base-to-string
       this.id = record._id?.toString()
     } else {
-      await PageModel.findOneAndUpdate({ _id: this.id }, this.getObj())
+      await PageModel.findOneAndUpdate({ _id: this.id }, data)
     }
   }
 
