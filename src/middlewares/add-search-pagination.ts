@@ -11,8 +11,8 @@ const addSearchPagination = async (req: Request, res: Response, next: NextFuncti
     const endpoint = `${root}/pages`
     const orig = req.query as any
 
-    const makeLink = (changes: any, rel: string): void => {
-      res.set('Link', `<${endpoint}?${getQueryStr(Object.assign({}, orig, changes))}>; rel="${rel}"`)
+    const makeLink = (changes: any, rel: string): string => {
+      return `<${endpoint}?${getQueryStr(Object.assign({}, orig, changes))}>; rel="${rel}"`
     }
 
     const { total, start, end } = req.searchResults
@@ -20,10 +20,12 @@ const addSearchPagination = async (req: Request, res: Response, next: NextFuncti
     const prev = start - per
     const last = total - per
 
-    if (start > 0) makeLink({ offset: 0 }, 'first')
-    if (prev >= 0) makeLink({ offset: prev }, 'previous')
-    if (end < total) makeLink({ offset: end }, 'next')
-    if (end < total) makeLink({ offset: last }, 'last')
+    const links = []
+    if (start > 0) links.push(makeLink({ offset: 0 }, 'first'))
+    if (prev >= 0) links.push(makeLink({ offset: prev }, 'previous'))
+    if (end < total) links.push(makeLink({ offset: end }, 'next'))
+    if (end < total) links.push(makeLink({ offset: last }, 'last'))
+    res.set('Link', links.join(', '))
   }
   next()
 }

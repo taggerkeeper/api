@@ -29,19 +29,19 @@ describe('addSearchPagination', () => {
   })
 
   const getLinks = (spy: sinon.SinonSpy): string[] => {
-    const links = spy.args.map(call => call[1])
-    return links.map(link => {
+    const links = spy.args[0][1].split(',').map((link: string) => link.trim())
+    return links.map((link: string) => {
       const match = link.match(/<(.*?)>/i)
       return match !== null ? match[1] : null
-    }).filter(url => url !== null)
+    }).filter((url: string) => url !== null)
   }
 
   const getRels = (spy: sinon.SinonSpy): string[] => {
-    const links = spy.args.map(call => call[1])
-    return links.map(link => {
+    const links = spy.args[0][1].split(',').map((link: string) => link.trim())
+    return links.map((link: string) => {
       const match = link.match(/rel="(.*?)"/i)
       return match !== null ? match[1] : null
-    }).filter(rel => rel !== null)
+    }).filter((rel: string) => rel !== null)
   }
 
   it('doesn\'t link to the first page if this is the first page', async () => {
