@@ -25,31 +25,9 @@ const router = Router()
  *             type: object
  *             properties:
  *               content:
- *                 type: object
- *                 properties:
- *                   title:
- *                     type: string
- *                     description: "The page's title (as of this revision)."
- *                     example: "Example Page"
- *                   path:
- *                     type: string
- *                     description: "The page's unique path (as of this revision)."
- *                     example: "/example-page"
- *                   body:
- *                     type: string
- *                     description: "The content of the page (as of this revision)."
- *                     example: "This page is an example."
+ *                 $ref: "#/components/schemas/RevisionContent"
  *               permissions:
- *                 type: object
- *                 properties:
- *                   read:
- *                     type: string
- *                     enum: [anyone, authenticated, editor, admin]
- *                     description: "Read permissions for this page (as of this revision)."
- *                   write:
- *                     type: string
- *                     enum: [anyone, authenticated, editor, admin]
- *                     description: "Write permissions for this page (as of this revision)."
+ *                 $ref: "#/components/schemas/RevisionPermissions"
  *               editor:
  *                 description: "The user who made this revision."
  *                 $ref: "#/components/schemas/User"
@@ -69,6 +47,46 @@ const router = Router()
  *             type: number
  *             description: "The timestamp of when this page was most recently updated (measured as milliseconds since January 1, 1970)."
  *             example: 1663863528000
+ *     RevisionContent:
+ *       type: object
+ *       description: "The content of a page revision."
+ *       properties:
+ *         title:
+ *           type: string
+ *           description: "The page's title (as of this revision)."
+ *           example: "Example Page"
+ *         path:
+ *           type: string
+ *           description: "The page's unique path (as of this revision)."
+ *           example: "/example-page"
+ *         body:
+ *           type: string
+ *           description: "The content of the page (as of this revision)."
+ *           example: "This page is an example."
+ *     RevisionPermissions:
+ *       type: object
+ *       description: "The page permissions (as of this revision)."
+ *       properties:
+ *         read:
+ *           type: string
+ *           enum: [anyone, authenticated, editor, admin]
+ *           description: "Read permissions for this page (as of this revision)."
+ *         write:
+ *           type: string
+ *           enum: [anyone, authenticated, editor, admin]
+ *           description: "Write permissions for this page (as of this revision)."
+ *     RevisionInput:
+ *       type: object
+ *       description: "The information that a user is expected to supply in order to create a new page revision."
+ *       properties:
+ *         content:
+ *           $ref: "#/components/schemas/RevisionContent"
+ *         permissions:
+ *           $ref: "#/components/schemas/RevisionPermissions"
+ *         msg:
+ *           type: string
+ *           description: "A message explaining the purpose and intent of the revision."
+ *           example: "Initial text"
  */
 
 // /pages
