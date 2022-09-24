@@ -3,6 +3,7 @@ import { isUserData } from '../user/data.js'
 import User from '../user/user.js'
 import Permissions from '../permissions/permissions.js'
 import RevisionData from './data.js'
+import PublicRevisionData from './public.js'
 
 class Revision {
   content: Content
@@ -27,6 +28,17 @@ class Revision {
       timestamp: this.timestamp
     }
     if (this.editor !== undefined) obj.editor = this.editor.getObj()
+    return obj
+  }
+
+  getPublicObj (): PublicRevisionData {
+    const obj: PublicRevisionData = {
+      content: this.content.getObj(),
+      permissions: this.permissions.getObj(),
+      msg: this.msg,
+      timestamp: this.timestamp
+    }
+    if (this.editor !== undefined) obj.editor = this.editor.getPublicObj()
     return obj
   }
 }

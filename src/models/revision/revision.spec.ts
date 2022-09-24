@@ -5,6 +5,7 @@ import Permissions from '../permissions/permissions.js'
 import { PermissionLevel } from '../permissions/data.js'
 import Revision from './revision.js'
 import { isRevisionData } from './data.js'
+import { isPublicRevisionData } from './public.js'
 
 describe('Revision', () => {
   const before = new Date()
@@ -69,6 +70,12 @@ describe('Revision', () => {
     describe('getObj', () => {
       it('returns a RevisionData object', () => {
         expect(isRevisionData(actual.getObj())).to.equal(true)
+      })
+    })
+
+    describe('getPublicObj', () => {
+      it('returns a PublicRevisionData object', () => {
+        expect(isPublicRevisionData(actual.getPublicObj())).to.equal(true)
       })
     })
   })
