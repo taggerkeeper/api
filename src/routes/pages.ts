@@ -1,9 +1,17 @@
 import { Request, Response, Router } from 'express'
+import expressAsyncHandler from 'express-async-handler'
 
-import allow from '../middlewares/allow.js'
-import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.js'
-import searchPages from '../middlewares/search-pages.js'
+import loadPackage from '../utils/load-package.js'
+import getAPIInfo from '../utils/get-api-info.js'
+
 import addSearchPagination from '../middlewares/add-search-pagination.js'
+import allow from '../middlewares/allow.js'
+import createPage from '../middlewares/create-page.js'
+import getRevisionFromBody from '../middlewares/get-revision-from-body.js'
+import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.js'
+import requirePage from '../middlewares/require-page.js'
+import savePage from '../middlewares/save-page.js'
+import searchPages from '../middlewares/search-pages.js'
 
 const router = Router()
 
@@ -100,7 +108,13 @@ const collection = {
   },
   get: (req: Request, res: Response) => {
     res.status(200).send(req.searchResults)
-  }
+  },
+  post: expressAsyncHandler(async (req: Request, res: Response) => {
+    const pkg = await loadPackage()
+    const { root } = getAPIInfo(pkg)
+    res.set('Location', `${root}/pages/${req.page?.id ?? ''}`)
+    res.status(201).send(req.page?.getPublicObj())
+  })
 }
 
 router.all('/', allow(collection))
@@ -119,12 +133,12 @@ router.all('/', allow(collection))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  */
 
@@ -206,12 +220,12 @@ router.options('/', collection.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Link':
  *             schema:
@@ -298,12 +312,12 @@ router.head('/', loadUserFromAccessToken, searchPages, addSearchPagination, coll
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Link':
  *             schema:
@@ -334,5 +348,43 @@ router.head('/', loadUserFromAccessToken, searchPages, addSearchPagination, coll
  */
 
 router.get('/', loadUserFromAccessToken, searchPages, addSearchPagination, collection.get)
+
+/**
+ * @openapi
+ * /pages:
+ *   post:
+ *     summary: "Create a new page."
+ *     description: "Create a new page."
+ *     tags:
+ *       - pages
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           $ref: '#/components/schemas/RevisionInput'
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: "#/components/schemas/RevisionInput"
+ *     responses:
+ *       201:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Location':
+ *             schema:
+ *               type: string
+ *               example: https://taggerkeeper.com/v1/pages/012345abcdef012345abcdef
+ *             description: "Link to the newly created page."
+ */
+
+router.post('/', loadUserFromAccessToken, getRevisionFromBody, createPage, requirePage, savePage, collection.post)
 
 export default router

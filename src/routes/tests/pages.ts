@@ -4,6 +4,7 @@ import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import { PermissionLevel } from '../../models/permissions/data.js'
 import Page from '../../models/page/page.js'
+import PageModel from '../../models/page/model.js'
 import User from '../../models/user/user.js'
 import api from '../../server.js'
 
@@ -67,7 +68,7 @@ describe('Pages API', () => {
   let pkg: NPMPackage
   let base: string
   let res: any
-  const allow = 'OPTIONS, HEAD, GET'
+  const allow = 'OPTIONS, HEAD, GET, POST'
 
   beforeEach(async () => {
     pkg = await loadPackage() as NPMPackage
@@ -83,15 +84,9 @@ describe('Pages API', () => {
         res = await request(api).options(`${base}/pages`)
       })
 
-      it('returns 204', () => {
+      it('returns correct status and headers', () => {
         expect(res.status).to.equal(204)
-      })
-
-      it('returns Allow header', () => {
         expect(res.headers.allow).to.equal(allow)
-      })
-
-      it('returns Access-Control-Allow-Methods header', () => {
         expect(res.headers['access-control-allow-methods']).to.equal(allow)
       })
     })
@@ -102,109 +97,61 @@ describe('Pages API', () => {
       })
 
       describe('Anonymous calls', () => {
-        it('returns 204', () => {
-          expect(results.anonymous.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(results.anonymous.headers.allow).to.equal(allow)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(results.anonymous.headers['access-control-allow-methods']).to.equal(allow)
-        })
-
-        it('returns link headers', () => {
+        it('returns correct status and headers', () => {
           const rels = Object.keys(parseLinks(results.anonymous.headers.link))
+          expect(results.anonymous.status).to.equal(204)
+          expect(results.anonymous.headers.allow).to.equal(allow)
+          expect(results.anonymous.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-        })
-
-        it('returns X-Total-Count header', () => {
           expect(results.anonymous.headers['x-total-count']).to.equal('10')
         })
       })
 
       describe('Authenticated calls', () => {
-        it('returns 204', () => {
-          expect(results.authenticated.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(results.authenticated.headers.allow).to.equal(allow)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(results.authenticated.headers['access-control-allow-methods']).to.equal(allow)
-        })
-
-        it('returns link headers', () => {
+        it('returns correct status and headers', () => {
           const rels = Object.keys(parseLinks(results.authenticated.headers.link))
+          expect(results.authenticated.status).to.equal(204)
+          expect(results.authenticated.headers.allow).to.equal(allow)
+          expect(results.authenticated.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-        })
-
-        it('returns X-Total-Count header', () => {
           expect(results.authenticated.headers['x-total-count']).to.equal('11')
         })
       })
 
       describe('Editor calls', () => {
-        it('returns 204', () => {
-          expect(results.editor.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(results.editor.headers.allow).to.equal(allow)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(results.editor.headers['access-control-allow-methods']).to.equal(allow)
-        })
-
-        it('returns link headers', () => {
+        it('returns correct status and headers', () => {
           const rels = Object.keys(parseLinks(results.editor.headers.link))
+          expect(results.editor.status).to.equal(204)
+          expect(results.editor.headers.allow).to.equal(allow)
+          expect(results.editor.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-        })
-
-        it('returns X-Total-Count header', () => {
           expect(results.editor.headers['x-total-count']).to.equal('12')
         })
       })
 
       describe('Admin calls', () => {
-        it('returns 204', () => {
-          expect(results.admin.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(results.admin.headers.allow).to.equal(allow)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(results.admin.headers['access-control-allow-methods']).to.equal(allow)
-        })
-
-        it('returns link headers', () => {
+        it('returns correct status and headers', () => {
           const rels = Object.keys(parseLinks(results.admin.headers.link))
+          expect(results.admin.status).to.equal(204)
+          expect(results.admin.headers.allow).to.equal(allow)
+          expect(results.admin.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-        })
-
-        it('returns X-Total-Count header', () => {
           expect(results.admin.headers['x-total-count']).to.equal('13')
         })
       })
@@ -216,28 +163,16 @@ describe('Pages API', () => {
       })
 
       describe('Anonymous calls', () => {
-        it('returns 200', () => {
-          expect(results.anonymous.status).to.equal(200)
-        })
-
-        it('returns Allow header', () => {
-          expect(results.anonymous.headers.allow).to.equal(allow)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(results.anonymous.headers['access-control-allow-methods']).to.equal(allow)
-        })
-
-        it('returns link headers', () => {
+        it('returns correct status and headers', () => {
           const rels = Object.keys(parseLinks(results.anonymous.headers.link))
+          expect(results.anonymous.status).to.equal(200)
+          expect(results.anonymous.headers.allow).to.equal(allow)
+          expect(results.anonymous.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-        })
-
-        it('returns X-Total-Count header', () => {
           expect(results.anonymous.headers['x-total-count']).to.equal('10')
         })
 
@@ -250,28 +185,16 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated calls', () => {
-        it('returns 200', () => {
-          expect(results.authenticated.status).to.equal(200)
-        })
-
-        it('returns Allow header', () => {
-          expect(results.authenticated.headers.allow).to.equal(allow)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(results.authenticated.headers['access-control-allow-methods']).to.equal(allow)
-        })
-
-        it('returns link headers', () => {
+        it('returns correct status and headers', () => {
           const rels = Object.keys(parseLinks(results.authenticated.headers.link))
+          expect(results.authenticated.status).to.equal(200)
+          expect(results.authenticated.headers.allow).to.equal(allow)
+          expect(results.authenticated.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-        })
-
-        it('returns X-Total-Count header', () => {
           expect(results.authenticated.headers['x-total-count']).to.equal('11')
         })
 
@@ -284,28 +207,16 @@ describe('Pages API', () => {
       })
 
       describe('Editor calls', () => {
-        it('returns 200', () => {
-          expect(results.editor.status).to.equal(200)
-        })
-
-        it('returns Allow header', () => {
-          expect(results.editor.headers.allow).to.equal(allow)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(results.editor.headers['access-control-allow-methods']).to.equal(allow)
-        })
-
-        it('returns link headers', () => {
+        it('returns correct status and headers', () => {
           const rels = Object.keys(parseLinks(results.editor.headers.link))
+          expect(results.editor.status).to.equal(200)
+          expect(results.editor.headers.allow).to.equal(allow)
+          expect(results.editor.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-        })
-
-        it('returns X-Total-Count header', () => {
           expect(results.editor.headers['x-total-count']).to.equal('12')
         })
 
@@ -318,28 +229,16 @@ describe('Pages API', () => {
       })
 
       describe('Admin calls', () => {
-        it('returns 200', () => {
-          expect(results.admin.status).to.equal(200)
-        })
-
-        it('returns Allow header', () => {
-          expect(results.admin.headers.allow).to.equal(allow)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(results.admin.headers['access-control-allow-methods']).to.equal(allow)
-        })
-
-        it('returns link headers', () => {
+        it('returns correct status and headers', () => {
           const rels = Object.keys(parseLinks(results.admin.headers.link))
+          expect(results.admin.status).to.equal(200)
+          expect(results.admin.headers.allow).to.equal(allow)
+          expect(results.admin.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-        })
-
-        it('returns X-Total-Count header', () => {
           expect(results.admin.headers['x-total-count']).to.equal('13')
         })
 
@@ -349,6 +248,40 @@ describe('Pages API', () => {
           expect(results.admin.body.end).to.equal(6)
           expect(results.admin.body.pages).to.have.lengthOf(2)
         })
+      })
+    })
+
+    describe('POST /pages', () => {
+      let res: any
+      const data = {
+        title: 'New Page',
+        body: 'This is a new page.'
+      }
+
+      beforeEach(async () => {
+        res = await request(api).post(`${base}/pages`).send(data)
+      })
+
+      it('returns correct status and headers', () => {
+        expect(res.status).to.equal(201)
+        expect(res.headers.allow).to.equal(allow)
+        expect(res.headers['access-control-allow-methods']).to.equal(allow)
+        expect(res.headers.location).not.to.equal(undefined)
+      })
+
+      it('creates a new page', async () => {
+        const elems = res.headers.location.split('/')
+        const id = elems[elems.length - 1]
+        const page = await PageModel.findById(id)
+        const rev = page?.revisions[0]
+        expect(page).not.to.equal(null)
+        expect(rev).not.to.equal(undefined)
+        expect(rev?.content.title).to.equal(data.title)
+        expect(rev?.content.path).to.equal('/new-page')
+        expect(rev?.content.body).to.equal(data.body)
+        expect(rev?.permissions?.read).to.equal(PermissionLevel.anyone)
+        expect(rev?.permissions?.write).to.equal(PermissionLevel.anyone)
+        expect(rev?.editor).to.equal(undefined)
       })
     })
   })
