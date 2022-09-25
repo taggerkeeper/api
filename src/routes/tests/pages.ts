@@ -68,7 +68,6 @@ describe('Pages API', () => {
   let pkg: NPMPackage
   let base: string
   let res: any
-  const allow = 'OPTIONS, HEAD, GET, POST'
 
   beforeEach(async () => {
     pkg = await loadPackage() as NPMPackage
@@ -77,6 +76,7 @@ describe('Pages API', () => {
   })
 
   describe('/pages', () => {
+    const allow = 'OPTIONS, HEAD, GET, POST'
     let results: any
 
     describe('OPTIONS /pages', () => {
@@ -252,7 +252,6 @@ describe('Pages API', () => {
     })
 
     describe('POST /pages', () => {
-      let res: any
       const data = {
         title: 'New Page',
         body: 'This is a new page.'
@@ -282,6 +281,27 @@ describe('Pages API', () => {
         expect(rev?.permissions?.read).to.equal(PermissionLevel.anyone)
         expect(rev?.permissions?.write).to.equal(PermissionLevel.anyone)
         expect(rev?.editor).to.equal(undefined)
+      })
+    })
+  })
+
+  describe('/pages/:pid', () => {
+    const allow = 'OPTIONS'
+    const page = new Page({ revisions: [{ content: { title: 'New Page', body: 'This is a new page.' } }] })
+
+    beforeEach(async () => {
+      await page.save()
+    })
+
+    describe('OPTIONS /pages', () => {
+      beforeEach(async () => {
+        res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+      })
+
+      it('returns correct status and headers', () => {
+        expect(res.status).to.equal(204)
+        expect(res.headers.allow).to.equal(allow)
+        expect(res.headers['access-control-allow-methods']).to.equal(allow)
       })
     })
   })

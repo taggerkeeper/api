@@ -387,4 +387,47 @@ router.get('/', loadUserFromAccessToken, searchPages, addSearchPagination, colle
 
 router.post('/', loadUserFromAccessToken, getRevisionFromBody, createPage, requirePage, savePage, collection.post)
 
+// /pages/:pid
+
+const item = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  }
+}
+
+router.all('/:pid', allow(item))
+
+/**
+ * @openapi
+ * /pages/{pid}:
+ *   options:
+ *     summary: "Methods for the Pages item endpoint."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
+ *     tags:
+ *       - pages
+ *     parameters:
+ *       - in: path
+ *         name: pid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The page's unique 24-digit hexadecimal ID number."
+ *         example: "0123456789abcdef12345678"
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS"
+ *             description: "The methods that this endpoint allows."
+ */
+
+router.options('/:pid', item.options)
+
 export default router
