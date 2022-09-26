@@ -25,15 +25,10 @@ describe('loadSubject', () => {
     expect(load.callCount).to.equal(0)
   })
 
-  it('loads the subject if a user ID is provided', () => {
-    mockReq.params = { uid }
-    loadSubject(mockReq, mockRes, mockNext)
-    expect(load.callCount).to.equal(1)
-  })
-
   it('loads the subject identified by the user ID provided', () => {
     mockReq.params = { uid }
     loadSubject(mockReq, mockRes, mockNext)
+    expect(load.callCount).to.equal(1)
     expect(load.calledWith(uid)).to.equal(true)
   })
 })
