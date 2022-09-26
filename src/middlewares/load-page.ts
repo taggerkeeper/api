@@ -1,10 +1,14 @@
 import { Request, Response, NextFunction } from 'express'
 import expressAsyncHandler from 'express-async-handler'
+import getPath from '../utils/get-path.js'
 import loadPageById from '../models/page/loaders/by-id.js'
+import loadPageByPath from '../models/page/loaders/by-path.js'
 
 const loadPage = async function (req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const page = await loadPageById(req.params.pid)
+    const { pid } = req.params
+    const path = getPath(req.originalUrl)
+    const page = path !== `/${pid}` ? await loadPageByPath(path) : await loadPageById(pid)
     if (page !== null) req.page = page
   } catch (err) {
     console.error(err)
