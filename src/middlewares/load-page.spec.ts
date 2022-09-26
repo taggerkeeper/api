@@ -2,6 +2,8 @@ import { expect } from 'chai'
 import { mockRequest, mockResponse } from 'mock-req-res'
 import * as sinon from 'sinon'
 import PageModel from '../models/page/model.js'
+import loadPackage from '../utils/load-package.js'
+import getAPIInfo from '../utils/get-api-info.js'
 import loadPage from './load-page.js'
 
 describe('loadPage', () => {
@@ -12,12 +14,17 @@ describe('loadPage', () => {
   const pid = '0123456789abcdef12345678'
   const path = '/path/to/page'
   const record = { id: pid, revisions: [{ content: { title: 'Hello, World!', path, body: 'This is a test.' } }] }
+  let base: string
 
-  beforeEach(() => {
+  beforeEach(async () => {
     mockReq = mockRequest()
     mockRes = mockResponse()
     mockNext = () => {}
     findOne = sinon.stub(PageModel, 'findOne')
+
+    const pkg = await loadPackage()
+    const info = await getAPIInfo(pkg)
+    base = info.base
   })
 
   afterEach(() => sinon.restore())
@@ -29,7 +36,7 @@ describe('loadPage', () => {
 
   it('loads the page identified by the page ID provided', async () => {
     findOne.resolves(record)
-    mockReq.originalUrl = `/pages/${pid}`
+    mockReq.originalUrl = `${base}/pages/${pid}`
     mockReq.params = { pid }
     await loadPage(mockReq, mockRes, mockNext)
     expect(mockReq.page?.id).to.equal(pid)
@@ -37,7 +44,7 @@ describe('loadPage', () => {
 
   it('loads the page identified by the path provided', async () => {
     findOne.resolves(record)
-    mockReq.originalUrl = `/pages${path}?q=test&n=42`
+    mockReq.originalUrl = `${base}/pages${path}?q=test&n=42`
     await loadPage(mockReq, mockRes, mockNext)
     expect(mockReq.page?.id).to.equal(pid)
   })
