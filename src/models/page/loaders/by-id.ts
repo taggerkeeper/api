@@ -9,7 +9,7 @@ const loadPageById = async (id: string, searcher?: User): Promise<Page | null> =
   try {
     if (!isValid(id)) return null
     const record = await PageModel.findOne({ $and: [{ _id: id }, getSecuritySubquery(searcher)] })
-    return record === null ? null : new Page(record)
+    return record === null || record === undefined ? null : new Page(record)
   } catch (err) {
     console.error(err)
     return null
