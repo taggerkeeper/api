@@ -8,7 +8,7 @@ const loadPage = async function (req: Request, res: Response, next: NextFunction
   try {
     const { pid } = req.params
     const path = getPath(req.originalUrl)
-    const page = path !== `/${pid}` ? await loadPageByPath(path) : await loadPageById(pid)
+    const page = path !== `/${pid}` ? await loadPageByPath(path, req.user) : await loadPageById(pid, req.user)
     if (page !== null) req.page = page
   } catch (err) {
     console.error(err)
