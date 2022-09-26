@@ -11,19 +11,19 @@ describe('loadPageById', () => {
   afterEach(() => sinon.restore())
 
   it('returns null if not given a valid ID', async () => {
-    sinon.stub(PageModel, 'findById').resolves(null)
+    sinon.stub(PageModel, 'findOne').resolves(null)
     const actual = await loadPageById(id)
     expect(actual).to.equal(null)
   })
 
   it('returns null if given a valid ID that does not exist', async () => {
-    sinon.stub(PageModel, 'findById').resolves(null)
+    sinon.stub(PageModel, 'findOne').resolves(null)
     const actual = await loadPageById(id)
     expect(actual).to.equal(null)
   })
 
   it('returns a page if given a valid, existing ID', async () => {
-    sinon.stub(PageModel, 'findById').resolves(record)
+    sinon.stub(PageModel, 'findOne').resolves(record)
     const actual = await loadPageById(id)
     expect(actual).to.be.an.instanceOf(Page)
   })
