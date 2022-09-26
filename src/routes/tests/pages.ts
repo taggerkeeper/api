@@ -64,6 +64,23 @@ const runSearchTest = async (base: string, method: 'head' | 'get' = 'get'): Prom
   }
 }
 
+const initUser = async (user: User): Promise<{Authorization: string}> => {
+  await user.save()
+  const tokens = await user.generateTokens()
+  await user.save()
+  return { Authorization: `Bearer ${tokens.access}` }
+}
+
+const testPageLoad = async (base: string, method: string = 'GET', page: Page, auth?: { Authorization: string }): Promise<{ id: any, path: any }> => {
+  const fn = method === 'HEAD' ? request(api).head : request(api).get
+  await page.save()
+  const idUrl = `${base}/pages/${page.id ?? ''}`
+  const pathUrl = `${base}/pages${page.revisions[0].content.path ?? ''}`
+  const id = auth === undefined ? await fn(idUrl) : await fn(idUrl).set(auth)
+  const path = auth === undefined ? await fn(pathUrl) : await fn(pathUrl).set(auth)
+  return { id, path }
+}
+
 describe('Pages API', () => {
   let pkg: NPMPackage
   let base: string
@@ -286,15 +303,20 @@ describe('Pages API', () => {
   })
 
   describe('/pages/:pid', () => {
-    const allow = 'OPTIONS'
-    const page = new Page({ revisions: [{ content: { title: 'New Page', body: 'This is a new page.' } }] })
+    const allow = 'OPTIONS, HEAD, GET'
+    const title = 'New Page'
+    const body = 'This is a new page.'
+    const anyone = { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } }
+    const authenticated = { content: { title, body }, permissions: { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated } }
+    const editor = { content: { title, body }, permissions: { read: PermissionLevel.editor, write: PermissionLevel.editor } }
+    const admin = { content: { title, body }, permissions: { read: PermissionLevel.admin, write: PermissionLevel.admin } }
 
-    beforeEach(async () => {
-      await page.save()
-    })
+    describe('OPTIONS /pages/:pid', () => {
+      let page: Page
 
-    describe('OPTIONS /pages', () => {
       beforeEach(async () => {
+        page = new Page({ revisions: [{ content: { title: 'New Page', body: 'This is a new page.' } }] })
+        await page.save()
         res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
       })
 
@@ -302,6 +324,642 @@ describe('Pages API', () => {
         expect(res.status).to.equal(204)
         expect(res.headers.allow).to.equal(allow)
         expect(res.headers['access-control-allow-methods']).to.equal(allow)
+      })
+    })
+
+    describe('HEAD /pages/:pid', () => {
+      describe('Anonymous user', () => {
+        it('returns correct status and headers for an anonymous user requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an anonymous user requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an anonymous user requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an anonymous user requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+      })
+
+      describe('Authenticated user', () => {
+        const user = new User({ name: 'Authenticated User' })
+        let auth = { Authorization: '' }
+
+        beforeEach(async () => {
+          auth = await initUser(user)
+        })
+
+        it('returns correct status and headers for an authenticated user requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an authenticated user requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an authenticated user requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an authenticated user requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+      })
+
+      describe('Editor', () => {
+        const user = new User({ name: 'Editor' })
+        let auth = { Authorization: '' }
+
+        beforeEach(async () => {
+          auth = await initUser(user)
+        })
+
+        it('returns correct status and headers for an editor requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, anyone, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an editor requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, authenticated, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an editor requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, editor, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an editor requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, admin, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+      })
+
+      describe('Admin', () => {
+        const user = new User({ name: 'Admin', admin: true })
+        let auth = { Authorization: '' }
+
+        beforeEach(async () => {
+          auth = await initUser(user)
+        })
+
+        it('returns correct status and headers for an admin requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an admin requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an admin requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns correct status and headers for an admin requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+      })
+    })
+
+    describe('GET /pages/:pid', () => {
+      describe('Anonymous user', () => {
+        it('returns correct status and headers for an anonymous user requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'GET', page)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an anonymous user requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'GET', page)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an anonymous user requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'GET', page)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns an error message for an anonymous user requesting a page that authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'GET', page)
+
+          expect(id.body.message).to.equal('Page not found.')
+          expect(path.body.message).to.equal('Page not found.')
+        })
+
+        it('returns correct status and headers for an anonymous user requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'GET', page)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns an error message for an anonymous user requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'GET', page)
+
+          expect(id.body.message).to.equal('Page not found.')
+          expect(path.body.message).to.equal('Page not found.')
+        })
+
+        it('returns correct status and headers for an anonymous user requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'GET', page)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns an error message for an anonymous user requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'GET', page)
+
+          expect(id.body.message).to.equal('Page not found.')
+          expect(path.body.message).to.equal('Page not found.')
+        })
+      })
+
+      describe('Authenticated user', () => {
+        const user = new User({ name: 'Authenticated User' })
+        let auth = { Authorization: '' }
+
+        beforeEach(async () => {
+          auth = await initUser(user)
+        })
+
+        it('returns correct status and headers for an authenticated user requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an authenticated user requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an authenticated user requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an anonymous user requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an authenticated user requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns an error message for an authenticated user requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.message).to.equal('Page not found.')
+          expect(path.body.message).to.equal('Page not found.')
+        })
+
+        it('returns correct status and headers for an authenticated user requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns an error message for an authenticated user requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.message).to.equal('Page not found.')
+          expect(path.body.message).to.equal('Page not found.')
+        })
+      })
+
+      describe('Editor', () => {
+        const user = new User({ name: 'Editor' })
+        let auth = { Authorization: '' }
+
+        beforeEach(async () => {
+          auth = await initUser(user)
+        })
+
+        it('returns correct status and headers for an editor requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, anyone, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an editor requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, anyone, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an editor requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, authenticated, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an editor requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, authenticated, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an editor requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, editor, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an editor requesting a page that only an editor can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, editor, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an editor requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, admin, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(404)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(404)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns an error message for an editor requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [Object.assign({}, admin, { editor: user.getObj() })] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.message).to.equal('Page not found.')
+          expect(path.body.message).to.equal('Page not found.')
+        })
+      })
+
+      describe('Admin', () => {
+        const user = new User({ name: 'Admin', admin: true })
+        let auth = { Authorization: '' }
+
+        beforeEach(async () => {
+          auth = await initUser(user)
+        })
+
+        it('returns correct status and headers for an admin requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an admin requesting a page that anyone can read', async () => {
+          const page = new Page({ revisions: [anyone] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an admin requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an admin requesting a page that only authenticated users can read', async () => {
+          const page = new Page({ revisions: [authenticated] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an admin requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an admin requesting a page that only editors can read', async () => {
+          const page = new Page({ revisions: [editor] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+
+        it('returns correct status and headers for an admin requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.status).to.equal(200)
+          expect(id.headers.allow).to.equal(allow)
+          expect(id.headers['access-control-allow-methods']).to.equal(allow)
+
+          expect(path.status).to.equal(200)
+          expect(path.headers.allow).to.equal(allow)
+          expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('returns the page for an admin requesting a page that only admins can read', async () => {
+          const page = new Page({ revisions: [admin] })
+          const { id, path } = await testPageLoad(base, 'GET', page, auth)
+
+          expect(id.body.revisions[0].content.title).to.equal(title)
+          expect(id.body.revisions[0].content.body).to.equal(body)
+
+          expect(path.body.revisions[0].content.title).to.equal(title)
+          expect(path.body.revisions[0].content.body).to.equal(body)
+        })
       })
     })
   })
