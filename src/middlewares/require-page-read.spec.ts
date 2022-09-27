@@ -126,7 +126,7 @@ describe('requirePageRead', () => {
       mockReq.user = other
       requirePageRead(mockReq, mockRes, mockNext)
       expect(mockRes.status).to.have.been.calledWith(403)
-      expect(mockRes.send).to.have.been.calledWithMatch({ message: 'You do not have permission to update this page.' })
+      expect(mockRes.send).to.have.been.calledWithMatch({ message: 'You do not have permission to view this page.' })
     })
 
     it('allows editors', () => {
@@ -158,14 +158,14 @@ describe('requirePageRead', () => {
       mockReq.user = other
       requirePageRead(mockReq, mockRes, mockNext)
       expect(mockRes.status).to.have.been.calledWith(403)
-      expect(mockRes.send).to.have.been.calledWithMatch({ message: 'You do not have permission to update this page.' })
+      expect(mockRes.send).to.have.been.calledWithMatch({ message: 'You do not have permission to view this page.' })
     })
 
     it('doesn\'t allow editors', () => {
       mockReq.user = editor
       requirePageRead(mockReq, mockRes, mockNext)
       expect(mockRes.status).to.have.been.calledWith(403)
-      expect(mockRes.send).to.have.been.calledWithMatch({ message: 'You do not have permission to update this page.' })
+      expect(mockRes.send).to.have.been.calledWithMatch({ message: 'You do not have permission to view this page.' })
     })
 
     it('allows admins', () => {
