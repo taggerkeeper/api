@@ -11,8 +11,11 @@ import getRevisionFromBody from '../middlewares/get-revision-from-body.js'
 import loadPage from '../middlewares/load-page.js'
 import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.js'
 import requirePage from '../middlewares/require-page.js'
+import requirePageRead from '../middlewares/require-page-read.js'
+import requirePageWrite from '../middlewares/require-page-write.js'
 import savePage from '../middlewares/save-page.js'
 import searchPages from '../middlewares/search-pages.js'
+import updatePage from '../middlewares/update-page.js'
 
 const router = Router()
 
@@ -399,6 +402,9 @@ const item = {
   },
   get: (req: Request, res: Response) => {
     res.status(200).send(req.page?.getPublicObj())
+  },
+  post: (req: Request, res: Response) => {
+    res.status(200).send(req.page?.getPublicObj())
   }
 }
 
@@ -432,12 +438,12 @@ router.all('/:pid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  */
 
@@ -471,23 +477,23 @@ router.options('/:pid', item.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  */
 
-router.head('/:pid', loadUserFromAccessToken, loadPage, requirePage, item.head)
+router.head('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.head)
 
 /**
  * @openapi
  * /pages/{pid}:
- *   head:
- *     summary: "Return the headers for a page."
- *     description: "Return the headers for a page."
+ *   get:
+ *     summary: "Return a page."
+ *     description: "Return a page."
  *     tags:
  *       - pages
  *     parameters:
@@ -510,18 +516,68 @@ router.head('/:pid', loadUserFromAccessToken, loadPage, requirePage, item.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET"
+ *               example: "OPTIONS, HEAD, GET, POST"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             $ref: "#/components/schemas/Page"
  */
 
-router.get('/:pid', loadUserFromAccessToken, loadPage, requirePage, item.get)
+router.get('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.get)
+
+/**
+ * @openapi
+ * /pages/{pid}:
+ *   post:
+ *     summary: "Update a page."
+ *     description: "Update a page."
+ *     tags:
+ *       - pages
+ *     parameters:
+ *       - in: path
+ *         name: pid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The page's unique path or 24-digit hexadecimal ID number."
+ *         examples:
+ *           pid:
+ *             value: "0123456789abcdef12345678"
+ *             summary: "The page's unique 24-digit hexadecimal ID number."
+ *           path:
+ *             value: "/path/to/page"
+ *             summary: "The page's unique path."
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           $ref: '#/components/schemas/RevisionInput'
+ *         application/x-www-form-urlencoded:
+ *           schema:
+ *             $ref: "#/components/schemas/RevisionInput"
+ *     responses:
+ *       200:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             $ref: "#/components/schemas/Page"
+ */
+
+router.post('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, getRevisionFromBody, updatePage, savePage, item.post)
 
 export default router

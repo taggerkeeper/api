@@ -1,11 +1,15 @@
 import { expect } from 'chai'
 import request from 'supertest'
 import loadPackage, { NPMPackage } from '../../utils/load-package.js'
+import loadPageById from '../../models/page/loaders/by-id.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import { PermissionLevel } from '../../models/permissions/data.js'
+import ContentData from '../../models/content/data.js'
+import PermissionsData from '../../models/permissions/data.js'
 import Page from '../../models/page/page.js'
 import PageModel from '../../models/page/model.js'
-import User from '../../models/user/user.js'
+import RevisionData from '../../models/revision/data.js'
+import User, { TokenSet } from '../../models/user/user.js'
 import api from '../../server.js'
 
 const parseLinks = (header: string): any => {
@@ -72,8 +76,8 @@ const initUser = async (user: User): Promise<{Authorization: string}> => {
 }
 
 const testPageLoad = async (base: string, method: string = 'GET', page: Page, auth?: { Authorization: string }): Promise<{ id: any, path: any }> => {
-  const fn = method === 'HEAD' ? request(api).head : request(api).get
   await page.save()
+  const fn = method === 'HEAD' ? request(api).head : request(api).get
   const idUrl = `${base}/pages/${page.id ?? ''}`
   const pathUrl = `${base}/pages${page.revisions[0].content.path ?? ''}`
   const id = auth === undefined ? await fn(idUrl) : await fn(idUrl).set(auth)
@@ -303,7 +307,7 @@ describe('Pages API', () => {
   })
 
   describe('/pages/:pid', () => {
-    const allow = 'OPTIONS, HEAD, GET'
+    const allow = 'OPTIONS, HEAD, GET, POST'
     const title = 'New Page'
     const body = 'This is a new page.'
     const anyone = { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } }
@@ -959,6 +963,257 @@ describe('Pages API', () => {
 
           expect(path.body.revisions[0].content.title).to.equal(title)
           expect(path.body.revisions[0].content.body).to.equal(body)
+        })
+      })
+    })
+
+    describe('POST /pages/:pid', () => {
+      const editor = new User()
+      const admin = new User({ name: 'Admin', admin: true })
+      let content: ContentData
+      let permissions: PermissionsData
+      let orig: RevisionData
+
+      const title = 'New Revision'
+      const body = 'This is the revised body.'
+      const update = { title, body, msg: 'New revision' }
+
+      before(async () => {
+        await editor.save()
+      })
+
+      beforeEach(() => {
+        content = { title: 'Original Revision', body: 'This is the original body.' }
+        permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+        orig = { content, permissions, msg: 'Initial text' }
+        orig.editor = editor.getObj()
+      })
+
+      describe('An anonymous user', () => {
+        it('can update a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).send(update)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+        })
+
+        it('won\'t update a page that only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).send(update)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(401)
+          expect(after?.revisions).to.have.lengthOf(1)
+        })
+
+        it('won\'t update a page that only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).send(update)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(401)
+          expect(after?.revisions).to.have.lengthOf(1)
+        })
+
+        it('won\'t update a page that only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).send(update)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(401)
+          expect(after?.revisions).to.have.lengthOf(1)
+        })
+      })
+
+      describe('An authenticated user', () => {
+        let user = new User()
+        let tokens: TokenSet
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await user.generateTokens()
+          await user.save()
+        })
+
+        it('can update a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId =after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(user.id?.toString())
+        })
+
+        it('can update a page that only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId = after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(user.id?.toString())
+        })
+
+        it('can\'t update a page that only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(403)
+          expect(after?.revisions).to.have.lengthOf(1)
+        })
+
+        it('can\'t update a page that only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(403)
+          expect(after?.revisions).to.have.lengthOf(1)
+        })
+      })
+
+      describe('An editor', () => {
+        let tokens: TokenSet
+
+        beforeEach(async () => {
+          tokens = await editor.generateTokens()
+          await editor.save()
+        })
+
+        it('can update a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId =after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(editor.id?.toString())
+        })
+
+        it('can update a page that only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId = after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(editor.id?.toString())
+        })
+
+        it('can update a page that only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId = after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(editor.id?.toString())
+        })
+
+        it('can\'t update a page that only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(403)
+          expect(after?.revisions).to.have.lengthOf(1)
+        })
+      })
+
+      describe('An admin', () => {
+        let tokens: TokenSet
+
+        before(async () => {
+          await admin.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await admin.generateTokens()
+          await admin.save()
+        })
+
+        it('can update a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId =after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(admin.id?.toString())
+        })
+
+        it('can update a page that only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId = after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(admin.id?.toString())
+        })
+
+        it('can update a page that only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId = after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(admin.id?.toString())
+        })
+
+        it('can update a page that only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const after = await loadPageById(pid, admin)
+          const mostRecentEditorId = after?.revisions[0].editor?.id
+          expect(res.status).to.equal(200)
+          expect(after?.revisions).to.have.lengthOf(2)
+          expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
       })
     })
