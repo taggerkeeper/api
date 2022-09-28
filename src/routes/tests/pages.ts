@@ -3,9 +3,8 @@ import request from 'supertest'
 import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import loadPageById from '../../models/page/loaders/by-id.js'
 import getAPIInfo from '../../utils/get-api-info.js'
-import { PermissionLevel } from '../../models/permissions/data.js'
 import ContentData from '../../models/content/data.js'
-import PermissionsData from '../../models/permissions/data.js'
+import PermissionsData, { PermissionLevel } from '../../models/permissions/data.js'
 import Page from '../../models/page/page.js'
 import PageModel from '../../models/page/model.js'
 import RevisionData from '../../models/revision/data.js'
@@ -1035,7 +1034,7 @@ describe('Pages API', () => {
       })
 
       describe('An authenticated user', () => {
-        let user = new User()
+        const user = new User()
         let tokens: TokenSet
 
         before(async () => {
@@ -1053,7 +1052,7 @@ describe('Pages API', () => {
           const pid = page.id ?? ''
           res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
-          const mostRecentEditorId =after?.revisions[0].editor?.id
+          const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(user.id?.toString())
@@ -1109,7 +1108,7 @@ describe('Pages API', () => {
           const pid = page.id ?? ''
           res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
-          const mostRecentEditorId =after?.revisions[0].editor?.id
+          const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(editor.id?.toString())
@@ -1171,7 +1170,7 @@ describe('Pages API', () => {
           const pid = page.id ?? ''
           res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
-          const mostRecentEditorId =after?.revisions[0].editor?.id
+          const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
