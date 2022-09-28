@@ -5,7 +5,8 @@ import User from '../../user/user.js'
 
 const loadPageByPath = async (path: string, searcher?: User): Promise<Page | null> => {
   try {
-    const record = await PageModel.findOne({ $and: [{ 'revisions.0.content.path': path }, getSecuritySubquery(searcher)] })
+    const query = { $and: [{ 'revisions.0.content.path': path }, getSecuritySubquery(searcher)] }
+    const record = await PageModel.findOne(query).populate('revisions.editor')
     return record === null || record === undefined ? null : new Page(record)
   } catch (err) {
     console.error(err)
