@@ -1,7 +1,7 @@
 import { expect } from 'chai'
+import { Model } from 'mongoose'
 import * as sinon from 'sinon'
 import Page from '../page.js'
-import PageModel from '../model.js'
 import loadPageByPath from './by-path.js'
 
 describe('loadPageByPath', () => {
@@ -14,13 +14,13 @@ describe('loadPageByPath', () => {
   afterEach(() => sinon.restore())
 
   it('returns null if given a path that does not exist', async () => {
-    sinon.stub(PageModel, 'findOne').resolves(null)
+    sinon.stub(Model, 'findOne').returns({ populate: sinon.stub().resolves(null) } as any)
     const actual = await loadPageByPath('/nope')
     expect(actual).to.equal(null)
   })
 
   it('returns a page if given a valid, existing path', async () => {
-    sinon.stub(PageModel, 'findOne').resolves(record)
+    sinon.stub(Model, 'findOne').returns({ populate: sinon.stub().resolves(record) } as any)
     const actual = await loadPageByPath(path)
     expect(actual).to.be.an.instanceOf(Page)
   })
