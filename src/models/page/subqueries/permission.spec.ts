@@ -13,9 +13,9 @@ describe('getPermissionSubquery', () => {
     expect(JSON.stringify(getPermissionSubquery(undefined))).to.equal(anyoneJson)
   })
 
-  it('returns an empty object if the user is an admin', () => {
+  it('returns false if the user is an admin', () => {
     const admin = new User({ name: 'Admin', admin: true })
-    expect(JSON.stringify(getPermissionSubquery(admin))).to.equal('{}')
+    expect(getPermissionSubquery(admin)).to.equal(false)
   })
 
   it('returns permissions logic for other users', () => {

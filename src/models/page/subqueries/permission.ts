@@ -3,7 +3,7 @@ import User from '../../user/user.js'
 import exists from '../../../utils/exists.js'
 
 const getPermissionSubquery = (searcher?: User): any => {
-  if (searcher?.admin === true) return {}
+  if (searcher?.admin === true) return false
 
   const levels = {
     anyone: { 'revisions.0.permissions.read': PermissionLevel.anyone },
