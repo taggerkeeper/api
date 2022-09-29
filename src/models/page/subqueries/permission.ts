@@ -2,7 +2,7 @@ import { PermissionLevel } from '../../permissions/data.js'
 import User from '../../user/user.js'
 import exists from '../../../utils/exists.js'
 
-const getSecuritySubquery = (searcher?: User): any => {
+const getPermissionSubquery = (searcher?: User): any => {
   if (searcher?.admin === true) return {}
 
   const levels = {
@@ -16,4 +16,4 @@ const getSecuritySubquery = (searcher?: User): any => {
   return { $or: [levels.anyone, levels.authenticated, { $and: [levels.editor, isEditor] }] }
 }
 
-export default getSecuritySubquery
+export default getPermissionSubquery
