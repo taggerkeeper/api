@@ -664,7 +664,7 @@ router.get('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, require
  * /pages/{pid}:
  *   put:
  *     summary: "Update a page."
- *     description: "Update a page."
+ *     description: "The most common use for this method is to update a page, but you can also call this method for a page without any update if it has been marked for deletion, in which case it will be unmarked. Both of these functions require the user to have write permissions for the page."
  *     tags:
  *       - pages
  *     parameters:
@@ -682,7 +682,7 @@ router.get('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, require
  *             value: "/path/to/page"
  *             summary: "The page's unique path."
  *     requestBody:
- *       required: true
+ *       description: "Calling this method without a body can be effective if the page was marked for deletion (in which case calling this method will unmark it, if you have permission to update it). If the page is not marked for deletion, then calling this method without an update will have no effect."
  *       content:
  *         application/json:
  *           schema:
