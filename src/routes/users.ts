@@ -201,7 +201,7 @@ const item = {
     const { subject } = req
     res.status(200).send(subject?.getPublicObj())
   },
-  post: (req: Request, res: Response) => {
+  put: (req: Request, res: Response) => {
     const { subject } = req
     res.status(200).send(subject?.getPublicObj())
   }
@@ -231,15 +231,26 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -251,6 +262,17 @@ router.all('/:uid', allow(item))
  *                   example: "No user ID (uid) provided."
  *       404:
  *         description: "The requested user could not be found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -287,15 +309,26 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "No user ID (uid) was provided."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -307,6 +340,17 @@ router.options('/:uid', loadSubject, requireSubject, item.options)
  *                   example: "No user ID (uid) provided."
  *       404:
  *         description: "The requested user could not be found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -343,12 +387,12 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -356,6 +400,17 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *               $ref: "#/components/schemas/User"
  *       400:
  *         description: "No user ID (uid) was provided."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -367,6 +422,17 @@ router.head('/:uid', loadSubject, requireSubject, item.head)
  *                   example: "No user ID (uid) provided."
  *       404:
  *         description: "The requested user could not be found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -383,7 +449,7 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
 /**
  * @openapi
  * /users/{uid}:
- *   post:
+ *   put:
  *     summary: "Update a user."
  *     description: "Update a user's name and/or password. This method can only be used while authenticated as the subject or as an administrator."
  *     tags:
@@ -403,12 +469,12 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -416,6 +482,17 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *               $ref: "#/components/schemas/User"
  *       400:
  *         description: "No user ID (uid) was provided."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -428,6 +505,16 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *       401:
  *         description: "This method requires authentication."
  *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
@@ -444,6 +531,17 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *                   example: "This method requires authentication."
  *       403:
  *         description: "This endpoint can only be used by the subject or an administrator."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -456,6 +554,17 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *
  *       404:
  *         description: "The requested user could not be found."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -467,7 +576,7 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *                   example: "No user found with the ID 0123456789abcdef12345678."
  */
 
-router.post('/:uid', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, updateSubjectName, updateSubjectPassword, saveSubject, item.post)
+router.put('/:uid', loadUserFromAccessToken, requireUser, loadSubject, requireSubject, requireSelfOrAdmin, updateSubjectName, updateSubjectPassword, saveSubject, item.put)
 
 // /users/:uid/emails
 

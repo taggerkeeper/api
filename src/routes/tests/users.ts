@@ -152,11 +152,11 @@ describe('Users API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, HEAD, GET, POST')
+        expect(res.headers.allow).to.equal('OPTIONS, HEAD, GET, PUT')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, HEAD, GET, POST')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, HEAD, GET, PUT')
       })
     })
 
@@ -187,7 +187,7 @@ describe('Users API', () => {
       })
     })
 
-    describe('POST /users/:uid', () => {
+    describe('PUT /users/:uid', () => {
       const user = new User()
       const name = 'New Name'
       const password = 'Longer passwords are still better passwords, even when you change them.'
@@ -200,7 +200,7 @@ describe('Users API', () => {
           tokens = await user.generateTokens()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
+          res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
 
         it('returns 200', () => {
@@ -229,7 +229,7 @@ describe('Users API', () => {
           tokens = await admin.generateTokens()
           await admin.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
+          res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
 
         it('returns 200', () => {
@@ -258,7 +258,7 @@ describe('Users API', () => {
           tokens = await other.generateTokens()
           await other.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
+          res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
 
         it('returns 403', () => {
@@ -281,7 +281,7 @@ describe('Users API', () => {
         beforeEach(async () => {
           user.active = true
           await user.save()
-          res = await request(api).post(`${base}/users/${user.id ?? ''}`).send({ name, password })
+          res = await request(api).put(`${base}/users/${user.id ?? ''}`).send({ name, password })
         })
 
         it('returns 400', () => {
