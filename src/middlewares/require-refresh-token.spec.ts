@@ -28,6 +28,13 @@ describe('requireRefreshToken', () => {
     expect(mockRes.status.firstCall.args[0]).to.equal(401)
   })
 
+  it('returns a WWW-Authenticate header if no user is found', async () => {
+    sinon.stub(UserModel, 'findOne').resolves(null)
+    await requireRefreshToken(mockReq, mockRes, mockNext)
+    expect(mockRes.set.firstCall.args[0]).to.equal('WWW-Authenticate')
+    expect(mockRes.set.firstCall.args[1]).to.equal('Bearer error="invalid_token" error_description="The access token could not be verified."')
+  })
+
   it('provides an error message if no user is found', async () => {
     sinon.stub(UserModel, 'findOne').resolves(null)
     await requireRefreshToken(mockReq, mockRes, mockNext)

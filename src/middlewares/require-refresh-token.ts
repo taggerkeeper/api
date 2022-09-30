@@ -6,6 +6,7 @@ const requireRefreshToken = async function (req: Request, res: Response, next: N
   const { refresh } = req.body
   const user = await loadUserByIdAndRefresh(req.params.uid, refresh)
   if (user === null) {
+    res.set('WWW-Authenticate', 'Bearer error="invalid_token" error_description="The access token could not be verified."')
     res.status(401).send({ message: 'Could not verify refresh token.' })
   } else {
     req.user = user
