@@ -306,7 +306,7 @@ describe('Pages API', () => {
   })
 
   describe('/pages/:pid', () => {
-    const allow = 'OPTIONS, HEAD, GET, POST'
+    const allow = 'OPTIONS, HEAD, GET, POST, DELETE'
     const title = 'New Page'
     const body = 'This is a new page.'
     const anyone = { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } }
@@ -1213,6 +1213,235 @@ describe('Pages API', () => {
           expect(res.status).to.equal(200)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
+        })
+      })
+    })
+
+    describe('DELETE /pages/:pid', () => {
+      const editor = new User()
+      const admin = new User({ name: 'Admin', admin: true })
+      let content: ContentData
+      let permissions: PermissionsData
+      let orig: RevisionData
+
+      before(async () => {
+        await editor.save()
+      })
+
+      beforeEach(() => {
+        content = { title: 'Original Revision', body: 'This is the original body.' }
+        permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+        orig = { content, permissions, msg: 'Initial text' }
+        orig.editor = editor.getObj()
+      })
+
+      describe('An anonymous user', () => {
+        it('can delete a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('won\'t delete a page that only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(401)
+          expect(after?.trashed).to.equal(undefined)
+        })
+
+        it('won\'t delete a page that only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(401)
+          expect(after?.trashed).to.equal(undefined)
+        })
+
+        it('won\'t delete a page that only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`)
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(401)
+          expect(after?.trashed).to.equal(undefined)
+        })
+      })
+
+      describe('An authenticated user', () => {
+        const user = new User()
+        let tokens: TokenSet
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await user.generateTokens()
+          await user.save()
+        })
+
+        it('can delete a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('can delete a page that only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('can\'t delete a page that only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(403)
+          expect(after?.trashed).to.equal(undefined)
+        })
+
+        it('can\'t delete a page that only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(403)
+          expect(after?.trashed).to.equal(undefined)
+        })
+      })
+
+      describe('An editor', () => {
+        let tokens: TokenSet
+
+        beforeEach(async () => {
+          tokens = await editor.generateTokens()
+          await editor.save()
+        })
+
+        it('can delete a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('can delete a page that only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('can delete a page that only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('can\'t delete a page that only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(403)
+          expect(after?.trashed).to.equal(undefined)
+        })
+      })
+
+      describe('An admin', () => {
+        let tokens: TokenSet
+
+        before(async () => {
+          await admin.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await admin.generateTokens()
+          await admin.save()
+        })
+
+        it('can delete a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('can delete a page that only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('can delete a page that only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('can delete a page that only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig] })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.be.an.instanceOf(Date)
         })
       })
     })

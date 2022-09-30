@@ -15,6 +15,7 @@ import requirePageRead from '../middlewares/require-page-read.js'
 import requirePageWrite from '../middlewares/require-page-write.js'
 import savePage from '../middlewares/save-page.js'
 import searchPages from '../middlewares/search-pages.js'
+import trashPage from '../middlewares/trash-page.js'
 import updatePage from '../middlewares/update-page.js'
 
 const router = Router()
@@ -405,6 +406,9 @@ const item = {
   },
   post: (req: Request, res: Response) => {
     res.status(200).send(req.page?.getPublicObj())
+  },
+  delete: (req: Request, res: Response) => {
+    res.status(200).send(req.page?.getPublicObj())
   }
 }
 
@@ -579,5 +583,48 @@ router.get('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.get
  */
 
 router.post('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, getRevisionFromBody, updatePage, savePage, item.post)
+
+/**
+ * @openapi
+ * /pages/{pid}:
+ *   delete:
+ *     summary: "Delete a page."
+ *     description: "Delete a page."
+ *     tags:
+ *       - pages
+ *     parameters:
+ *       - in: path
+ *         name: pid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The page's unique path or 24-digit hexadecimal ID number."
+ *         examples:
+ *           pid:
+ *             value: "0123456789abcdef12345678"
+ *             summary: "The page's unique 24-digit hexadecimal ID number."
+ *           path:
+ *             value: "/path/to/page"
+ *             summary: "The page's unique path."
+ *     responses:
+ *       200:
+ *         description: "The page has been deleted. A representation of the page just prior to its deletion is returned."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             $ref: "#/components/schemas/Page"
+ */
+
+router.delete('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, trashPage, savePage, item.delete)
 
 export default router
