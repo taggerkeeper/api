@@ -118,6 +118,17 @@ router.options('/', collection.options)
  *             description: "A JSON web token (JWT) which can be submitted as a Bearer token to authorize access to secured parts of the API."
  *       400:
  *         description: "Authentication failed."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -129,6 +140,17 @@ router.options('/', collection.options)
  *                   example: "Authentication failed."
  *       500:
  *         description: "An unexpected error occurred."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -184,6 +206,17 @@ router.all('/:uid', allow(item))
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "The refresh token was not included as the 'refresh' property in the body."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -195,6 +228,22 @@ router.all('/:uid', allow(item))
  *                   example: "This method requires a body with elements 'refresh'"
  *       401:
  *         description: "The refresh token provided could not be verified."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
@@ -261,6 +310,17 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *             description: "A JSON web token (JWT) which can be submitted as a Bearer token to authorize access to secured parts of the API."
  *       400:
  *         description: "The refresh token was not included as the 'refresh' property in the body."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -272,6 +332,22 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *                   example: "This method requires a body with elements 'refresh'"
  *       401:
  *         description: "The refresh token provided could not be verified."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, POST"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "A description of what you need to authenticate. See `POST /tokens` for the method necessary to obtain an access token. This token should be passed to the method in a Bearer Authorization header."
  *         content:
  *           application/json:
  *             schema:
