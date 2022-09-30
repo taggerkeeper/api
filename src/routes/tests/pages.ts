@@ -306,7 +306,7 @@ describe('Pages API', () => {
   })
 
   describe('/pages/:pid', () => {
-    const allow = 'OPTIONS, HEAD, GET, POST, DELETE'
+    const allow = 'OPTIONS, HEAD, GET, PUT, DELETE'
     const title = 'New Page'
     const body = 'This is a new page.'
     const anyone = { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } }
@@ -966,7 +966,7 @@ describe('Pages API', () => {
       })
     })
 
-    describe('POST /pages/:pid', () => {
+    describe('PUT /pages/:pid', () => {
       const editor = new User()
       const admin = new User({ name: 'Admin', admin: true })
       let content: ContentData
@@ -993,7 +993,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.revisions).to.have.lengthOf(2)
@@ -1004,7 +1004,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
           expect(after?.revisions).to.have.lengthOf(1)
@@ -1015,7 +1015,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
           expect(after?.revisions).to.have.lengthOf(1)
@@ -1026,7 +1026,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
           expect(after?.revisions).to.have.lengthOf(1)
@@ -1050,7 +1050,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1063,7 +1063,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1076,7 +1076,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.revisions).to.have.lengthOf(1)
@@ -1087,7 +1087,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.revisions).to.have.lengthOf(1)
@@ -1106,7 +1106,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1119,7 +1119,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1132,7 +1132,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1145,7 +1145,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.revisions).to.have.lengthOf(1)
@@ -1168,7 +1168,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1181,7 +1181,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1194,7 +1194,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1207,7 +1207,7 @@ describe('Pages API', () => {
           const page = new Page({ revisions: [orig] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).post(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)

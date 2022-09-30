@@ -404,7 +404,7 @@ const item = {
   get: (req: Request, res: Response) => {
     res.status(200).send(req.page?.getPublicObj())
   },
-  post: (req: Request, res: Response) => {
+  put: (req: Request, res: Response) => {
     res.status(200).send(req.page?.getPublicObj())
   },
   delete: (req: Request, res: Response) => {
@@ -442,12 +442,12 @@ router.all('/:pid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  */
 
@@ -481,12 +481,12 @@ router.options('/:pid', item.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  */
 
@@ -520,12 +520,12 @@ router.head('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.he
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -537,7 +537,7 @@ router.get('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.get
 /**
  * @openapi
  * /pages/{pid}:
- *   post:
+ *   put:
  *     summary: "Update a page."
  *     description: "Update a page."
  *     tags:
@@ -570,19 +570,19 @@ router.get('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.get
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             $ref: "#/components/schemas/Page"
  */
 
-router.post('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, getRevisionFromBody, updatePage, savePage, item.post)
+router.put('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, getRevisionFromBody, updatePage, savePage, item.put)
 
 /**
  * @openapi
@@ -613,12 +613,12 @@ router.post('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, getRev
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
