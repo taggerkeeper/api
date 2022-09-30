@@ -2858,7 +2858,6 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *               type: string
  *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
- *         headers:
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
