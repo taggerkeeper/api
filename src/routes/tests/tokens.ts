@@ -137,20 +137,20 @@ describe('Tokens API', () => {
       })
 
       it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, POST')
+        expect(res.headers.allow).to.equal('OPTIONS, PUT')
       })
 
       it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, POST')
+        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, PUT')
       })
     })
 
-    describe('POST /tokens/:uid', () => {
+    describe('PUT /tokens/:uid', () => {
       describe('When no refresh is given', () => {
         beforeEach(async () => {
           const { id } = user
           const path = `${base}/tokens/${id ?? ''}`
-          res = await request(api).post(path).set(auth)
+          res = await request(api).put(path).set(auth)
         })
 
         it('returns 400', () => {
@@ -166,7 +166,7 @@ describe('Tokens API', () => {
         beforeEach(async () => {
           const { id, refresh } = user
           const path = `${base}/tokens/${id ?? ''}`
-          res = await request(api).post(path).send({ refresh: refresh === '111' ? '000' : '111' }).set(auth)
+          res = await request(api).put(path).send({ refresh: refresh === '111' ? '000' : '111' }).set(auth)
         })
 
         it('returns 401', () => {
@@ -186,7 +186,7 @@ describe('Tokens API', () => {
         beforeEach(async () => {
           const { id, refresh } = user
           const path = `${base}/tokens/${id ?? ''}`
-          res = await request(api).post(path).send({ refresh }).set(auth)
+          res = await request(api).put(path).send({ refresh }).set(auth)
           accessObject = jwt.verify(res.body.token, secret) as any
           cookie = parseCookie(res.headers['set-cookie'][0]) as CookieInfo
           cookieObject = jwt.verify(cookie?.value ?? '', secret) as any

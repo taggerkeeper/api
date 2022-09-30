@@ -170,7 +170,7 @@ const item = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
   },
-  post: (req: Request, res: Response) => {
+  put: (req: Request, res: Response) => {
     if (req.tokens === undefined) {
       res.status(500).send({ message: 'Tokens could not be generated.' })
     } else {
@@ -197,12 +197,12 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "The refresh token was not included as the 'refresh' property in the body."
@@ -210,12 +210,12 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -232,12 +232,12 @@ router.all('/:uid', allow(item))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *           'WWW-Authenticate':
  *             schema:
@@ -260,7 +260,7 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
 /**
  * @openapi
  * /tokens/{uid}:
- *   post:
+ *   put:
  *     summary: "Exchange a refresh token for a new access token."
  *     description: "Exchange a refresh token for a new access token."
  *     tags:
@@ -296,12 +296,12 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -314,12 +314,12 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
@@ -336,12 +336,12 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, POST"
+ *               example: "OPTIONS, PUT"
  *             description: "The methods that this endpoint allows."
  *           'WWW-Authenticate':
  *             schema:
@@ -359,6 +359,6 @@ router.options('/:uid', requireBodyParts('refresh') as any, requireRefreshToken,
  *                   example: "Could not verify refresh token."
  */
 
-router.post('/:uid', requireBodyParts('refresh') as any, requireRefreshToken, generateTokens, saveUser, item.post)
+router.put('/:uid', requireBodyParts('refresh') as any, requireRefreshToken, generateTokens, saveUser, item.put)
 
 export default router
