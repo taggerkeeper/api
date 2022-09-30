@@ -455,6 +455,8 @@ router.all('/:pid', allow(item))
  *           path:
  *             value: "/path/to/page"
  *             summary: "The page's unique path."
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         headers:
@@ -900,5 +902,56 @@ router.put('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, require
  */
 
 router.delete('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageWrite, trashPage, savePage, item.delete)
+
+// /pages/:pid/revisions
+
+const revisions = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  }
+}
+
+router.all('/:pid/revisions', allow(revisions))
+
+/**
+ * @openapi
+ * /pages/{pid}/revisions:
+ *   options:
+ *     summary: "Methods for the Revisions collection endpoint."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
+ *     tags:
+ *       - pages
+ *     parameters:
+ *       - in: path
+ *         name: pid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The page's unique path or 24-digit hexadecimal ID number."
+ *         examples:
+ *           pid:
+ *             value: "0123456789abcdef12345678"
+ *             summary: "The page's unique 24-digit hexadecimal ID number."
+ *           path:
+ *             value: "/path/to/page"
+ *             summary: "The page's unique path."
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS"
+ *             description: "The methods that this endpoint allows."
+ */
+
+router.options('/:pid/revisions', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, revisions.options)
 
 export default router
