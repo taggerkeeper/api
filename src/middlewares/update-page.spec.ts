@@ -28,11 +28,11 @@ describe('updatePage', () => {
     mockReq = mockRequest()
     mockRes = mockResponse()
     mockNext = () => {}
-    mockReq.revision = revision
     mockReq.page = new Page({ revisions: [{ content: { title: 'Original Revision', body: 'This is the original revision.' }, msg: 'Initial text' }] })
   })
 
-  it('updates the content', () => {
+  it('updates the content if given a revision', () => {
+    mockReq.revision = revision
     updatePage(mockReq, mockRes, mockNext)
     const revisions = mockReq.page?.revisions
     const zero = Array.isArray(revisions) ? revisions[0] : undefined
@@ -44,5 +44,11 @@ describe('updatePage', () => {
     expect(zero?.permissions.write).to.equal(PermissionLevel.anyone)
     expect(zero?.editor?.id).to.equal(uid)
     expect(zero?.msg).to.equal(msg)
+  })
+
+  it('untrashes the page if it\'s trashed', () => {
+    if (mockReq.page !== undefined) mockReq.page.trashed = new Date()
+    updatePage(mockReq, mockRes, mockNext)
+    expect(mockReq.page?.trashed).to.equal(undefined)
   })
 })

@@ -1,7 +1,9 @@
 import { Request, Response, NextFunction } from 'express'
 
 const updatePage = function (req: Request, res: Response, next: NextFunction): void {
-  if (req.revision !== undefined) req.page?.addRevision(req.revision)
+  const { revision } = req
+  if (revision !== undefined) req.page?.addRevision(revision)
+  if (req.page?.trashed !== undefined) delete req.page.trashed
   next()
 }
 
