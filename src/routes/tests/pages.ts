@@ -383,6 +383,12 @@ describe('Pages API', () => {
           expect(path.headers.allow).to.equal(allow)
           expect(path.headers['access-control-allow-methods']).to.equal(allow)
         })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).head(`${base}/pages${path}`)
+          expect(res.status).to.equal(400)
+        })
       })
 
       describe('Authenticated calls', () => {
@@ -443,6 +449,12 @@ describe('Pages API', () => {
           expect(path.status).to.equal(404)
           expect(path.headers.allow).to.equal(allow)
           expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).head(`${base}/pages${path}`).set(auth)
+          expect(res.status).to.equal(400)
         })
       })
 
@@ -505,6 +517,12 @@ describe('Pages API', () => {
           expect(path.headers.allow).to.equal(allow)
           expect(path.headers['access-control-allow-methods']).to.equal(allow)
         })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).head(`${base}/pages${path}`).set(auth)
+          expect(res.status).to.equal(400)
+        })
       })
 
       describe('Admin calls', () => {
@@ -565,6 +583,12 @@ describe('Pages API', () => {
           expect(path.status).to.equal(200)
           expect(path.headers.allow).to.equal(allow)
           expect(path.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).head(`${base}/pages${path}`).set(auth)
+          expect(res.status).to.equal(400)
         })
       })
     })
@@ -656,6 +680,14 @@ describe('Pages API', () => {
 
           expect(id.body.message).to.equal('Page not found.')
           expect(path.body.message).to.equal('Page not found.')
+        })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).get(`${base}/pages${path}`)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
       })
 
@@ -755,6 +787,14 @@ describe('Pages API', () => {
 
           expect(id.body.message).to.equal('Page not found.')
           expect(path.body.message).to.equal('Page not found.')
+        })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).get(`${base}/pages${path}`).set(auth)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
       })
 
@@ -857,6 +897,14 @@ describe('Pages API', () => {
 
           expect(id.body.message).to.equal('Page not found.')
           expect(path.body.message).to.equal('Page not found.')
+        })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).get(`${base}/pages${path}`).set(auth)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
       })
 
@@ -963,6 +1011,14 @@ describe('Pages API', () => {
           expect(path.body.revisions[0].content.title).to.equal(title)
           expect(path.body.revisions[0].content.body).to.equal(body)
         })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).get(`${base}/pages${path}`).set(auth)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+        })
       })
     })
 
@@ -1031,6 +1087,14 @@ describe('Pages API', () => {
           expect(res.status).to.equal(401)
           expect(after?.revisions).to.have.lengthOf(1)
         })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).put(`${base}/pages${path}`).send(update)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+        })
       })
 
       describe('An authenticated user', () => {
@@ -1092,6 +1156,14 @@ describe('Pages API', () => {
           expect(res.status).to.equal(403)
           expect(after?.revisions).to.have.lengthOf(1)
         })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).put(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+        })
       })
 
       describe('An editor', () => {
@@ -1149,6 +1221,14 @@ describe('Pages API', () => {
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.revisions).to.have.lengthOf(1)
+        })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).put(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
       })
 
@@ -1214,6 +1294,14 @@ describe('Pages API', () => {
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).put(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+        })
       })
     })
 
@@ -1278,6 +1366,14 @@ describe('Pages API', () => {
           expect(res.status).to.equal(401)
           expect(after?.trashed).to.equal(undefined)
         })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).delete(`${base}/pages${path}`)
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+        })
       })
 
       describe('An authenticated user', () => {
@@ -1335,6 +1431,14 @@ describe('Pages API', () => {
           expect(res.status).to.equal(403)
           expect(after?.trashed).to.equal(undefined)
         })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).delete(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+        })
       })
 
       describe('An editor', () => {
@@ -1386,6 +1490,14 @@ describe('Pages API', () => {
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.trashed).to.equal(undefined)
+        })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).delete(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
       })
 
@@ -1442,6 +1554,14 @@ describe('Pages API', () => {
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
+        })
+
+        it('catches an invalid path', async () => {
+          const path = '/login'
+          const res = await request(api).delete(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.status).to.equal(400)
+          expect(res.body.path).to.equal(path)
+          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
       })
     })

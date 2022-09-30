@@ -13,6 +13,7 @@ import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.
 import requirePage from '../middlewares/require-page.js'
 import requirePageRead from '../middlewares/require-page-read.js'
 import requirePageWrite from '../middlewares/require-page-write.js'
+import requireValidPath from '../middlewares/require-valid-path.js'
 import savePage from '../middlewares/save-page.js'
 import searchPages from '../middlewares/search-pages.js'
 import trashPage from '../middlewares/trash-page.js'
@@ -100,6 +101,18 @@ const router = Router()
  *           type: string
  *           description: "A message explaining the purpose and intent of the revision."
  *           example: "Initial text"
+ *     InvalidPath:
+ *       type: object
+ *       description: "An error message describing the problems with the invalid path that you provided."
+ *       properties:
+ *         message:
+ *           type: string
+ *           description: "A description of the error."
+ *           example: "A null string is not a valid path."
+ *         path:
+ *           type: string
+ *           description: "The path that you provided."
+ *           example: "/invalid-path"
  */
 
 // /pages
@@ -488,9 +501,54 @@ router.options('/:pid', item.options)
  *               type: string
  *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
+ *       400:
+ *         description: "You have provided an invalid path."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *       401:
+ *         description: "Only authenticated users can view this page, but you are not authenticated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "This header is informing you that you must pass a valid access token as the Bearer header to this request. To obtain a valid access token, see the `POST /tokens` method."
+ *       403:
+ *         description: "You do not have permission to view this page."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *
  */
 
-router.head('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.head)
+router.head('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, item.head)
 
 /**
  * @openapi
@@ -529,10 +587,77 @@ router.head('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.he
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
- *             $ref: "#/components/schemas/Page"
+ *             schema:
+ *               $ref: "#/components/schemas/Page"
+ *       400:
+ *         description: "You have provided an invalid path."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/InvalidPath"
+ *       401:
+ *         description: "Only authenticated users can view this page, but you are not authenticated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "This header is informing you that you must pass a valid access token as the Bearer header to this request. To obtain a valid access token, see the `POST /tokens` method."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
+ *       403:
+ *         description: "You do not have permission to view this page."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "You do not have permission to view this page."
  */
 
-router.get('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.get)
+router.get('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, item.get)
 
 /**
  * @openapi
@@ -579,10 +704,77 @@ router.get('/:pid', loadUserFromAccessToken, loadPage, requirePageRead, item.get
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
- *             $ref: "#/components/schemas/Page"
+ *             schema:
+ *               $ref: "#/components/schemas/Page"
+ *       400:
+ *         description: "You have provided an invalid path."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/InvalidPath"
+ *       401:
+ *         description: "Only authenticated users can view this page, but you are not authenticated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "This header is informing you that you must pass a valid access token as the Bearer header to this request. To obtain a valid access token, see the `POST /tokens` method."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
+ *       403:
+ *         description: "You do not have permission to view this page."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "You do not have permission to view this page."
  */
 
-router.put('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, getRevisionFromBody, updatePage, savePage, item.put)
+router.put('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageWrite, getRevisionFromBody, updatePage, savePage, item.put)
 
 /**
  * @openapi
@@ -622,9 +814,76 @@ router.put('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, getRevi
  *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
- *             $ref: "#/components/schemas/Page"
+ *             schema:
+ *               $ref: "#/components/schemas/Page"
+ *       400:
+ *         description: "You have provided an invalid path."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/InvalidPath"
+ *       401:
+ *         description: "Only authenticated users can view this page, but you are not authenticated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "This header is informing you that you must pass a valid access token as the Bearer header to this request. To obtain a valid access token, see the `POST /tokens` method."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
+ *       403:
+ *         description: "You do not have permission to view this page."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "You do not have permission to view this page."
  */
 
-router.delete('/:pid', loadUserFromAccessToken, loadPage, requirePageWrite, trashPage, savePage, item.delete)
+router.delete('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageWrite, trashPage, savePage, item.delete)
 
 export default router
