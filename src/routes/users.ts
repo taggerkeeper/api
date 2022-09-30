@@ -473,6 +473,8 @@ router.get('/:uid', loadSubject, requireSubject, item.get)
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The user has been updated."
@@ -628,6 +630,8 @@ router.all('/:uid/emails', allow(emails))
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         headers:
@@ -755,6 +759,8 @@ router.options('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         description: "The user requested was found."
@@ -883,6 +889,8 @@ router.head('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, r
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The user requested was found."
@@ -1017,6 +1025,8 @@ router.get('/:uid/emails', loadUserFromAccessToken, requireUser, loadSubject, re
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       201:
  *         description: "The email was added to the user record."
@@ -1197,6 +1207,8 @@ router.all('/:uid/emails/:addr', allow(email))
  *           type: string
  *         description: "The user's email address that you're interested in."
  *         example: "tester@testing.com"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         headers:
@@ -1331,6 +1343,8 @@ router.options('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadS
  *           type: string
  *         description: "The user's email address that you're interested in."
  *         example: "tester@testing.com"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         description: "The user's requested email record was found."
@@ -1466,6 +1480,8 @@ router.head('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubj
  *           type: string
  *         description: "The user's email address that you're interested in."
  *         example: "tester@testing.com"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The user's requested email record was found."
@@ -1605,6 +1621,8 @@ router.get('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *           type: string
  *         description: "The user's email address that you're interested in."
  *         example: "tester@testing.com"
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       description: "Your verification code."
  *       required: true
@@ -1754,6 +1772,8 @@ router.put('/:uid/emails/:addr', loadUserFromAccessToken, requireUser, loadSubje
  *           type: string
  *         description: "The user's email address that you're interested in."
  *         example: "tester@testing.com"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The user's email has been deleted."
@@ -2143,6 +2163,8 @@ router.get('/:uid/admin', loadSubject, requireSubject, admin.get)
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The user has been promoted to administrator."
@@ -2275,6 +2297,8 @@ router.post('/:uid/admin', loadUserFromAccessToken, requireUser, requireAdmin, l
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The user has been demoted from administrator."
@@ -2673,6 +2697,8 @@ router.get('/:uid/active', loadSubject, requireSubject, active.get)
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The user has been activated."
@@ -2805,6 +2831,8 @@ router.post('/:uid/active', loadUserFromAccessToken, requireUser, requireAdmin, 
  *           type: string
  *         description: "The user's unique 24-digit hexadecimal ID number."
  *         example: "0123456789abcdef12345678"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The user requested was found."

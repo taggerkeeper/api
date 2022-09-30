@@ -30,6 +30,8 @@ router.all('/', allow(renderer))
  *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
  *       - renderer
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         headers:
@@ -62,6 +64,8 @@ router.options('/', loadUserFromAccessToken, renderer.options)
  *           type: string
  *         description: "The text to be rendered."
  *         example: "Some text is **bolded**, and some is in _italics_."
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         headers:
@@ -94,6 +98,8 @@ router.head('/', loadUserFromAccessToken, renderer.head)
  *           type: string
  *         description: "The text to be rendered."
  *         example: "Some text is **bolded**, and some is in _italics_."
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         headers:

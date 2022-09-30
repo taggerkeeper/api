@@ -29,6 +29,11 @@ const router = Router()
  *           type: string
  *           description: "If you have enabled two-factor authentication, you must also supply a passcode."
  *           example: "123456"
+ *   securitySchemes:
+ *     bearerAuth:
+ *       type: http
+ *       scheme: bearer
+ *       bearerFormat: JWT
  */
 
 // /tokens

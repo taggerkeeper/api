@@ -65,6 +65,8 @@ router.all('/', allow(otp))
  *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
  *       - otp
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         headers:
@@ -161,6 +163,8 @@ router.options('/', loadUserFromAccessToken, requireUser, otp.options)
  *     description: "Returns the headers that a user would receive if requesting the OTP endpoint."
  *     tags:
  *       - otp
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         headers:
@@ -259,6 +263,8 @@ router.head('/', loadUserFromAccessToken, requireUser, otp.head)
  *     description: "Generates a new one-time-password secret and returns a QR code for the user to save and verify. The one-time-password will not be enabled on the account until the user has verified receipt of the secret using the `POST /otp` method."
  *     tags:
  *       - otp
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         headers:
@@ -382,6 +388,8 @@ router.get('/', loadUserFromAccessToken, requireUser, otp.get)
  *     description: "If the code provided can be verified, enables OTP with the secret generated with the most recent `GET /otp` request."
  *     tags:
  *       - otp
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       description: "The code to verify."
  *       required: true
@@ -533,6 +541,8 @@ router.post('/', loadUserFromAccessToken, requireUser, otp.post)
  *     description: "Disable OTP."
  *     tags:
  *       - otp
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         headers:

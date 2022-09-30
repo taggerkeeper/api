@@ -232,6 +232,8 @@ router.options('/', collection.options)
  *           type: string
  *         description: "A search string."
  *         example: Poughkeepsie
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       204:
  *         headers:
@@ -324,6 +326,8 @@ router.head('/', loadUserFromAccessToken, searchPages, addSearchPagination, coll
  *           type: string
  *         description: "A search string."
  *         example: Poughkeepsie
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         headers:
@@ -383,6 +387,8 @@ router.get('/', loadUserFromAccessToken, searchPages, addSearchPagination, colle
  *         application/x-www-form-urlencoded:
  *           schema:
  *             $ref: "#/components/schemas/RevisionInput"
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       201:
  *         headers:
@@ -488,6 +494,8 @@ router.options('/:pid', item.options)
  *           path:
  *             value: "/path/to/page"
  *             summary: "The page's unique path."
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         headers:
@@ -572,6 +580,8 @@ router.head('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requir
  *           path:
  *             value: "/path/to/page"
  *             summary: "The page's unique path."
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         headers:
@@ -681,6 +691,8 @@ router.get('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, require
  *           path:
  *             value: "/path/to/page"
  *             summary: "The page's unique path."
+ *     security:
+ *       - bearerAuth: []
  *     requestBody:
  *       description: "Calling this method without a body can be effective if the page was marked for deletion (in which case calling this method will unmark it, if you have permission to update it). If the page is not marked for deletion, then calling this method without an update will have no effect."
  *       content:
@@ -799,6 +811,8 @@ router.put('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, require
  *           path:
  *             value: "/path/to/page"
  *             summary: "The page's unique path."
+ *     security:
+ *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: "The page has been deleted. A representation of the page just prior to its deletion is returned."
