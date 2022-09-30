@@ -3,7 +3,6 @@ import mongoose from 'mongoose'
 
 import otpRouter from './routes/otp.js'
 import pagesRouter from './routes/pages.js'
-import pathValidatorRouter from './routes/path-validator.js'
 import rendererRouter from './routes/renderer.js'
 import tokenRouter from './routes/tokens.js'
 import userRouter from './routes/users.js'
@@ -34,7 +33,6 @@ await setupSwagger(api)
 const endpoints: { [key: string]: Router } = {
   otp: otpRouter,
   pages: pagesRouter,
-  'path-validator': pathValidatorRouter,
   renderer: rendererRouter,
   tokens: tokenRouter,
   users: userRouter
