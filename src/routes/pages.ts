@@ -36,23 +36,7 @@ const router = Router()
  *         revisions:
  *           type: array
  *           items:
- *             type: object
- *             properties:
- *               content:
- *                 $ref: "#/components/schemas/RevisionContent"
- *               permissions:
- *                 $ref: "#/components/schemas/RevisionPermissions"
- *               editor:
- *                 description: "The user who made this revision."
- *                 $ref: "#/components/schemas/User"
- *               msg:
- *                 type: string
- *                 description: "A message explaining the purpose and intent of the revision."
- *                 example: "Initial text"
- *               timestamp:
- *                 type: number
- *                 description: "The timestamp of when the revision was made (measured as milliseconds since January 1, 1970)."
- *                 example: 1663863528000
+ *             $ref: "#/components/schemas/Revision"
  *           created:
  *             type: number
  *             description: "The timestamp of when this page was created (measured as milliseconds since January 1, 1970)."
@@ -61,6 +45,25 @@ const router = Router()
  *             type: number
  *             description: "The timestamp of when this page was most recently updated (measured as milliseconds since January 1, 1970)."
  *             example: 1663863528000
+ *     Revision:
+ *       type: object
+ *       description: "A page revision."
+ *       properties:
+ *         content:
+ *           $ref: "#/components/schemas/RevisionContent"
+ *         permissions:
+ *           $ref: "#/components/schemas/RevisionPermissions"
+ *         editor:
+ *           description: "The user who made this revision."
+ *           $ref: "#/components/schemas/User"
+ *         msg:
+ *           type: string
+ *           description: "A message explaining the purpose and intent of the revision."
+ *           example: "Initial text"
+ *         timestamp:
+ *           type: number
+ *           description: "The timestamp of when the revision was made (measured as milliseconds since January 1, 1970)."
+ *           example: 1663863528000
  *     RevisionContent:
  *       type: object
  *       description: "The content of a page revision."
@@ -908,6 +911,12 @@ router.delete('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requ
 const revisions = {
   options: (req: Request, res: Response) => {
     res.sendStatus(204)
+  },
+  head: (req: Request, res: Response) => {
+    res.sendStatus(200)
+  },
+  get: (req: Request, res: Response) => {
+    res.status(200).send(req.page?.getPublicObj().revisions)
   }
 }
 
@@ -943,15 +952,214 @@ router.all('/:pid/revisions', allow(revisions))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS"
+ *               example: "OPTIONS, HEAD, GET"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS"
+ *               example: "OPTIONS, HEAD, GET"
  *             description: "The methods that this endpoint allows."
  */
 
 router.options('/:pid/revisions', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, revisions.options)
+
+/**
+ * @openapi
+ * /pages/{pid}/revisions:
+ *   head:
+ *     summary: "Return the headers for a page's revisions."
+ *     description: "Return the headers for a page's revisions."
+ *     tags:
+ *       - pages/revisions
+ *     parameters:
+ *       - in: path
+ *         name: pid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The page's unique path or 24-digit hexadecimal ID number."
+ *         examples:
+ *           pid:
+ *             value: "0123456789abcdef12345678"
+ *             summary: "The page's unique 24-digit hexadecimal ID number."
+ *           path:
+ *             value: "/path/to/page"
+ *             summary: "The page's unique path."
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *       400:
+ *         description: "You have provided an invalid path."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *       401:
+ *         description: "Only authenticated users can view this page, but you are not authenticated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "This header is informing you that you must pass a valid access token as the Bearer header to this request. To obtain a valid access token, see the `POST /tokens` method."
+ *       403:
+ *         description: "You do not have permission to view this page."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *
+ */
+
+router.head('/:pid/revisions', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, revisions.head)
+
+/**
+ * @openapi
+ * /pages/{pid}:
+ *   get:
+ *     summary: "Return a page's revisions."
+ *     description: "Return a page's revisions."
+ *     tags:
+ *       - pages
+ *     parameters:
+ *       - in: path
+ *         name: pid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The page's unique path or 24-digit hexadecimal ID number."
+ *         examples:
+ *           pid:
+ *             value: "0123456789abcdef12345678"
+ *             summary: "The page's unique 24-digit hexadecimal ID number."
+ *           path:
+ *             value: "/path/to/page"
+ *             summary: "The page's unique path."
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: array
+ *               items:
+ *                 $ref: "#/components/schemas/Revision"
+ *       400:
+ *         description: "You have provided an invalid path."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/InvalidPath"
+ *       401:
+ *         description: "Only authenticated users can view this page, but you are not authenticated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "This header is informing you that you must pass a valid access token as the Bearer header to this request. To obtain a valid access token, see the `POST /tokens` method."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
+ *       403:
+ *         description: "You do not have permission to view this page."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "You do not have permission to view this page."
+ */
+
+router.get('/:pid/revisions', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, revisions.get)
 
 export default router
