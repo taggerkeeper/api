@@ -80,6 +80,17 @@ router.all('/', allow(otp))
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "This typically happens when you make a request without an authorization header."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -92,6 +103,16 @@ router.all('/', allow(otp))
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
@@ -108,6 +129,17 @@ router.all('/', allow(otp))
  *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -144,6 +176,17 @@ router.options('/', loadUserFromAccessToken, requireUser, otp.options)
  *             description: "The methods that this endpoint allows."
  *       400:
  *         description: "This typically happens when you make a request without an authorization header."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -156,6 +199,16 @@ router.options('/', loadUserFromAccessToken, requireUser, otp.options)
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
@@ -172,6 +225,17 @@ router.options('/', loadUserFromAccessToken, requireUser, otp.options)
  *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -215,6 +279,17 @@ router.head('/', loadUserFromAccessToken, requireUser, otp.head)
  *               description: "A QR code that the user can use to save the one-time-password secret."
  *       400:
  *         description: "This typically happens when you make a request without an authorization header."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -227,6 +302,16 @@ router.head('/', loadUserFromAccessToken, requireUser, otp.head)
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
@@ -243,6 +328,17 @@ router.head('/', loadUserFromAccessToken, requireUser, otp.head)
  *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -254,6 +350,17 @@ router.head('/', loadUserFromAccessToken, requireUser, otp.head)
  *                   example: "Your account has been deactivated."
  *       500:
  *         description: "The server encountered an unexpected error."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -323,6 +430,17 @@ router.get('/', loadUserFromAccessToken, requireUser, otp.get)
  *                   example: "0123456789abcdef12345678"
  *       400:
  *         description: "This typically happens when you make a request without an authorization header or without supplying a code to verify."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -335,6 +453,16 @@ router.get('/', loadUserFromAccessToken, requireUser, otp.get)
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
@@ -351,6 +479,17 @@ router.get('/', loadUserFromAccessToken, requireUser, otp.get)
  *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -362,6 +501,17 @@ router.get('/', loadUserFromAccessToken, requireUser, otp.get)
  *                   example: "Your account has been deactivated."
  *       500:
  *         description: "The server encountered an unexpected error."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -411,6 +561,17 @@ router.post('/', loadUserFromAccessToken, requireUser, otp.post)
  *                   example: "0123456789abcdef12345678"
  *       400:
  *         description: "This typically happens when you make a request without an authorization header."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -423,6 +584,16 @@ router.post('/', loadUserFromAccessToken, requireUser, otp.post)
  *       401:
  *         description: "This typically happens when you call a request with an authorization header that does not include a verifiable access token."
  *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *           'WWW-Authenticate':
  *             schema:
  *               type: string
@@ -439,6 +610,17 @@ router.post('/', loadUserFromAccessToken, requireUser, otp.post)
  *                   example: "This method requires authentication."
  *       403:
  *         description: "This typically happen when you make a request with a deactivated user account."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
@@ -450,6 +632,17 @@ router.post('/', loadUserFromAccessToken, requireUser, otp.post)
  *                   example: "Your account has been deactivated."
  *       500:
  *         description: "The server encountered an unexpected error."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
  *         content:
  *           application/json:
  *             schema:
