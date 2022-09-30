@@ -470,7 +470,7 @@ router.all('/:pid', allow(item))
  *             description: "The methods that this endpoint allows."
  */
 
-router.options('/:pid', item.options)
+router.options('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, item.options)
 
 /**
  * @openapi

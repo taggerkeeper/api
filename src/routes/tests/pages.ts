@@ -316,17 +316,381 @@ describe('Pages API', () => {
 
     describe('OPTIONS /pages/:pid', () => {
       let page: Page
+      const content = { title: 'New Page', body: 'This is a new page.' }
+      const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      const orig: RevisionData = { content, permissions }
 
-      beforeEach(async () => {
-        page = new Page({ revisions: [{ content: { title: 'New Page', body: 'This is a new page.' } }] })
-        await page.save()
-        res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+      beforeEach(() => {
+        permissions.read = PermissionLevel.anyone
+        permissions.write = PermissionLevel.anyone
       })
 
-      it('returns correct status and headers', () => {
-        expect(res.status).to.equal(204)
-        expect(res.headers.allow).to.equal(allow)
-        expect(res.headers['access-control-allow-methods']).to.equal(allow)
+      describe('Anonymous user', () => {
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).options(`${base}/pages/login`)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only users can read', () => {
+          beforeEach(async () => {
+            permissions.read = PermissionLevel.authenticated
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+          })
+
+          it('returns 404 and correct headers', () => {
+            expect(res.status).to.equal(404)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only editors can read', () => {
+          const editor = new User()
+
+          before(async () => {
+            await editor.save()
+          })
+
+          beforeEach(async () => {
+            orig.editor = editor.getObj()
+            permissions.read = PermissionLevel.editor
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+          })
+
+          it('returns 404 and correct headers', () => {
+            expect(res.status).to.equal(404)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only admins can read', () => {
+          beforeEach(async () => {
+            permissions.read = PermissionLevel.admin
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+          })
+
+          it('returns 404 and correct headers', () => {
+            expect(res.status).to.equal(404)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+      })
+
+      describe('Authenticated user', () => {
+        const user = new User()
+        let tokens: TokenSet
+
+        before(async () => {
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/login`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only users can read', () => {
+          beforeEach(async () => {
+            permissions.read = PermissionLevel.authenticated
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only editors can read', () => {
+          const editor = new User()
+
+          before(async () => {
+            await editor.save()
+          })
+
+          beforeEach(async () => {
+            orig.editor = editor.getObj()
+            permissions.read = PermissionLevel.editor
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 404 and correct headers', () => {
+            expect(res.status).to.equal(404)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only admins can read', () => {
+          beforeEach(async () => {
+            permissions.read = PermissionLevel.admin
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 404 and correct headers', () => {
+            expect(res.status).to.equal(404)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+      })
+
+      describe('Editor', () => {
+        const user = new User()
+        let tokens: TokenSet
+
+        before(async () => {
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/login`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page anyone can read', () => {
+          beforeEach(async () => {
+            orig.editor = user.getObj()
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only users can read', () => {
+          beforeEach(async () => {
+            orig.editor = user.getObj()
+            permissions.read = PermissionLevel.authenticated
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only editors can read', () => {
+          beforeEach(async () => {
+            orig.editor = user.getObj()
+            permissions.read = PermissionLevel.editor
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only admins can read', () => {
+          beforeEach(async () => {
+            orig.editor = user.getObj()
+            permissions.read = PermissionLevel.admin
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 404 and correct headers', () => {
+            expect(res.status).to.equal(404)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+      })
+
+      describe('Admin', () => {
+        const user = new User({ name: 'Admin', admin: true })
+        let tokens: TokenSet
+
+        before(async () => {
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/login`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only users can read', () => {
+          beforeEach(async () => {
+            permissions.read = PermissionLevel.authenticated
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only editors can read', () => {
+          const editor = new User()
+
+          before(async () => {
+            await editor.save()
+          })
+
+          beforeEach(async () => {
+            orig.editor = editor.getObj()
+            permissions.read = PermissionLevel.editor
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('calling a page only admins can read', () => {
+          beforeEach(async () => {
+            permissions.read = PermissionLevel.admin
+            page = new Page({ revisions: [orig] })
+            await page.save()
+            tokens = await user.generateTokens()
+            await user.save()
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+          })
+
+          it('returns 204 and correct headers', () => {
+            expect(res.status).to.equal(204)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
       })
     })
 
