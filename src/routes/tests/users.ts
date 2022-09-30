@@ -676,7 +676,7 @@ describe('Users API', () => {
     })
 
     describe('OPTIONS /users/:uid/emails/:addr', () => {
-      const expected = 'OPTIONS, HEAD, GET, POST, DELETE'
+      const expected = 'OPTIONS, HEAD, GET, PUT, DELETE'
 
       describe('Self calls', () => {
         beforeEach(async () => {
@@ -936,7 +936,7 @@ describe('Users API', () => {
       })
     })
 
-    describe('POST /users/:uid/emails/:addr', () => {
+    describe('PUT /users/:uid/emails/:addr', () => {
       beforeEach(async () => {
         user.emails[0].verified = false
         user.emails[0].generateVerificationCode()
@@ -949,7 +949,7 @@ describe('Users API', () => {
           tokens = await user.generateTokens()
           await user.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
+          res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
 
         it('returns 200', () => {
@@ -981,7 +981,7 @@ describe('Users API', () => {
           tokens = await admin.generateTokens()
           await admin.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
+          res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
 
         it('returns 200', () => {
@@ -1013,7 +1013,7 @@ describe('Users API', () => {
           tokens = await other.generateTokens()
           await other.save()
           const auth = { Authorization: `Bearer ${tokens.access}` }
-          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
+          res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
 
         it('returns 403', () => {
@@ -1030,7 +1030,7 @@ describe('Users API', () => {
       describe('Anonymous calls', () => {
         beforeEach(async () => {
           const { code } = user.emails[0]
-          res = await request(api).post(`${base}/users/${user.id ?? ''}/emails/${addr}`).send({ code })
+          res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).send({ code })
         })
 
         it('returns 400', () => {
