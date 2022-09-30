@@ -1,4 +1,3 @@
-import PageModel from '../models/page/model.js'
 import andStr from './and-str.js'
 import checkAll from './check-all.js'
 import checkAny from './check-any.js'
@@ -19,13 +18,11 @@ const isPathValidation = (obj: any): obj is PathValidation => {
   ])
 }
 
-const validatePath = async (path: string): Promise<PathValidation> => {
+const validatePath = (path: string): PathValidation => {
   const reserved = (getEnvVar('RESERVED_PATHS') as string).split(',').map(path => path.trim())
   const elements = path.split('/').map(el => el.trim()).filter(el => el.length > 0)
   if (elements.length < 1) return { isValid: false, reason: 'A null string is not a valid path.' }
   if (reserved.includes(elements[0])) return { isValid: false, reason: `First element cannot be any of ${andStr(reserved, 'or')}.` }
-  const check = await PageModel.findOne({ path })
-  if (check !== null) return { isValid: false, reason: `The path ${path} is already in use.` }
   return { isValid: true }
 }
 

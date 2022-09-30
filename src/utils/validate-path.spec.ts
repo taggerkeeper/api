@@ -1,6 +1,5 @@
 import { expect } from 'chai'
 import * as sinon from 'sinon'
-import PageModel from '../models/page/model.js'
 import validatePath, { isPathValidation } from './validate-path.js'
 
 describe('isPathValidation', () => {
@@ -80,28 +79,20 @@ describe('isPathValidation', () => {
 describe('validatePath', () => {
   afterEach(() => { sinon.restore() })
 
-  it('rejects an empty string', async () => {
-    const actual = await validatePath('')
+  it('rejects an empty string', () => {
+    const actual = validatePath('')
     expect(actual.isValid).to.equal(false)
     expect(actual.reason).to.equal('A null string is not a valid path.')
   })
 
-  it('rejects paths that begin with reserved words', async () => {
-    const actual = await validatePath('/login/more')
+  it('rejects paths that begin with reserved words', () => {
+    const actual = validatePath('/login/more')
     expect(actual.isValid).to.equal(false)
     expect(actual.reason).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
   })
 
-  it('rejects paths that already exist', async () => {
-    sinon.stub(PageModel, 'findOne').resolves({})
-    const actual = await validatePath('/test')
-    expect(actual.isValid).to.equal(false)
-    expect(actual.reason).to.equal('The path /test is already in use.')
-  })
-
   it('accepts valid paths', async () => {
-    sinon.stub(PageModel, 'findOne').resolves(null)
-    const actual = await validatePath('/test')
+    const actual = validatePath('/test')
     expect(actual.isValid).to.equal(true)
     expect(actual.reason).to.equal(undefined)
   })
