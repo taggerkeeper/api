@@ -685,7 +685,8 @@ router.get('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, require
  *       required: true
  *       content:
  *         application/json:
- *           $ref: '#/components/schemas/RevisionInput'
+ *           schema:
+ *             $ref: '#/components/schemas/RevisionInput'
  *         application/x-www-form-urlencoded:
  *           schema:
  *             $ref: "#/components/schemas/RevisionInput"
