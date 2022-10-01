@@ -50,4 +50,10 @@ describe('buildQuery', () => {
     const actual = buildQuery({ updated: { after }, trashed: false })
     expect(actual.updated.$gte).to.equal(after)
   })
+
+  it('includes trashed if it\'s part of the query', () => {
+    const actual = buildQuery({ trashed: true })
+    expect(actual.trashed.$exists).to.equal(true)
+    expect(actual.trashed.$ne).to.equal(null)
+  })
 })
