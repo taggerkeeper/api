@@ -16,9 +16,11 @@ const getPermissionsFromBody = (req: Request): Permissions => {
 }
 
 const getRevisionFromBody = (req: Request, res: Response, next: NextFunction): void => {
-  const content = getContentFromBody(req)
-  const permissions = getPermissionsFromBody(req)
-  req.revision = new Revision({ content, permissions, editor: req.user?.getObj(), msg: req.body.msg, timestamp: new Date() })
+  if (req.body.title !== undefined && req.body.body !== undefined) {
+    const content = getContentFromBody(req)
+    const permissions = getPermissionsFromBody(req)
+    req.revision = new Revision({ content, permissions, editor: req.user?.getObj(), msg: req.body.msg, timestamp: new Date() })
+  }
   next()
 }
 
