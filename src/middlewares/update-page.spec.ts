@@ -52,6 +52,6 @@ describe('updatePage', () => {
   it('untrashes the page if it\'s trashed', () => {
     if (mockReq.page !== undefined) mockReq.page.trashed = new Date()
     updatePage(mockReq, mockRes, mockNext)
-    expect(stub.args[0][1]['$unset'].trashed).to.equal(1)
+    expect(stub.args[0][1].$unset.trashed).to.equal(1)
   })
 })

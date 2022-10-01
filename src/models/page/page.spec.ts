@@ -218,7 +218,7 @@ describe('Page', () => {
       it('untrashes the database record', async () => {
         const page = new Page({ id: pid, revisions: [], trashed: new Date() })
         await page.untrash()
-        expect(stub.args[0][1]['$unset'].trashed).to.equal(1)
+        expect(stub.args[0][1].$unset.trashed).to.equal(1)
       })
     })
   })
