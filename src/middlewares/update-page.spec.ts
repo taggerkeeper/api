@@ -1,18 +1,18 @@
-import chai, { expect } from 'chai'
-import sinonChai from 'sinon-chai'
+import { expect } from 'chai'
+import * as sinon from 'sinon'
 import { mockRequest, mockResponse } from 'mock-req-res'
 import { PermissionLevel } from '../models/permissions/data.js'
 import User from '../models/user/user.js'
 import Revision from '../models/revision/revision.js'
 import Page from '../models/page/page.js'
+import PageModel from '../models/page/model.js'
 import updatePage from './update-page.js'
-
-chai.use(sinonChai)
 
 describe('updatePage', () => {
   let mockReq = mockRequest()
   let mockRes = mockResponse()
-  let mockNext = (): void => {}
+  let mockNext = sinon.spy()
+  let stub: sinon.SinonStub
 
   const name = 'Tester'
   const uid = '0123456789abcdef12345678'
@@ -27,9 +27,12 @@ describe('updatePage', () => {
   beforeEach(() => {
     mockReq = mockRequest()
     mockRes = mockResponse()
-    mockNext = () => {}
-    mockReq.page = new Page({ revisions: [{ content: { title: 'Original Revision', body: 'This is the original revision.' }, msg: 'Initial text' }] })
+    mockNext = sinon.spy()
+    stub = sinon.stub(PageModel, 'updateOne')
+    mockReq.page = new Page({ id: 'abcdef0123456789abcdef01', revisions: [{ content: { title: 'Original Revision', body: 'This is the original revision.' }, msg: 'Initial text' }] })
   })
+
+  afterEach(() => sinon.restore())
 
   it('updates the content if given a revision', () => {
     mockReq.revision = revision
@@ -49,6 +52,6 @@ describe('updatePage', () => {
   it('untrashes the page if it\'s trashed', () => {
     if (mockReq.page !== undefined) mockReq.page.trashed = new Date()
     updatePage(mockReq, mockRes, mockNext)
-    expect(mockReq.page?.trashed).to.equal(undefined)
+    expect(stub.args[0][1]['$unset'].trashed).to.equal(1)
   })
 })

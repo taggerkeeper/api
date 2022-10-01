@@ -1,9 +1,10 @@
 import { Request, Response, NextFunction } from 'express'
+import expressAsyncHandler from 'express-async-handler'
 
-const updatePage = function (req: Request, res: Response, next: NextFunction): void {
+const updatePage = async function (req: Request, res: Response, next: NextFunction): Promise<void> {
   if (req.revision !== undefined) req.page?.addRevision(req.revision)
-  if (req.page !== undefined) req.page.trashed = undefined
+  if (req.page !== undefined) await req.page.untrash()
   next()
 }
 
-export default updatePage
+export default expressAsyncHandler(updatePage)
