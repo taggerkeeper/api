@@ -202,6 +202,25 @@ describe('Page', () => {
         expect(page.id).to.equal(_id)
       })
     })
+
+    describe('untrash', () => {
+      let stub: sinon.SinonStub
+      const pid = 'abcdef0123456789abcdef01'
+      beforeEach(() => { stub = sinon.stub(PageModel, 'updateOne') })
+      afterEach(() => sinon.restore())
+
+      it('deletes the trashed timestamp', async () => {
+        const page = new Page({ id: pid, revisions: [], trashed: new Date() })
+        await page.untrash()
+        expect(page.trashed).to.equal(undefined)
+      })
+
+      it('untrashes the database record', async () => {
+        const page = new Page({ id: pid, revisions: [], trashed: new Date() })
+        await page.untrash()
+        expect(stub.args[0][1]['$unset'].trashed).to.equal(1)
+      })
+    })
   })
 
   describe('Static methods', () => {

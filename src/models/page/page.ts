@@ -94,6 +94,13 @@ class Page {
     }
   }
 
+  async untrash (): Promise<void> {
+    if (this.id !== undefined && this.trashed !== undefined) {
+      delete this.trashed
+      await PageModel.updateOne({ _id: this.id }, { $unset: { trashed: 1 } })
+    }
+  }
+
   static async render (text: string): Promise<string> {
     const markup = await renderMarkdown(text)
     return markup
