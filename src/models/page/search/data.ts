@@ -17,6 +17,7 @@ interface PageQuery {
   limit?: number
   offset?: number
   sort?: 'created' | '-created' | 'updated' | '-updated' | 'alphabetical' | '-alphabetical' | 'relevance'
+  trashed: boolean
 }
 
 interface PageSearchOptions {

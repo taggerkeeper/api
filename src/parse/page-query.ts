@@ -38,7 +38,7 @@ const parsePageQuerySort = (req: Request): undefined | PageQuerySortOption => {
 }
 
 const parsePageQuery = (req: Request): PageQuery => {
-  const query: PageQuery = {}
+  const query: PageQuery = { trashed: req.query.trashed !== undefined }
 
   const created = parsePageQueryDates(req, 'created')
   const updated = parsePageQueryDates(req, 'updated')

@@ -11,17 +11,17 @@ describe('getRevisionsSubquery', () => {
   })
 
   it('returns a subquery for maximum number of revisions', () => {
-    const json = JSON.stringify(getRevisionsSubquery({ revisions: { max: 5 } }))
+    const json = JSON.stringify(getRevisionsSubquery({ revisions: { max: 5 }, trashed: false }))
     expect(json).to.equal('{"revisions.5":{"$exists":false}}')
   })
 
   it('returns a subquery for minimum number of revisions', () => {
-    const json = JSON.stringify(getRevisionsSubquery({ revisions: { min: 2 } }))
+    const json = JSON.stringify(getRevisionsSubquery({ revisions: { min: 2 }, trashed: false }))
     expect(json).to.equal('{"revisions.1":{"$exists":true}}')
   })
 
   it('returns a subquery for both minimum and maximum number of revisions', () => {
-    const json = JSON.stringify(getRevisionsSubquery({ revisions: { min: 2, max: 5 } }))
+    const json = JSON.stringify(getRevisionsSubquery({ revisions: { min: 2, max: 5 }, trashed: false }))
     expect(json).to.equal('{"revisions.5":{"$exists":false},"revisions.1":{"$exists":true}}')
   })
 })

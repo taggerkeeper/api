@@ -11,7 +11,7 @@ describe('getTextSubquery', () => {
   })
 
   it('returns a text search subquery', () => {
-    const json = JSON.stringify(getTextSubquery({ text: 'test' }))
+    const json = JSON.stringify(getTextSubquery({ text: 'test', trashed: false }))
     expect(json).to.equal('{"$text":{"$search":"test","$caseSensitive":false,"$diacriticSensitive":false}}')
   })
 })

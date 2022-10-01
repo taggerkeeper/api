@@ -22,6 +22,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses created after', () => {
@@ -37,6 +38,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses both created dates', () => {
@@ -57,6 +59,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses updated before', () => {
@@ -72,6 +75,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses updated after', () => {
@@ -87,6 +91,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses both updated dates', () => {
@@ -107,6 +112,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses all dates', () => {
@@ -132,6 +138,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses minimum revisions', () => {
@@ -147,6 +154,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses maximum revisions', () => {
@@ -162,6 +170,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses minimum and maximum revisions', () => {
@@ -182,6 +191,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses text', () => {
@@ -196,6 +206,21 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
+  })
+
+  it('parses a request for trashed pages', () => {
+    mockReq.query = { trashed: 'true' }
+
+    const query = parsePageQuery(mockReq)
+    expect(query.created).to.equal(undefined)
+    expect(query.created).to.equal(undefined)
+    expect(query.revisions).to.equal(undefined)
+    expect(query.text).to.equal(undefined)
+    expect(query.limit).to.equal(undefined)
+    expect(query.offset).to.equal(undefined)
+    expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(true)
   })
 
   it('parses limit', () => {
@@ -210,6 +235,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(limit)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses offset', () => {
@@ -224,6 +250,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(offset)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses a request to sort in order of created date', () => {
@@ -238,6 +265,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(sort)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses a request to sort in reverse order of created date', () => {
@@ -252,6 +280,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(sort)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses a request to sort in order of updated date', () => {
@@ -266,6 +295,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(sort)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses a request to sort in reverse order of updated date', () => {
@@ -280,6 +310,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(sort)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses a request to sort in alphabetical order by title', () => {
@@ -294,6 +325,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(sort)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses a request to sort in reverse alphabetical order by title', () => {
@@ -308,6 +340,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(sort)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses a request to sort in search relevance order', () => {
@@ -322,6 +355,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(sort)
+    expect(query.trashed).to.equal(false)
   })
 
   it('rejects a request to sort in an unknown order', () => {
@@ -336,6 +370,7 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(undefined)
     expect(query.offset).to.equal(undefined)
     expect(query.sort).to.equal(undefined)
+    expect(query.trashed).to.equal(false)
   })
 
   it('parses everything at once', () => {
@@ -360,7 +395,8 @@ describe('parsePageQuery', () => {
       text,
       limit: limit.toString(),
       offset: offset.toString(),
-      sort
+      sort,
+      trashed: 'true'
     }
 
     const query = parsePageQuery(mockReq)
@@ -374,5 +410,6 @@ describe('parsePageQuery', () => {
     expect(query.limit).to.equal(limit)
     expect(query.offset).to.equal(offset)
     expect(query.sort).to.equal(sort)
+    expect(query.trashed).to.equal(true)
   })
 })
