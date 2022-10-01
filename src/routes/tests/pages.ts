@@ -1620,6 +1620,16 @@ describe('Pages API', () => {
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
 
+        it('can untrash a page anyone can edit', async () => {
+          const page = new Page({ revisions: [orig], trashed: new Date() })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.equal(undefined)
+        })
+
         it('can update a page that only users can edit', async () => {
           if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
           const page = new Page({ revisions: [orig] })
@@ -1631,6 +1641,17 @@ describe('Pages API', () => {
           expect(res.status).to.equal(200)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
+        })
+
+        it('can untrash a page only users can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
+          const page = new Page({ revisions: [orig], trashed: new Date() })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.equal(undefined)
         })
 
         it('can update a page that only editors can edit', async () => {
@@ -1646,6 +1667,17 @@ describe('Pages API', () => {
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
 
+        it('can untrash a page only editors can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
+          const page = new Page({ revisions: [orig], trashed: new Date() })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.equal(undefined)
+        })
+
         it('can update a page that only admins can edit', async () => {
           if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
           const page = new Page({ revisions: [orig] })
@@ -1657,6 +1689,17 @@ describe('Pages API', () => {
           expect(res.status).to.equal(200)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
+        })
+
+        it('can untrash a page only admins can edit', async () => {
+          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
+          const page = new Page({ revisions: [orig], trashed: new Date() })
+          await page.save()
+          const pid = page.id ?? ''
+          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const after = await loadPageById(pid, admin)
+          expect(res.status).to.equal(200)
+          expect(after?.trashed).to.equal(undefined)
         })
 
         it('catches an invalid path', async () => {
