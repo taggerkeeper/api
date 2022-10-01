@@ -6,10 +6,22 @@ import Revision from '../../models/revision/revision.js'
 import Page from '../../models/page/page.js'
 import { PageQueryResultSet } from '../../models/page/search/data'
 
+interface RevisionDiff {
+  content: {
+    title: Change[]
+    path: Change[]
+    body: Change[]
+  }
+  permissions: {
+    read: Change[]
+    write: Change[]
+  }
+}
+
 declare global {
   namespace Express {
     interface Request {
-      diff?: Change[]
+      revisionsDiff?: RevisionDiff
       email?: Email
       emailer?: Function | sinon.SinonStub
       page?: Page
