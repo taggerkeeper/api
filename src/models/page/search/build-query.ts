@@ -13,7 +13,7 @@ const buildQuery = (query: PageQuery, searcher?: User): any => {
     getTextSubquery(query),
     getTimeSubquery(query, 'created'),
     getTimeSubquery(query, 'updated'),
-    getTrashedSubquery(query)
+    getTrashedSubquery(query, searcher)
   ].filter(subquery => subquery !== false)
   return Object.assign({}, ...subqueries)
 }

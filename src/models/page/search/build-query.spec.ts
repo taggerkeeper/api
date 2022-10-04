@@ -1,4 +1,5 @@
 import { expect } from 'chai'
+import User from '../../user/user.js'
 import buildQuery from './build-query.js'
 
 describe('buildQuery', () => {
@@ -52,7 +53,8 @@ describe('buildQuery', () => {
   })
 
   it('includes trashed if it\'s part of the query', () => {
-    const actual = buildQuery({ trashed: true })
+    const admin = new User({ name: 'Admin', admin: true })
+    const actual = buildQuery({ trashed: true }, admin)
     expect(actual.trashed.$exists).to.equal(true)
     expect(actual.trashed.$ne).to.equal(null)
   })
