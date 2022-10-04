@@ -6,6 +6,7 @@ import getAPIInfo from '../../utils/get-api-info.js'
 import ContentData from '../../models/content/data.js'
 import PermissionsData, { PermissionLevel } from '../../models/permissions/data.js'
 import Page from '../../models/page/page.js'
+import PageData from '../../models/page/data.js'
 import PageModel from '../../models/page/model.js'
 import RevisionData from '../../models/revision/data.js'
 import User, { TokenSet } from '../../models/user/user.js'
@@ -23,55 +24,21 @@ const parseLinks = (header: string): any => {
   return links
 }
 
-const runSearchTest = async (base: string, method: 'head' | 'get' = 'get'): Promise<any> => {
-  const users = {
-    authenticated: new User(),
-    editor: new User(),
-    admin: new User({ name: 'Admin', admin: true })
-  }
-
-  await users.authenticated.save()
-  await users.editor.save()
-  await users.admin.save()
-
-  const tokens = {
-    authenticated: await users.authenticated.generateTokens(),
-    editor: await users.editor.generateTokens(),
-    admin: await users.admin.generateTokens()
-  }
-
-  await users.authenticated.save()
-  await users.editor.save()
-  await users.admin.save()
-
-  for (let i = 1; i <= 10; i++) {
-    const page = new Page({ revisions: [{ content: { title: `Test Page #${i}`, path: `/test-${i}`, body: 'This is a test page.' } }] })
+const createTestSearchPages = async (editor: User): Promise<void> => {
+  for (let i = 1; i <= 15; i++) {
+    const data: PageData = { revisions: [{ content: { title: `Test Page #${i}`, path: `/test-${i}`, body: 'This is a test page.' } }] }
+    if (i > 10) data.trashed = new Date()
+    const page = new Page(data)
     await page.save()
   }
 
   const authOnly = new Page({ revisions: [{ content: { title: 'Authenticated Only', path: '/auth', body: 'Authenticated only.' }, permissions: { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated } }] })
-  const editorOnly = new Page({ revisions: [{ content: { title: 'Editor Only', path: '/editor', body: 'Editor only.' }, permissions: { read: PermissionLevel.editor, write: PermissionLevel.editor }, editor: users.editor.getObj() }] })
+  const editorOnly = new Page({ revisions: [{ content: { title: 'Editor Only', path: '/editor', body: 'Editor only.' }, permissions: { read: PermissionLevel.editor, write: PermissionLevel.editor }, editor: editor.getObj() }] })
   const adminOnly = new Page({ revisions: [{ content: { title: 'Admin Only', path: '/admin', body: 'Admin only.' }, permissions: { read: PermissionLevel.admin, write: PermissionLevel.admin } }] })
 
   await authOnly.save()
   await editorOnly.save()
   await adminOnly.save()
-
-  const url = `${base}/pages?created-after=0&offset=4&limit=2`
-  const fn = method === 'head' ? request(api).head : request(api).get
-  return {
-    anonymous: await fn(url),
-    authenticated: await fn(url).set({ Authorization: `Bearer ${tokens.authenticated.access}` }),
-    editor: await fn(url).set({ Authorization: `Bearer ${tokens.editor.access}` }),
-    admin: await fn(url).set({ Authorization: `Bearer ${tokens.admin.access}` })
-  }
-}
-
-const initUser = async (user: User): Promise<{Authorization: string}> => {
-  await user.save()
-  const tokens = await user.generateTokens()
-  await user.save()
-  return { Authorization: `Bearer ${tokens.access}` }
 }
 
 const testPageLoad = async (base: string, method: string = 'GET', page: Page, auth?: { Authorization: string }): Promise<{ id: any, path: any }> => {
@@ -97,7 +64,11 @@ describe('Pages API', () => {
 
   describe('/pages', () => {
     const allow = 'OPTIONS, HEAD, GET, POST'
-    let results: any
+    const editor = new User()
+
+    before(async () => {
+      await editor.save()
+    })
 
     describe('OPTIONS /pages', () => {
       beforeEach(async () => {
@@ -112,161 +83,383 @@ describe('Pages API', () => {
     })
 
     describe('HEAD /pages', () => {
+      const query = 'created-after=0&offset=4&limit=2'
+
       beforeEach(async () => {
-        results = await runSearchTest(base, 'head')
+        await createTestSearchPages(editor)
       })
 
       describe('Anonymous calls', () => {
-        it('returns correct status and headers', () => {
-          const rels = Object.keys(parseLinks(results.anonymous.headers.link))
-          expect(results.anonymous.status).to.equal(204)
-          expect(results.anonymous.headers.allow).to.equal(allow)
-          expect(results.anonymous.headers['access-control-allow-methods']).to.equal(allow)
+        it('returns correct status and headers', async () => {
+          res = await request(api).head(`${base}/pages?${query}`)
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(results.anonymous.headers['x-total-count']).to.equal('10')
+          expect(res.headers['x-total-count']).to.equal('10')
+        })
+
+        it('ignores the trashed element', async () => {
+          res = await request(api).head(`${base}/pages?${query}&trashed=true`)
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          expect(rels).to.include('first')
+          expect(rels).to.include('previous')
+          expect(rels).to.include('next')
+          expect(rels).to.include('last')
+          expect(rels).to.have.lengthOf(4)
+          expect(res.headers['x-total-count']).to.equal('10')
         })
       })
 
       describe('Authenticated calls', () => {
-        it('returns correct status and headers', () => {
-          const rels = Object.keys(parseLinks(results.authenticated.headers.link))
-          expect(results.authenticated.status).to.equal(204)
-          expect(results.authenticated.headers.allow).to.equal(allow)
-          expect(results.authenticated.headers['access-control-allow-methods']).to.equal(allow)
+        const user = new User()
+        let tokens: TokenSet
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await user.generateTokens()
+          await user.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).head(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(results.authenticated.headers['x-total-count']).to.equal('11')
+          expect(res.headers['x-total-count']).to.equal('11')
+        })
+
+        it('ignores the trashed element', async () => {
+          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          expect(rels).to.include('first')
+          expect(rels).to.include('previous')
+          expect(rels).to.include('next')
+          expect(rels).to.include('last')
+          expect(rels).to.have.lengthOf(4)
+          expect(res.headers['x-total-count']).to.equal('11')
         })
       })
 
       describe('Editor calls', () => {
-        it('returns correct status and headers', () => {
-          const rels = Object.keys(parseLinks(results.editor.headers.link))
-          expect(results.editor.status).to.equal(204)
-          expect(results.editor.headers.allow).to.equal(allow)
-          expect(results.editor.headers['access-control-allow-methods']).to.equal(allow)
+        let tokens: TokenSet
+
+        beforeEach(async () => {
+          tokens = await editor.generateTokens()
+          await editor.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).head(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(results.editor.headers['x-total-count']).to.equal('12')
+          expect(res.headers['x-total-count']).to.equal('12')
+        })
+
+        it('ignores the trashed element', async () => {
+          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          expect(rels).to.include('first')
+          expect(rels).to.include('previous')
+          expect(rels).to.include('next')
+          expect(rels).to.include('last')
+          expect(rels).to.have.lengthOf(4)
+          expect(res.headers['x-total-count']).to.equal('12')
         })
       })
 
       describe('Admin calls', () => {
-        it('returns correct status and headers', () => {
-          const rels = Object.keys(parseLinks(results.admin.headers.link))
-          expect(results.admin.status).to.equal(204)
-          expect(results.admin.headers.allow).to.equal(allow)
-          expect(results.admin.headers['access-control-allow-methods']).to.equal(allow)
+        const admin = new User({ name: 'Admin', admin: true })
+        let tokens: TokenSet
+
+        before(async () => {
+          await admin.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await admin.generateTokens()
+          await admin.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).head(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(results.admin.headers['x-total-count']).to.equal('13')
+          expect(res.headers['x-total-count']).to.equal('13')
+        })
+
+        it('returns correct status and headers for trashed query', async () => {
+          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          expect(rels).to.include('first')
+          expect(rels).to.include('previous')
+          expect(rels).not.to.include('next')
+          expect(rels).not.to.include('last')
+          expect(rels).to.have.lengthOf(2)
+          expect(res.headers['x-total-count']).to.equal('5')
         })
       })
     })
 
     describe('GET /pages', () => {
+      const query = 'created-after=0&offset=4&limit=2'
+
       beforeEach(async () => {
-        results = await runSearchTest(base)
+        await createTestSearchPages(editor)
       })
 
       describe('Anonymous calls', () => {
-        it('returns correct status and headers', () => {
-          const rels = Object.keys(parseLinks(results.anonymous.headers.link))
-          expect(results.anonymous.status).to.equal(200)
-          expect(results.anonymous.headers.allow).to.equal(allow)
-          expect(results.anonymous.headers['access-control-allow-methods']).to.equal(allow)
+        it('returns correct status and headers', async () => {
+          res = await request(api).get(`${base}/pages?${query}`)
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(200)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(results.anonymous.headers['x-total-count']).to.equal('10')
+          expect(res.headers['x-total-count']).to.equal('10')
         })
 
-        it('returns your results', () => {
-          expect(results.anonymous.body.total).to.equal(10)
-          expect(results.anonymous.body.start).to.equal(4)
-          expect(results.anonymous.body.end).to.equal(6)
-          expect(results.anonymous.body.pages).to.have.lengthOf(2)
+        it('returns your results', async () => {
+          res = await request(api).get(`${base}/pages?${query}`)
+          expect(res.body.total).to.equal(10)
+          expect(res.body.start).to.equal(4)
+          expect(res.body.end).to.equal(5)
+          expect(res.body.pages).to.have.lengthOf(2)
+        })
+
+        it('ignores the trashed element (headers & status)', async () => {
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`)
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(200)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          expect(rels).to.include('first')
+          expect(rels).to.include('previous')
+          expect(rels).to.include('next')
+          expect(rels).to.include('last')
+          expect(rels).to.have.lengthOf(4)
+          expect(res.headers['x-total-count']).to.equal('10')
+        })
+
+        it('ignores the trashed element (body)', async () => {
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`)
+          expect(res.body.total).to.equal(10)
+          expect(res.body.start).to.equal(4)
+          expect(res.body.end).to.equal(5)
+          expect(res.body.pages).to.have.lengthOf(2)
         })
       })
 
       describe('Authenticated calls', () => {
-        it('returns correct status and headers', () => {
-          const rels = Object.keys(parseLinks(results.authenticated.headers.link))
-          expect(results.authenticated.status).to.equal(200)
-          expect(results.authenticated.headers.allow).to.equal(allow)
-          expect(results.authenticated.headers['access-control-allow-methods']).to.equal(allow)
+        const user = new User()
+        let tokens: TokenSet
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await user.generateTokens()
+          await user.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(200)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(results.authenticated.headers['x-total-count']).to.equal('11')
+          expect(res.headers['x-total-count']).to.equal('11')
         })
 
-        it('returns your results', () => {
-          expect(results.authenticated.body.total).to.equal(11)
-          expect(results.authenticated.body.start).to.equal(4)
-          expect(results.authenticated.body.end).to.equal(6)
-          expect(results.authenticated.body.pages).to.have.lengthOf(2)
+        it('returns your results', async () => {
+          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.body.total).to.equal(11)
+          expect(res.body.start).to.equal(4)
+          expect(res.body.end).to.equal(5)
+          expect(res.body.pages).to.have.lengthOf(2)
+        })
+
+        it('ignores the trashed element (headers & status)', async () => {
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(200)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          expect(rels).to.include('first')
+          expect(rels).to.include('previous')
+          expect(rels).to.include('next')
+          expect(rels).to.include('last')
+          expect(rels).to.have.lengthOf(4)
+          expect(res.headers['x-total-count']).to.equal('11')
+        })
+
+        it('ignores the trashed element (body)', async () => {
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.body.total).to.equal(11)
+          expect(res.body.start).to.equal(4)
+          expect(res.body.end).to.equal(5)
+          expect(res.body.pages).to.have.lengthOf(2)
         })
       })
 
       describe('Editor calls', () => {
-        it('returns correct status and headers', () => {
-          const rels = Object.keys(parseLinks(results.editor.headers.link))
-          expect(results.editor.status).to.equal(200)
-          expect(results.editor.headers.allow).to.equal(allow)
-          expect(results.editor.headers['access-control-allow-methods']).to.equal(allow)
+        let tokens: TokenSet
+
+        beforeEach(async () => {
+          tokens = await editor.generateTokens()
+          await editor.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(200)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(results.editor.headers['x-total-count']).to.equal('12')
+          expect(res.headers['x-total-count']).to.equal('12')
         })
 
-        it('returns your results', () => {
-          expect(results.editor.body.total).to.equal(12)
-          expect(results.editor.body.start).to.equal(4)
-          expect(results.editor.body.end).to.equal(6)
-          expect(results.editor.body.pages).to.have.lengthOf(2)
+        it('returns your results', async () => {
+          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.body.total).to.equal(12)
+          expect(res.body.start).to.equal(4)
+          expect(res.body.end).to.equal(5)
+          expect(res.body.pages).to.have.lengthOf(2)
+        })
+
+        it('ignores the trashed element (headers & status)', async () => {
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(200)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          expect(rels).to.include('first')
+          expect(rels).to.include('previous')
+          expect(rels).to.include('next')
+          expect(rels).to.include('last')
+          expect(rels).to.have.lengthOf(4)
+          expect(res.headers['x-total-count']).to.equal('12')
+        })
+
+        it('ignores the trashed element (body)', async () => {
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.body.total).to.equal(12)
+          expect(res.body.start).to.equal(4)
+          expect(res.body.end).to.equal(5)
+          expect(res.body.pages).to.have.lengthOf(2)
         })
       })
 
       describe('Admin calls', () => {
-        it('returns correct status and headers', () => {
-          const rels = Object.keys(parseLinks(results.admin.headers.link))
-          expect(results.admin.status).to.equal(200)
-          expect(results.admin.headers.allow).to.equal(allow)
-          expect(results.admin.headers['access-control-allow-methods']).to.equal(allow)
+        const admin = new User({ name: 'Admin', admin: true })
+        let tokens: TokenSet
+
+        before(async () => {
+          await admin.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await admin.generateTokens()
+          await admin.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(200)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(results.admin.headers['x-total-count']).to.equal('13')
+          expect(res.headers['x-total-count']).to.equal('13')
         })
 
-        it('returns your results', () => {
-          expect(results.admin.body.total).to.equal(13)
-          expect(results.admin.body.start).to.equal(4)
-          expect(results.admin.body.end).to.equal(6)
-          expect(results.admin.body.pages).to.have.lengthOf(2)
+        it('returns your results', async () => {
+          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.body.total).to.equal(13)
+          expect(res.body.start).to.equal(4)
+          expect(res.body.end).to.equal(5)
+          expect(res.body.pages).to.have.lengthOf(2)
+        })
+
+        it('returns correct status and headers for a trashed query', async () => {
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          const rels = Object.keys(parseLinks(res.headers.link))
+          expect(res.status).to.equal(200)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          expect(rels).to.include('first')
+          expect(rels).to.include('previous')
+          expect(rels).not.to.include('next')
+          expect(rels).not.to.include('last')
+          expect(rels).to.have.lengthOf(2)
+          expect(res.headers['x-total-count']).to.equal('5')
+        })
+
+        it('returns your results for a trashed query', async () => {
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.body.total).to.equal(5)
+          expect(res.body.start).to.equal(4)
+          expect(res.body.end).to.equal(5)
+          expect(res.body.pages).to.have.lengthOf(1)
         })
       })
     })
@@ -757,10 +950,16 @@ describe('Pages API', () => {
 
       describe('Authenticated calls', () => {
         const user = new User({ name: 'Authenticated User' })
-        let auth = { Authorization: '' }
+        const auth = { Authorization: '' }
+
+        before(async () => {
+          await user.save()
+        })
 
         beforeEach(async () => {
-          auth = await initUser(user)
+          const { access } = await user.generateTokens()
+          await user.save()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers for a page that anyone can read', async () => {
@@ -824,10 +1023,16 @@ describe('Pages API', () => {
 
       describe('Editor calls', () => {
         const user = new User({ name: 'Editor' })
-        let auth = { Authorization: '' }
+        const auth = { Authorization: '' }
+
+        before(async () => {
+          await user.save()
+        })
 
         beforeEach(async () => {
-          auth = await initUser(user)
+          const { access } = await user.generateTokens()
+          await user.save()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers for a page that anyone can read', async () => {
@@ -891,10 +1096,16 @@ describe('Pages API', () => {
 
       describe('Admin calls', () => {
         const user = new User({ name: 'Admin', admin: true })
-        let auth = { Authorization: '' }
+        const auth = { Authorization: '' }
+
+        before(async () => {
+          await user.save()
+        })
 
         beforeEach(async () => {
-          auth = await initUser(user)
+          const { access } = await user.generateTokens()
+          await user.save()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers for a page that anyone can read', async () => {
@@ -1057,10 +1268,16 @@ describe('Pages API', () => {
 
       describe('Authenticated calls', () => {
         const user = new User({ name: 'Authenticated User' })
-        let auth = { Authorization: '' }
+        const auth = { Authorization: '' }
+
+        before(async () => {
+          await user.save()
+        })
 
         beforeEach(async () => {
-          auth = await initUser(user)
+          const { access } = await user.generateTokens()
+          await user.save()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers that anyone can read', async () => {
@@ -1164,10 +1381,16 @@ describe('Pages API', () => {
 
       describe('Editor calls', () => {
         const user = new User({ name: 'Editor' })
-        let auth = { Authorization: '' }
+        const auth = { Authorization: '' }
+
+        before(async () => {
+          await user.save()
+        })
 
         beforeEach(async () => {
-          auth = await initUser(user)
+          const { access } = await user.generateTokens()
+          await user.save()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers that anyone can read', async () => {
@@ -1274,10 +1497,16 @@ describe('Pages API', () => {
 
       describe('Admin calls', () => {
         const user = new User({ name: 'Admin', admin: true })
-        let auth = { Authorization: '' }
+        const auth = { Authorization: '' }
+
+        before(async () => {
+          await user.save()
+        })
 
         beforeEach(async () => {
-          auth = await initUser(user)
+          const { access } = await user.generateTokens()
+          await user.save()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers for a page that anyone can read', async () => {

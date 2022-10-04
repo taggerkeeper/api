@@ -235,6 +235,12 @@ router.options('/', collection.options)
  *           type: string
  *         description: "A search string."
  *         example: Poughkeepsie
+ *       - in: query
+ *         name: trashed
+ *         schema:
+ *           type: boolean
+ *         description: "If set, only return pages that have been marked for deletion. Only administrators can see pages that have been marked for deletion, so if you're not an administrator this option is ignored."
+ *         example: true
  *     security:
  *       - bearerAuth: []
  *     responses:
@@ -329,6 +335,12 @@ router.head('/', loadUserFromAccessToken, searchPages, addSearchPagination, coll
  *           type: string
  *         description: "A search string."
  *         example: Poughkeepsie
+ *       - in: query
+ *         name: trashed
+ *         schema:
+ *           type: boolean
+ *         description: "If set, only return pages that have been marked for deletion. Only administrators can see pages that have been marked for deletion, so if you're not an administrator this option is ignored."
+ *         example: true
  *     security:
  *       - bearerAuth: []
  *     responses:
