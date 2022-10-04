@@ -43,6 +43,6 @@ describe('getOffsetLimitStartEnd', () => {
 
   it('returns an end equal to the offset plus the limit', () => {
     const actual = getOffsetLimitStartEnd({ limit: 55, offset: 1000000, trashed: false })
-    expect(actual.end).to.equal(1000055)
+    expect(actual.end).to.equal(1000054)
   })
 })

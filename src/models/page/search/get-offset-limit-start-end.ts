@@ -13,7 +13,7 @@ const getOffsetLimitStartEnd = (query: PageQuery): OffsetLimitStartEnd => {
   const maxLimit = parseInt(getFirstVal(process.env.MAX_QUERY_LIMIT, 1000))
   const limit = Math.min(requestedLimit, maxLimit)
   const offset = query.offset ?? 0
-  return { offset, limit, start: offset, end: offset + limit }
+  return { offset, limit, start: offset, end: offset + limit - 1 }
 }
 
 export default getOffsetLimitStartEnd
