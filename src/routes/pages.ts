@@ -1057,7 +1057,7 @@ router.all('/:pid/revisions', allow(revisions))
  *     summary: "Methods for the Revisions collection endpoint."
  *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
  *     tags:
- *       - pages
+ *       - pages/revisions
  *     parameters:
  *       - in: path
  *         name: pid
@@ -1184,7 +1184,7 @@ router.head('/:pid/revisions', loadUserFromAccessToken, requireValidPath, loadPa
  *     summary: "Return a page's revisions."
  *     description: "Return a page's revisions."
  *     tags:
- *       - pages
+ *       - pages/revisions
  *     parameters:
  *       - in: path
  *         name: pid
@@ -1289,5 +1289,63 @@ router.head('/:pid/revisions', loadUserFromAccessToken, requireValidPath, loadPa
  */
 
 router.get('/:pid/revisions', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, revisions.get)
+
+// /pages/:pid/revisions/:revision
+
+const revision = {
+  options: (req: Request, res: Response) => {
+    res.sendStatus(204)
+  }
+}
+
+router.all('/:pid/revisions/:revision', allow(revision))
+
+/**
+ * @openapi
+ * /pages/{pid}/revisions/{revision}:
+ *   options:
+ *     summary: "Methods for the Revision item endpoint."
+ *     description: "This method returns an Allow header which lists the methods that this endpoint allows."
+ *     tags:
+ *       - pages/revisions
+ *     parameters:
+ *       - in: path
+ *         name: pid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The page's unique path or 24-digit hexadecimal ID number."
+ *         examples:
+ *           pid:
+ *             value: "0123456789abcdef12345678"
+ *             summary: "The page's unique 24-digit hexadecimal ID number."
+ *           path:
+ *             value: "/path/to/page"
+ *             summary: "The page's unique path."
+ *       - in: path
+ *         name: revision
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: "The index of the revision requested in the page's revisions array. The index of the most recent revision is 0; each revision is numbered from there, with higher indices indicating older revisions. The original version of the page has an index equal to the length of the revisions array minus one."
+ *         example: 0
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ */
+
+router.options('/:pid/revisions/:revision', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, revision.options)
 
 export default router
