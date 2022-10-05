@@ -1,6 +1,8 @@
 import { Request, Response, Router } from 'express'
 import expressAsyncHandler from 'express-async-handler'
 
+import PageModel from '../models/page/model.js'
+
 import loadPackage from '../utils/load-package.js'
 import getAPIInfo from '../utils/get-api-info.js'
 
@@ -441,9 +443,10 @@ const item = {
   put: (req: Request, res: Response) => {
     res.status(200).send(req.page?.getPublicObj())
   },
-  delete: (req: Request, res: Response) => {
+  delete: expressAsyncHandler(async (req: Request, res: Response) => {
+    if (req.user?.admin === true && req.query.hard !== undefined) await PageModel.findByIdAndRemove(req.params.pid)
     res.status(200).send(req.page?.getPublicObj())
-  }
+  })
 }
 
 router.all('/:pid', allow(item))
@@ -828,6 +831,13 @@ router.put('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, require
  *           path:
  *             value: "/path/to/page"
  *             summary: "The page's unique path."
+ *       - in: query
+ *         name: hard
+ *         required: false
+ *         schema:
+ *           type: boolean
+ *         description: "If provided by an administrator, this hard deletes the page, rather than marking it for deletion. This option is ignored if it is provided by someone who is not an administrator."
+ *         example: true
  *     security:
  *       - bearerAuth: []
  *     responses:
