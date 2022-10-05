@@ -3,6 +3,7 @@ import { mockRequest, mockResponse } from 'mock-req-res'
 import * as sinon from 'sinon'
 import sinonChai from 'sinon-chai'
 import Page from '../models/page/page.js'
+import Revision from '../models/revision/revision.js'
 import requireRevisionIndex from './require-revision-index.js'
 
 chai.use(sinonChai)
@@ -25,6 +26,7 @@ describe('requireRevisionIndex', () => {
     requireRevisionIndex(mockReq, mockRes, mockNext)
     expect(mockRes.status).to.have.been.calledWith(404)
     expect(mockRes.send).to.have.been.calledWithMatch({ message: 'Page not found.' })
+    expect(mockReq.revision).to.equal(undefined)
     expect(mockNext).to.have.callCount(0)
   })
 
@@ -33,6 +35,7 @@ describe('requireRevisionIndex', () => {
     requireRevisionIndex(mockReq, mockRes, mockNext)
     expect(mockRes.status).to.have.been.calledWith(400)
     expect(mockRes.send).to.have.been.calledWithMatch({ message: 'undefined is not a valid index for any revision of this page. Please provide an index between 0 and 0.' })
+    expect(mockReq.revision).to.equal(undefined)
     expect(mockNext).to.have.callCount(0)
   })
 
@@ -42,6 +45,7 @@ describe('requireRevisionIndex', () => {
     requireRevisionIndex(mockReq, mockRes, mockNext)
     expect(mockRes.status).to.have.been.calledWith(400)
     expect(mockRes.send).to.have.been.calledWithMatch({ message: 'nope is not a valid index for any revision of this page. Please provide an index between 0 and 0.' })
+    expect(mockReq.revision).to.equal(undefined)
     expect(mockNext).to.have.callCount(0)
   })
 
@@ -51,6 +55,7 @@ describe('requireRevisionIndex', () => {
     requireRevisionIndex(mockReq, mockRes, mockNext)
     expect(mockRes.status).to.have.been.calledWith(400)
     expect(mockRes.send).to.have.been.calledWithMatch({ message: '-1 is not a valid index for any revision of this page. Please provide an index between 0 and 0.' })
+    expect(mockReq.revision).to.equal(undefined)
     expect(mockNext).to.have.callCount(0)
   })
 
@@ -60,6 +65,7 @@ describe('requireRevisionIndex', () => {
     requireRevisionIndex(mockReq, mockRes, mockNext)
     expect(mockRes.status).to.have.been.calledWith(400)
     expect(mockRes.send).to.have.been.calledWithMatch({ message: '1 is not a valid index for any revision of this page. Please provide an index between 0 and 0.' })
+    expect(mockReq.revision).to.equal(undefined)
     expect(mockNext).to.have.callCount(0)
   })
 
@@ -67,6 +73,7 @@ describe('requireRevisionIndex', () => {
     mockReq.page = new Page({ revisions })
     mockReq.params = { revision: '0' }
     requireRevisionIndex(mockReq, mockRes, mockNext)
+    expect(mockReq.revision).to.be.an.instanceOf(Revision)
     expect(mockNext).to.have.callCount(1)
   })
 })

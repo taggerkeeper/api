@@ -8,6 +8,7 @@ const requireRevisionIndex = (req: Request, res: Response, next: NextFunction): 
   } else if (isNaN(r) || r < 0 || r > max) {
     res.status(400).send({ message: `${req.params.revision} is not a valid index for any revision of this page. Please provide an index between 0 and ${max}.`})
   } else {
+    req.revision = req.page?.revisions[r]
     next()
   }
 }
