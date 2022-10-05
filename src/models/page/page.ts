@@ -65,6 +65,12 @@ class Page {
     return chronological[num - 1]
   }
 
+  getRevisionFromStr (index: string): Revision | string {
+    const i = parseInt(index)
+    if (isNaN(i) || i < 1 || i > this.revisions.length) return `${index} is not a valid index for any revision of this page. Please provide an index between 1 and ${this.revisions.length}.`
+    return this.getRevision(i) as Revision
+  }
+
   rollback (num: number, editor: User): boolean {
     // "num" is 1 for the original version, 2 for the first revision, etc.
     const target = this.getRevision(num)

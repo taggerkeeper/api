@@ -130,6 +130,37 @@ describe('Page', () => {
       })
     })
 
+    describe('getRevisionFromStr', () => {
+      beforeEach(() => runTestUpdate())
+
+      it('returns an error message if not given a string that can be parsed into an integer', () => {
+        const revision = actual.getRevisionFromStr('lolnope')
+        expect(revision).to.equal('lolnope is not a valid index for any revision of this page. Please provide an index between 1 and 2.')
+      })
+
+      it('returns an error message if given an index that\'s too low', () => {
+        const revision = actual.getRevisionFromStr('0')
+        expect(revision).to.equal('0 is not a valid index for any revision of this page. Please provide an index between 1 and 2.')
+      })
+
+      it('returns an error message if given an index that\'s too high', () => {
+        const revision = actual.getRevisionFromStr('3')
+        expect(revision).to.equal('3 is not a valid index for any revision of this page. Please provide an index between 1 and 2.')
+      })
+
+      it('returns the current revision as 1', () => {
+        const revision = actual.getRevisionFromStr('1')
+        expect(revision).to.be.an.instanceOf(Revision)
+        expect((revision as Revision)?.content.title).to.equal(updatedTitle)
+      })
+
+      it('returns older revisions for higher indices', () => {
+        const revision = actual.getRevisionFromStr('2')
+        expect(revision).to.be.an.instanceOf(Revision)
+        expect((revision as Revision)?.content.title).to.equal(title)
+      })
+    })
+
     describe('rollback', () => {
       beforeEach(() => {
         runTestUpdate()
