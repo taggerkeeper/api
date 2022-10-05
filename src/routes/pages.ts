@@ -12,9 +12,11 @@ import createPage from '../middlewares/create-page.js'
 import getRevisionFromBody from '../middlewares/get-revision-from-body.js'
 import loadPage from '../middlewares/load-page.js'
 import loadUserFromAccessToken from '../middlewares/load-user-from-access-token.js'
+import requireAdmin from '../middlewares/require-admin.js'
 import requirePage from '../middlewares/require-page.js'
 import requirePageRead from '../middlewares/require-page-read.js'
 import requirePageWrite from '../middlewares/require-page-write.js'
+import requireUser from '../middlewares/require-user.js'
 import requireValidPath from '../middlewares/require-valid-path.js'
 import savePage from '../middlewares/save-page.js'
 import searchPages from '../middlewares/search-pages.js'
@@ -137,6 +139,10 @@ const collection = {
     const { root } = getAPIInfo(pkg)
     res.set('Location', `${root}/pages/${req.page?.id ?? ''}`)
     res.status(201).send(req.page?.getPublicObj())
+  }),
+  delete: expressAsyncHandler(async (req: Request, res: Response) => {
+    await PageModel.deleteMany({ trashed: { $exists: true, $ne: null } })
+    res.sendStatus(204)
   })
 }
 
@@ -156,12 +162,12 @@ router.all('/', allow(collection))
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  */
 
@@ -251,12 +257,12 @@ router.options('/', collection.options)
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Link':
  *             schema:
@@ -351,12 +357,12 @@ router.head('/', loadUserFromAccessToken, searchPages, addSearchPagination, coll
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Link':
  *             schema:
@@ -412,12 +418,12 @@ router.get('/', loadUserFromAccessToken, searchPages, addSearchPagination, colle
  *           'Allow':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Access-Control-Allow-Methods':
  *             schema:
  *               type: string
- *               example: "OPTIONS, HEAD, GET, POST"
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
  *             description: "The methods that this endpoint allows."
  *           'Location':
  *             schema:
@@ -427,6 +433,107 @@ router.get('/', loadUserFromAccessToken, searchPages, addSearchPagination, colle
  */
 
 router.post('/', loadUserFromAccessToken, getRevisionFromBody, createPage, requirePage, savePage, collection.post)
+
+/**
+ * @openapi
+ * /pages:
+ *   delete:
+ *     summary: "Empty the trash."
+ *     description: "Hard delete all pages that have been marked for deletion. This method can only be used by an administrator."
+ *     tags:
+ *       - pages
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       204:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, POST, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *       400:
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "This method requires authentication."
+ *       401:
+ *         description: "This method requires authentication."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "This header is informing you that you must pass a valid access token as the Bearer header to this request. To obtain a valid access token, see the `POST /tokens` method."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   example: "This method requires authentication."
+ *       403:
+ *         description: "You do not have permission to use this method. This usually occurs because you are not an administrator, but it can also happen if your account is deactivated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   examples:
+ *                     not-admin:
+ *                       value: "This method requires authentication by an administrator."
+ *                       summary: "You are not an administrator."
+ *                     deactivated:
+ *                       value: "Your account has been deactivated."
+ *                       summary: "Your account has been deactivated."
+ */
+
+router.delete('/', loadUserFromAccessToken, requireUser, requireAdmin, collection.delete)
 
 // /pages/:pid
 
@@ -573,7 +680,6 @@ router.options('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, req
  *               type: string
  *               example: "OPTIONS, HEAD, GET, PUT, DELETE"
  *             description: "The methods that this endpoint allows."
- *
  */
 
 router.head('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, item.head)

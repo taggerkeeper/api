@@ -63,7 +63,7 @@ describe('Pages API', () => {
   })
 
   describe('/pages', () => {
-    const allow = 'OPTIONS, HEAD, GET, POST'
+    const allow = 'OPTIONS, HEAD, GET, POST, DELETE'
     const editor = new User()
 
     before(async () => {
@@ -494,6 +494,108 @@ describe('Pages API', () => {
         expect(rev?.permissions?.read).to.equal(PermissionLevel.anyone)
         expect(rev?.permissions?.write).to.equal(PermissionLevel.anyone)
         expect(rev?.editor).to.equal(undefined)
+      })
+    })
+
+    describe('DELETED /pages', () => {
+      const total = 3
+
+      beforeEach(async () => {
+        for (let i = 1; i <= total; i++) {
+          const page = new Page({ revisions: [{ content: { title: `Page ${i}`, body: 'Hello, world!' } }], trashed: new Date() })
+          await page.save()
+        }
+      })
+
+      describe('Anonymous calls', () => {
+        it('returns correct status and headers', async () => {
+          res = await request(api).delete(`${base}/pages`)
+          expect(res.status).to.equal(400)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('doesn\'t delete trashed pages', async () => {
+          res = await request(api).delete(`${base}/pages`)
+          const check = await PageModel.countDocuments({})
+          expect(check).to.equal(total)
+        })
+      })
+
+      describe('Authenticated calls', () => {
+        const user = new User()
+        let tokens: TokenSet
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await user.generateTokens()
+          await user.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.status).to.equal(403)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('doesn\'t delete trashed pages', async () => {
+          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          const check = await PageModel.countDocuments({})
+          expect(check).to.equal(total)
+        })
+      })
+
+      describe('Editor calls', () => {
+        let tokens: TokenSet
+
+        beforeEach(async () => {
+          tokens = await editor.generateTokens()
+          await editor.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.status).to.equal(403)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('doesn\'t delete trashed pages', async () => {
+          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          const check = await PageModel.countDocuments({})
+          expect(check).to.equal(total)
+        })
+      })
+
+      describe('Admin calls', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+        let tokens: TokenSet
+
+        before(async () => {
+          await admin.save()
+        })
+
+        beforeEach(async () => {
+          tokens = await admin.generateTokens()
+          await admin.save()
+        })
+
+        it('returns correct status and headers', async () => {
+          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          expect(res.status).to.equal(204)
+          expect(res.headers.allow).to.equal(allow)
+          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+        })
+
+        it('deletes trashed pages', async () => {
+          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          const check = await PageModel.countDocuments({})
+          expect(check).to.equal(0)
+        })
       })
     })
   })
