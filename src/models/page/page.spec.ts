@@ -148,16 +148,16 @@ describe('Page', () => {
         expect(revision).to.equal('3 is not a valid index for any revision of this page. Please provide an index between 1 and 2.')
       })
 
-      it('returns the current revision as 1', () => {
+      it('returns the original revision as 1', () => {
         const revision = actual.getRevisionFromStr('1')
         expect(revision).to.be.an.instanceOf(Revision)
-        expect((revision as Revision)?.content.title).to.equal(updatedTitle)
+        expect((revision as Revision)?.content.title).to.equal(title)
       })
 
-      it('returns older revisions for higher indices', () => {
+      it('returns later revisions for higher indices', () => {
         const revision = actual.getRevisionFromStr('2')
         expect(revision).to.be.an.instanceOf(Revision)
-        expect((revision as Revision)?.content.title).to.equal(title)
+        expect((revision as Revision)?.content.title).to.equal(updatedTitle)
       })
     })
 
