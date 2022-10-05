@@ -9,14 +9,15 @@ describe('diffRevisions', () => {
   let mockReq = mockRequest()
   let mockRes = mockResponse()
   let mockNext = (): void => {}
-  const a = new Revision({ content: { title: 'A', path: '/a', body: 'This is A.' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } })
-  const b = new Revision({ content: { title: 'B', path: '/b', body: 'This is B.' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.editor } })
+  const now = new Date().getTime()
+  const a = new Revision({ content: { title: 'A', path: '/a', body: 'This is A.' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }, timestamp: new Date(now - 5) })
+  const b = new Revision({ content: { title: 'B', path: '/b', body: 'This is B.' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.editor }, timestamp: new Date(now - 3) })
 
   beforeEach(async () => {
     mockReq = mockRequest()
     mockRes = mockResponse()
     mockNext = () => {}
-    mockReq.page = new Page({ revisions: [a, b] })
+    mockReq.page = new Page({ revisions: [b, a] })
   })
 
   it('does nothing if not given a parameter index', () => {
@@ -60,8 +61,8 @@ describe('diffRevisions', () => {
   })
 
   it('returns a diff of the two revisions given', () => {
-    mockReq.query = { compare: '1' }
-    mockReq.params = { revision: '2' }
+    mockReq.query = { compare: '2' }
+    mockReq.revision = b
     diffRevisions(mockReq, mockRes, mockNext)
 
     const expected = JSON.stringify({
