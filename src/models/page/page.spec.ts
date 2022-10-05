@@ -124,7 +124,12 @@ describe('Page', () => {
         expect(revision).to.be.an.instanceOf(Revision)
       })
 
-      it('returns the revision requested if given a valid number', () => {
+      it('returns the original revision if given 1', () => {
+        const revision = actual.getRevision(1)
+        expect(revision?.content.title).to.equal(title)
+      })
+
+      it('returns a later revision if given a higher number', () => {
         const revision = actual.getRevision(2)
         expect(revision?.content.title).to.equal(updatedTitle)
       })
