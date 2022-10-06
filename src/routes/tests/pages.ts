@@ -3761,7 +3761,7 @@ describe('Pages API', () => {
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            res = await request(api).options(`${base}/pages/login/revisions/0`)
+            res = await request(api).options(`${base}/pages/login/revisions/1`)
           })
 
           it('returns 400 and correct headers', () => {
@@ -3775,7 +3775,7 @@ describe('Pages API', () => {
           beforeEach(async () => {
             page = new Page({ revisions: [orig] })
             await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`)
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3790,7 +3790,7 @@ describe('Pages API', () => {
             permissions.read = PermissionLevel.authenticated
             page = new Page({ revisions: [orig] })
             await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`)
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3812,7 +3812,7 @@ describe('Pages API', () => {
             permissions.read = PermissionLevel.editor
             page = new Page({ revisions: [orig] })
             await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`)
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3827,7 +3827,7 @@ describe('Pages API', () => {
             permissions.read = PermissionLevel.admin
             page = new Page({ revisions: [orig] })
             await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`)
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3850,7 +3850,7 @@ describe('Pages API', () => {
           beforeEach(async () => {
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 400 and correct headers', () => {
@@ -3866,7 +3866,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
@@ -3883,7 +3883,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
@@ -3907,7 +3907,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 404 and correct headers', () => {
@@ -3924,7 +3924,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 404 and correct headers', () => {
@@ -3947,7 +3947,7 @@ describe('Pages API', () => {
           beforeEach(async () => {
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 400 and correct headers', () => {
@@ -3964,7 +3964,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
@@ -3982,7 +3982,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
@@ -4000,7 +4000,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
@@ -4018,7 +4018,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 404 and correct headers', () => {
@@ -4041,7 +4041,7 @@ describe('Pages API', () => {
           beforeEach(async () => {
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 400 and correct headers', () => {
@@ -4057,7 +4057,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
@@ -4074,7 +4074,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
@@ -4098,7 +4098,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
@@ -4115,7 +4115,7 @@ describe('Pages API', () => {
             await page.save()
             tokens = await user.generateTokens()
             await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/0`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
           })
 
           it('returns 204 and correct headers', () => {
