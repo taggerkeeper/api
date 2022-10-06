@@ -1,12 +1,16 @@
-import { expect } from 'chai'
+import chai, { expect } from 'chai'
 import { mockRequest, mockResponse } from 'mock-req-res'
+import * as sinon from 'sinon'
+import sinonChai from 'sinon-chai'
 import Page from '../models/page/page.js'
 import getRevision from './get-revision.js'
+
+chai.use(sinonChai)
 
 describe('getRevision', () => {
   let mockReq = mockRequest()
   let mockRes = mockResponse()
-  let mockNext = (): void => {}
+  let mockNext = sinon.spy()
 
   const revisions = [
     { content: { title: 'Revision 3', path: '/rev3', body: 'This is the third revision.' } },
@@ -19,9 +23,11 @@ describe('getRevision', () => {
   beforeEach(() => {
     mockReq = mockRequest()
     mockRes = mockResponse()
-    mockNext = () => {}
+    mockNext = sinon.spy()
     mockReq.page = page
   })
+
+  afterEach(() => sinon.restore())
 
   it('sets the revision indicated', () => {
     mockReq.params = { revision: '2' }
@@ -32,17 +38,17 @@ describe('getRevision', () => {
     expect(revision?.content.body).to.equal('This is the second revision.')
   })
 
-  it('does nothing if no such revision exists', () => {
+  it('returns an error if no such revision exists', () => {
     mockReq.params = { revision: '4' }
     getRevision(mockReq, mockRes, mockNext)
-    const { revision } = mockReq
-    expect(revision).to.equal(undefined)
+    expect(mockRes.status).to.have.been.calledWith(400)
+    expect(mockRes.send).to.have.been.calledWithMatch({ message: '4 is not a valid index for any revision of this page. Please provide an index between 1 and 3.' })
   })
 
-  it('does nothing if not given a number', () => {
-    mockReq.params = { revision: 'three' }
+  it('returns an error if not given a number', () => {
+    mockReq.params = { revision: 'lolnope' }
     getRevision(mockReq, mockRes, mockNext)
-    const { revision } = mockReq
-    expect(revision).to.equal(undefined)
+    expect(mockRes.status).to.have.been.calledWith(400)
+    expect(mockRes.send).to.have.been.calledWithMatch({ message: 'lolnope is not a valid index for any revision of this page. Please provide an index between 1 and 3.' })
   })
 })
