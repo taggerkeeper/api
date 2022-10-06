@@ -19,7 +19,6 @@ const diffRevisions = (req: Request, res: Response, next: NextFunction): void =>
           write: diffWords(a.permissions.write, b.permissions.write)
         }
       }
-      console.log({ a, b, diff: req.revisionsDiff })
     }
   }
   next()
