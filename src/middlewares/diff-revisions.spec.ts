@@ -61,7 +61,7 @@ describe('diffRevisions', () => {
   })
 
   it('returns a diff of the two revisions given', () => {
-    mockReq.query = { compare: '2' }
+    mockReq.query = { compare: '1' }
     mockReq.revision = b
     diffRevisions(mockReq, mockRes, mockNext)
 

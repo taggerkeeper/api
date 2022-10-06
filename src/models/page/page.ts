@@ -65,10 +65,10 @@ class Page {
     return chronological[num - 1]
   }
 
-  getRevisionFromStr (index: string): Revision | string {
-    const i = parseInt(index)
-    if (isNaN(i) || i < 1 || i > this.revisions.length) return `${index} is not a valid index for any revision of this page. Please provide an index between 1 and ${this.revisions.length}.`
-    return this.getRevision(i) as Revision
+  getRevisionFromStr (num: string): Revision | string {
+    const n = parseInt(num)
+    if (isNaN(n) || n < 1 || n > this.revisions.length) return `${num} is not a valid number for any revision of this page. Please provide a number between 1 and ${this.revisions.length}.`
+    return this.getRevision(n) as Revision
   }
 
   rollback (num: number, editor: User): boolean {

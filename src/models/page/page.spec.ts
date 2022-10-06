@@ -140,17 +140,17 @@ describe('Page', () => {
 
       it('returns an error message if not given a string that can be parsed into an integer', () => {
         const revision = actual.getRevisionFromStr('lolnope')
-        expect(revision).to.equal('lolnope is not a valid index for any revision of this page. Please provide an index between 1 and 2.')
+        expect(revision).to.equal('lolnope is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
       })
 
-      it('returns an error message if given an index that\'s too low', () => {
+      it('returns an error message if given a number that\'s too low', () => {
         const revision = actual.getRevisionFromStr('0')
-        expect(revision).to.equal('0 is not a valid index for any revision of this page. Please provide an index between 1 and 2.')
+        expect(revision).to.equal('0 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
       })
 
-      it('returns an error message if given an index that\'s too high', () => {
+      it('returns an error message if given a number that\'s too high', () => {
         const revision = actual.getRevisionFromStr('3')
-        expect(revision).to.equal('3 is not a valid index for any revision of this page. Please provide an index between 1 and 2.')
+        expect(revision).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
       })
 
       it('returns the original revision as 1', () => {

@@ -42,13 +42,13 @@ describe('getRevision', () => {
     mockReq.params = { revision: '4' }
     getRevision(mockReq, mockRes, mockNext)
     expect(mockRes.status).to.have.been.calledWith(400)
-    expect(mockRes.send).to.have.been.calledWithMatch({ message: '4 is not a valid index for any revision of this page. Please provide an index between 1 and 3.' })
+    expect(mockRes.send).to.have.been.calledWithMatch({ message: '4 is not a valid number for any revision of this page. Please provide a number between 1 and 3.' })
   })
 
   it('returns an error if not given a number', () => {
     mockReq.params = { revision: 'lolnope' }
     getRevision(mockReq, mockRes, mockNext)
     expect(mockRes.status).to.have.been.calledWith(400)
-    expect(mockRes.send).to.have.been.calledWithMatch({ message: 'lolnope is not a valid index for any revision of this page. Please provide an index between 1 and 3.' })
+    expect(mockRes.send).to.have.been.calledWithMatch({ message: 'lolnope is not a valid number for any revision of this page. Please provide a number between 1 and 3.' })
   })
 })
