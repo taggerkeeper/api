@@ -1,15 +1,15 @@
-import { expect } from 'chai'
+import {expect} from 'chai'
 import request from 'supertest'
-import loadPackage, { NPMPackage } from '../../utils/load-package.js'
+import loadPackage, {NPMPackage} from '../../utils/load-package.js'
 import loadPageById from '../../models/page/loaders/by-id.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import ContentData from '../../models/content/data.js'
-import PermissionsData, { PermissionLevel } from '../../models/permissions/data.js'
+import PermissionsData, {PermissionLevel} from '../../models/permissions/data.js'
 import Page from '../../models/page/page.js'
 import PageData from '../../models/page/data.js'
 import PageModel from '../../models/page/model.js'
 import RevisionData from '../../models/revision/data.js'
-import User, { TokenSet } from '../../models/user/user.js'
+import User, {TokenSet} from '../../models/user/user.js'
 import api from '../../server.js'
 
 const parseLinks = (header: string): any => {
@@ -3745,7 +3745,7 @@ describe('Pages API', () => {
   })
 
   describe('/pages/:pid/revisions/:revision', () => {
-    const allow = 'OPTIONS, HEAD, GET'
+    const allow = 'OPTIONS, HEAD, GET, PUT'
 
     describe('OPTIONS /pages/:pid/revisions/:revision', () => {
       let page: Page
@@ -6422,6 +6422,454 @@ describe('Pages API', () => {
               expect(write[1].added).to.equal(true)
               expect(write[1].value).to.equal('admin')
             })
+          })
+        })
+      })
+    })
+
+    describe('PUT /pages/:pid/revisions/:revision', () => {
+      let page: Page
+      const orig: RevisionData = {
+        content: { title: 'Version 1', body: 'This is the original text.' },
+        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      }
+      const update: RevisionData = {
+        content: { title: 'Version 2', body: 'This is an update.' },
+        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      }
+
+      beforeEach(() => {
+        update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      })
+
+      describe('Anonymous user', () => {
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).put(`${base}/pages/login/revisions/1`)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+            expect(res.body.path).to.equal('/login')
+          })
+        })
+
+        describe('rolling back a page anyone can edit', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only users can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
+          })
+
+          it('returns 401 and correct headers', () => {
+            expect(res.status).to.equal(401)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            expect(res.headers['www-authenticate']).to.equal('Bearer error="invalid_token" error_description="The access token could not be verified."')
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('This method requires authentication.')
+          })
+        })
+
+        describe('rolling back a page only editors can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.editor }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
+          })
+
+          it('returns 401 and correct headers', () => {
+            expect(res.status).to.equal(401)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            expect(res.headers['www-authenticate']).to.equal('Bearer error="invalid_token" error_description="The access token could not be verified."')
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('This method requires authentication.')
+          })
+        })
+
+        describe('rolling back a page only admins can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
+          })
+
+          it('returns 401 and correct headers', () => {
+            expect(res.status).to.equal(401)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            expect(res.headers['www-authenticate']).to.equal('Bearer error="invalid_token" error_description="The access token could not be verified."')
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('This method requires authentication.')
+          })
+        })
+      })
+
+      describe('Authenticated user', () => {
+        const user = new User()
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          const tokens = await user.generateTokens()
+          await user.save()
+          auth.Authorization = `Bearer ${tokens.access}`
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).put(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+            expect(res.body.path).to.equal('/login')
+          })
+        })
+
+        describe('rolling back a page anyone can edit', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only users can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only editors can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.editor }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 403 and correct headers', () => {
+            expect(res.status).to.equal(403)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('You do not have permission to update this page.')
+          })
+        })
+
+        describe('rolling back a page only admins can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 403 and correct headers', () => {
+            expect(res.status).to.equal(403)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('You do not have permission to update this page.')
+          })
+        })
+      })
+
+      describe('Editor', () => {
+        const user = new User()
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          const tokens = await user.generateTokens()
+          await user.save()
+          auth.Authorization = `Bearer ${tokens.access}`
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).put(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+            expect(res.body.path).to.equal('/login')
+          })
+        })
+
+        describe('rolling back a page anyone can edit', () => {
+          beforeEach(async () => {
+            update.editor = user.getObj()
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only users can edit', () => {
+          beforeEach(async () => {
+            update.editor = user.getObj()
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only editors can edit', () => {
+          beforeEach(async () => {
+            update.editor = user.getObj()
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.editor }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only admins can edit', () => {
+          beforeEach(async () => {
+            update.editor = user.getObj()
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 403 and correct headers', () => {
+            expect(res.status).to.equal(403)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('You do not have permission to update this page.')
+          })
+        })
+      })
+
+      describe('Admin', () => {
+        const admin = new User({ name: 'Admin', admin: true })
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await admin.save()
+        })
+
+        beforeEach(async () => {
+          const tokens = await admin.generateTokens()
+          await admin.save()
+          auth.Authorization = `Bearer ${tokens.access}`
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).put(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+            expect(res.body.path).to.equal('/login')
+          })
+        })
+
+        describe('rolling back a page anyone can edit', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only users can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only editors can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.editor }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
+          })
+        })
+
+        describe('rolling back a page only admins can edit', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+          })
+
+          it('returns 200 and correct headers', () => {
+            expect(res.status).to.equal(200)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns the updated page', () => {
+            expect(res.body.revisions).to.have.lengthOf(3)
+            expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
         })
       })

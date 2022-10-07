@@ -21,6 +21,7 @@ import requirePageWrite from '../middlewares/require-page-write.js'
 import requireRevision from '../middlewares/require-revision.js'
 import requireUser from '../middlewares/require-user.js'
 import requireValidPath from '../middlewares/require-valid-path.js'
+import rollback from '../middlewares/rollback.js'
 import savePage from '../middlewares/save-page.js'
 import searchPages from '../middlewares/search-pages.js'
 import trashPage from '../middlewares/trash-page.js'
@@ -1413,6 +1414,9 @@ const revision = {
   },
   get: (req: Request, res: Response) => {
     res.status(200).send(req.revisionsDiff ?? req.revision)
+  },
+  put: (req: Request, res: Response) => {
+    res.status(200).send(req.page)
   }
 }
 
@@ -1789,5 +1793,153 @@ router.head('/:pid/revisions/:revision', loadUserFromAccessToken, requireValidPa
  */
 
 router.get('/:pid/revisions/:revision', loadUserFromAccessToken, requireValidPath, loadPage, requirePageRead, getRevision, requireRevision, diffRevisions, revision.get)
+
+/**
+ * @openapi
+ * /pages/{pid}/revisions/{revision}:
+ *   put:
+ *     summary: "Roll the page back to a previous revision."
+ *     description: "Rolls the page back to the given previous revision."
+ *     tags:
+ *       - pages/revisions
+ *     parameters:
+ *       - in: path
+ *         name: pid
+ *         required: true
+ *         schema:
+ *           type: string
+ *         description: "The page's unique path or 24-digit hexadecimal ID number."
+ *         examples:
+ *           pid:
+ *             value: "0123456789abcdef12345678"
+ *             summary: "The page's unique 24-digit hexadecimal ID number."
+ *           path:
+ *             value: "/path/to/page"
+ *             summary: "The page's unique path."
+ *       - in: path
+ *         name: revision
+ *         required: true
+ *         schema:
+ *           type: number
+ *         description: "The number of the revision requested. The original revision is number 1; each revision is numbered from there, with higher numbers indicating more recent revisions. The number of the current revision is equal to the length of the page's revisions array."
+ *         example: 0
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: "#/components/schemas/Page"
+ *       400:
+ *         description: "You have provided an invalid path or an invalid revision."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               oneOf:
+ *                 - $ref: "#/components/schemas/InvalidPath"
+ *                 - $ref: "#/components/schemas/InvalidRevision"
+ *       401:
+ *         description: "Only authenticated users can update this page, but you are not authenticated."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'WWW-Authenticate':
+ *             schema:
+ *               type: string
+ *               example: "Bearer error=\"invalid_token\" error_description=\"The access token could not be verified.\""
+ *             description: "This header is informing you that you must pass a valid access token as the Bearer header to this request. To obtain a valid access token, see the `POST /tokens` method."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "This method requires authentication."
+ *       403:
+ *         description: "You do not have permission to update this page."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   example: "You do not have permission to update this page."
+ *       404:
+ *         description: "You have requested a page or a revision of that page that does not exist."
+ *         headers:
+ *           'Allow':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *           'Access-Control-Allow-Methods':
+ *             schema:
+ *               type: string
+ *               example: "OPTIONS, HEAD, GET, PUT"
+ *             description: "The methods that this endpoint allows."
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *                   description: "A description of the error that occurred."
+ *                   examples:
+ *                     page-not-found:
+ *                       value: "Page not found."
+ *                       summary: "The page requested could not be found (e.g., there is an error in your `pid` path parameter)."
+ *                     revision-not-found:
+ *                       value: "Revision not found."
+ *                       summary: "The revision requested could not be found (e.g., there is an error in your `revision` path parameter)."
+ */
+
+router.put('/:pid/revisions/:revision', loadUserFromAccessToken, requireValidPath, loadPage, requirePageWrite, getRevision, rollback, savePage, revision.put)
 
 export default router
