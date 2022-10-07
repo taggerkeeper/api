@@ -6,8 +6,8 @@ const diffRevisions = (req: Request, res: Response, next: NextFunction): void =>
   if (page !== undefined && revision !== undefined && req.query.compare !== undefined) {
     const compare = page.getRevisionFromStr(req.query.compare as string)
     if (typeof compare !== 'string') {
-      const a = revision.timestamp <= compare.timestamp ? revision : compare
-      const b = revision.timestamp > compare.timestamp ? revision : compare
+      const a = (revision?.number ?? 1) <= (compare?.number ?? 2) ? revision : compare
+      const b = (revision?.number ?? 1) > (compare?.number ?? 2) ? revision : compare
       req.revisionsDiff = {
         content: {
           title: diffWords(a.content.title, b.content.title),
