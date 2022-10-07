@@ -49,6 +49,10 @@ describe('Page', () => {
       expect(actual.revisions[0]).to.be.an.instanceOf(Revision)
     })
 
+    it('numbers revisions', () => {
+      expect(actual.revisions[0].number).to.equal(1)
+    })
+
     it('sets the created timestamp', () => {
       const { created } = actual
       expect(created >= before && created <= after).to.equal(true)

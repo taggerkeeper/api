@@ -18,6 +18,7 @@ class Page {
     this.revisions = data?.revisions === undefined
       ? []
       : data.revisions.map(r => r.constructor.name === 'Revision' ? r as Revision : new Revision(r))
+    this.revisions.forEach((revision, index) => revision.number = this.revisions.length - index)
     this.created = data?.created ?? new Date()
     this.updated = data?.updated ?? new Date()
     if (exists(data?.trashed)) this.trashed = data?.trashed

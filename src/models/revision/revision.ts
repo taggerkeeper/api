@@ -6,6 +6,7 @@ import RevisionData from './data.js'
 import PublicRevisionData from './public.js'
 
 class Revision {
+  number?: number
   content: Content
   permissions: Permissions
   editor?: User
