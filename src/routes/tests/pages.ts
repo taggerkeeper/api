@@ -4979,6 +4979,11 @@ describe('Pages API', () => {
             expect(res.headers.allow).to.equal(allow)
             expect(res.headers['access-control-allow-methods']).to.equal(allow)
           })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+            expect(res.body.path).to.equal('/login')
+          })
         })
 
         describe('requesting from a page anyone can read', () => {
@@ -5275,6 +5280,11 @@ describe('Pages API', () => {
             expect(res.status).to.equal(400)
             expect(res.headers.allow).to.equal(allow)
             expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+            expect(res.body.path).to.equal('/login')
           })
         })
 
@@ -5619,6 +5629,11 @@ describe('Pages API', () => {
             expect(res.status).to.equal(400)
             expect(res.headers.allow).to.equal(allow)
             expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+            expect(res.body.path).to.equal('/login')
           })
         })
 
@@ -6001,6 +6016,11 @@ describe('Pages API', () => {
             expect(res.status).to.equal(400)
             expect(res.headers.allow).to.equal(allow)
             expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+
+          it('returns an error', () => {
+            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+            expect(res.body.path).to.equal('/login')
           })
         })
 
