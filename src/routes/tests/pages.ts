@@ -3745,7 +3745,7 @@ describe('Pages API', () => {
   })
 
   describe('/pages/:pid/revisions/:revision', () => {
-    const allow = 'OPTIONS'
+    const allow = 'OPTIONS, HEAD, GET'
 
     describe('OPTIONS /pages/:pid/revisions/:revision', () => {
       let page: Page
@@ -4122,6 +4122,2286 @@ describe('Pages API', () => {
             expect(res.status).to.equal(204)
             expect(res.headers.allow).to.equal(allow)
             expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+      })
+    })
+
+    describe('HEAD /pages/:pid/revisions/:revision', () => {
+      let page: Page
+      const orig: RevisionData = {
+        content: { title: 'Version 1', body: 'This is the original text.' },
+        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      }
+      const update: RevisionData = {
+        content: { title: 'Version 2', body: 'This is an update.' },
+        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      }
+
+      beforeEach(() => {
+        update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      })
+
+      describe('Anonymous user', () => {
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).head(`${base}/pages/login/revisions/1`)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('requesting from a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only users can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only editors can read', () => {
+          const editor = new User()
+
+          before(async () => {
+            await editor.save()
+          })
+
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
+            update.editor = editor.getObj()
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only admins can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+      })
+
+      describe('Authenticated user', () => {
+        const user = new User()
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          const tokens = await user.generateTokens()
+          auth.Authorization = `Bearer ${tokens.access}`
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).head(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('requesting from a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only users can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only editors can read', () => {
+          const editor = new User()
+
+          before(async () => {
+            await editor.save()
+          })
+
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
+            update.editor = editor.getObj()
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only admins can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+      })
+
+      describe('An editor', () => {
+        const user = new User()
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          update.editor = user.getObj()
+          const tokens = await user.generateTokens()
+          auth.Authorization = `Bearer ${tokens.access}`
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).head(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('requesting from a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only users can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only editors can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only admins can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+      })
+
+      describe('An admin', () => {
+        const user = new User({ name: 'Admin', admin: true })
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          const tokens = await user.generateTokens()
+          auth.Authorization = `Bearer ${tokens.access}`
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).head(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('requesting from a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only users can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only editors can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+
+        describe('requesting from a page only admins can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+          })
+        })
+      })
+    })
+
+    describe('GET /pages/:pid/revisions/:revision', () => {
+      let page: Page
+      const orig: RevisionData = {
+        content: { title: 'Version 1', body: 'This is the original text.' },
+        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      }
+      const update: RevisionData = {
+        content: { title: 'Version 2', body: 'This is an update.' },
+        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      }
+
+      beforeEach(() => {
+        update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      })
+
+      describe('Anonymous user', () => {
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).get(`${base}/pages/login/revisions/1`)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('requesting from a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(1)
+              expect(read[0].value).to.equal('anyone')
+
+              expect(write).to.have.lengthOf(1)
+              expect(write[0].value).to.equal('anyone')
+            })
+          })
+        })
+
+        describe('requesting from a page only users can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+        })
+
+        describe('requesting from a page only editors can read', () => {
+          const editor = new User()
+
+          before(async () => {
+            await editor.save()
+          })
+
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
+            update.editor = editor.getObj()
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+        })
+
+        describe('requesting from a page only admins can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+        })
+      })
+
+      describe('Authenticated user', () => {
+        const user = new User()
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          const tokens = await user.generateTokens()
+          auth.Authorization = `Bearer ${tokens.access}`
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).get(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('requesting from a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(1)
+              expect(read[0].value).to.equal('anyone')
+
+              expect(write).to.have.lengthOf(1)
+              expect(write[0].value).to.equal('anyone')
+            })
+          })
+        })
+
+        describe('requesting from a page only users can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(2)
+              expect(read[0].removed).to.equal(true)
+              expect(read[0].value).to.equal('anyone')
+              expect(read[1].added).to.equal(true)
+              expect(read[1].value).to.equal('authenticated')
+
+              expect(write).to.have.lengthOf(2)
+              expect(write[0].removed).to.equal(true)
+              expect(write[0].value).to.equal('anyone')
+              expect(write[1].added).to.equal(true)
+              expect(write[1].value).to.equal('authenticated')
+            })
+          })
+        })
+
+        describe('requesting from a page only editors can read', () => {
+          const editor = new User()
+
+          before(async () => {
+            await editor.save()
+          })
+
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
+            update.editor = editor.getObj()
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+        })
+
+        describe('requesting from a page only admins can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+        })
+      })
+
+      describe('An editor', () => {
+        const user = new User()
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          update.editor = user.getObj()
+          const tokens = await user.generateTokens()
+          auth.Authorization = `Bearer ${tokens.access}`
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).get(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('requesting from a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(1)
+              expect(read[0].value).to.equal('anyone')
+
+              expect(write).to.have.lengthOf(1)
+              expect(write[0].value).to.equal('anyone')
+            })
+          })
+        })
+
+        describe('requesting from a page only users can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(2)
+              expect(read[0].removed).to.equal(true)
+              expect(read[0].value).to.equal('anyone')
+              expect(read[1].added).to.equal(true)
+              expect(read[1].value).to.equal('authenticated')
+
+              expect(write).to.have.lengthOf(2)
+              expect(write[0].removed).to.equal(true)
+              expect(write[0].value).to.equal('anyone')
+              expect(write[1].added).to.equal(true)
+              expect(write[1].value).to.equal('authenticated')
+            })
+          })
+        })
+
+        describe('requesting from a page only editors can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(2)
+              expect(read[0].removed).to.equal(true)
+              expect(read[0].value).to.equal('anyone')
+              expect(read[1].added).to.equal(true)
+              expect(read[1].value).to.equal('editor')
+
+              expect(write).to.have.lengthOf(2)
+              expect(write[0].removed).to.equal(true)
+              expect(write[0].value).to.equal('anyone')
+              expect(write[1].added).to.equal(true)
+              expect(write[1].value).to.equal('editor')
+            })
+          })
+        })
+
+        describe('requesting from a page only admins can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 404 and correct headers', () => {
+              expect(res.status).to.equal(404)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('Page not found.')
+            })
+          })
+        })
+      })
+
+      describe('An admin', () => {
+        const user = new User({ name: 'Admin', admin: true })
+        const auth = { Authorization: 'Bearer empty' }
+
+        before(async () => {
+          await user.save()
+        })
+
+        beforeEach(async () => {
+          const tokens = await user.generateTokens()
+          auth.Authorization = `Bearer ${tokens.access}`
+          await user.save()
+        })
+
+        describe('calling an invalid path', () => {
+          beforeEach(async () => {
+            res = await request(api).get(`${base}/pages/login/revisions/1`).set(auth)
+          })
+
+          it('returns 400 and correct headers', () => {
+            expect(res.status).to.equal(400)
+            expect(res.headers.allow).to.equal(allow)
+            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          })
+        })
+
+        describe('requesting from a page anyone can read', () => {
+          beforeEach(async () => {
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(1)
+              expect(read[0].value).to.equal('anyone')
+
+              expect(write).to.have.lengthOf(1)
+              expect(write[0].value).to.equal('anyone')
+            })
+          })
+        })
+
+        describe('requesting from a page only users can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(2)
+              expect(read[0].removed).to.equal(true)
+              expect(read[0].value).to.equal('anyone')
+              expect(read[1].added).to.equal(true)
+              expect(read[1].value).to.equal('authenticated')
+
+              expect(write).to.have.lengthOf(2)
+              expect(write[0].removed).to.equal(true)
+              expect(write[0].value).to.equal('anyone')
+              expect(write[1].added).to.equal(true)
+              expect(write[1].value).to.equal('authenticated')
+            })
+          })
+        })
+
+        describe('requesting from a page only editors can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(2)
+              expect(read[0].removed).to.equal(true)
+              expect(read[0].value).to.equal('anyone')
+              expect(read[1].added).to.equal(true)
+              expect(read[1].value).to.equal('editor')
+
+              expect(write).to.have.lengthOf(2)
+              expect(write[0].removed).to.equal(true)
+              expect(write[0].value).to.equal('anyone')
+              expect(write[1].added).to.equal(true)
+              expect(write[1].value).to.equal('editor')
+            })
+          })
+        })
+
+        describe('requesting from a page only admins can read', () => {
+          beforeEach(async () => {
+            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
+            page = new Page({ revisions: [update, orig] })
+            await page.save()
+          })
+
+          describe('a revision that doesn\'t exist', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+            })
+
+            it('returns 400 and correct headers', () => {
+              expect(res.status).to.equal(400)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns an error', () => {
+              expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
+            })
+          })
+
+          describe('a revision', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the revision requested', () => {
+              expect(res.body.content.title).to.equal(orig.content.title)
+              expect(res.body.content.path).to.equal('/version-1')
+              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.permissions.read).not.to.equal(undefined)
+              expect(res.body.permissions.write).not.to.equal(undefined)
+              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
+              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+            })
+          })
+
+          describe('the difference between two revisions', () => {
+            beforeEach(async () => {
+              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+            })
+
+            it('returns 200 and correct headers', () => {
+              expect(res.status).to.equal(200)
+              expect(res.headers.allow).to.equal(allow)
+              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            })
+
+            it('returns the difference', () => {
+              const { title, path, body } = res.body.content
+              const { read, write } = res.body.permissions
+
+              expect(title).to.have.lengthOf(3)
+              expect(title[0].value).to.equal('Version ')
+              expect(title[1].removed).to.equal(true)
+              expect(title[1].value).to.equal('1')
+              expect(title[2].added).to.equal(true)
+              expect(title[2].value).to.equal('2')
+
+              expect(path).to.have.lengthOf(3)
+              expect(path[0].value).to.equal('/version-')
+              expect(path[1].removed).to.equal(true)
+              expect(path[1].value).to.equal('1')
+              expect(path[2].added).to.equal(true)
+              expect(path[2].value).to.equal('2')
+
+              expect(body).to.have.lengthOf(7)
+              expect(body[0].value).to.equal('This is ')
+              expect(body[1].removed).to.equal(true)
+              expect(body[1].value).to.equal('the')
+              expect(body[2].added).to.equal(true)
+              expect(body[2].value).to.equal('an')
+              expect(body[3].value).to.equal(' ')
+              expect(body[4].removed).to.equal(true)
+              expect(body[4].value).to.equal('original text')
+              expect(body[5].added).to.equal(true)
+              expect(body[5].value).to.equal('update')
+              expect(body[6].value).to.equal('.')
+
+              expect(read).to.have.lengthOf(2)
+              expect(read[0].removed).to.equal(true)
+              expect(read[0].value).to.equal('anyone')
+              expect(read[1].added).to.equal(true)
+              expect(read[1].value).to.equal('admin')
+
+              expect(write).to.have.lengthOf(2)
+              expect(write[0].removed).to.equal(true)
+              expect(write[0].value).to.equal('anyone')
+              expect(write[1].added).to.equal(true)
+              expect(write[1].value).to.equal('admin')
+            })
           })
         })
       })
