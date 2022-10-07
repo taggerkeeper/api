@@ -72,13 +72,11 @@ class Page {
     return this.getRevision(n) as Revision
   }
 
-  rollback (num: number, editor: User): boolean {
-    // "num" is 1 for the original version, 2 for the first revision, etc.
-    const target = this.getRevision(num)
-    if (target === null) return false
-    const rollback = new Revision(Object.assign({}, target.getObj(), {
-      editor: editor.getObj(),
-      msg: target.msg.length > 0 ? `Rolling back to revision #${num}: ${target.msg}` : `Rolling back to revision #${num}`,
+  rollback (revision: Revision, editor?: User): boolean {
+    const desc = revision.number === undefined ? 'previous revision' : `revision #${revision.number}`
+    const rollback = new Revision(Object.assign({}, revision.getObj(), {
+      editor: editor !== undefined ? editor.getObj() : undefined,
+      msg: revision.msg.length > 0 ? `Rolling back to ${desc}: ${revision.msg}` : `Rolling back to ${desc}`,
       timestamp: new Date()
     }))
     this.addRevision(rollback)

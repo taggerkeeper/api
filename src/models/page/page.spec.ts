@@ -173,7 +173,7 @@ describe('Page', () => {
     describe('rollback', () => {
       beforeEach(() => {
         runTestUpdate()
-        actual.rollback(1, editor)
+        actual.rollback(actual.getRevision(1) as Revision, editor)
       })
 
       it('adds another revision to the revisions array', () => {
