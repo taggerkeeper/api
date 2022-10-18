@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import * as sinon from 'sinon'
 import Content from '../content/content.js'
+import File from '../file/file.js'
 import User from '../user/user.js'
 import Revision from '../revision/revision.js'
 import Page from './page.js'
@@ -22,13 +23,11 @@ describe('Page', () => {
   const updatedContent = new Content({ title: updatedTitle, body: updatedBody })
   const update = new Revision({ content: updatedContent, editor: editor.getObj(), msg: updatedMsg })
 
+  const file = new File({ location: '/path/to/file.txt', key: 'file.txt', mime: 'text/plain', size: 12345 })
+
   let before: Date
   let after: Date
   let actual: Page
-
-  const runTestUpdate = (): void => {
-    actual.addRevision(update)
-  }
 
   beforeEach(() => {
     before = new Date()
@@ -97,73 +96,108 @@ describe('Page', () => {
     })
 
     describe('addRevision', () => {
-      beforeEach(() => runTestUpdate())
-
       it('adds another revision to the revisions array', () => {
+        actual.addRevision(update)
         expect(actual.revisions).to.have.lengthOf(2)
       })
 
       it('makes the new revision the first in the revisions array', () => {
+        actual.addRevision(update)
         expect(actual.revisions[0].msg).to.equal(updatedMsg)
       })
 
       it('sets the page\'s updated timestamp to the new revision\'s timestamp', () => {
+        actual.addRevision(update)
         expect(actual.updated).to.equal(update.timestamp)
+      })
+
+      it('inherits file by default', () => {
+        const orig = new Revision({ content, file, editor: editor.getObj(), msg: 'Initial text' })
+        const page = new Page({ revisions: [orig] })
+        page.addRevision(update)
+        expect(page.revisions[0].file?.location).to.equal(file.location)
+      })
+
+      it('inherits thumbnail by default', () => {
+        const orig = new Revision({ content, thumbnail: file, editor: editor.getObj(), msg: 'Initial text' })
+        const page = new Page({ revisions: [orig] })
+        page.addRevision(update)
+        expect(page.revisions[0].thumbnail?.location).to.equal(file.location)
+      })
+
+      it('doesn\'t inherit file if told not to', () => {
+        const orig = new Revision({ content, file, editor: editor.getObj(), msg: 'Initial text' })
+        const page = new Page({ revisions: [orig] })
+        page.addRevision(update, false)
+        expect(page.revisions[0].file).to.equal(undefined)
+      })
+
+      it('doesn\'t inherit thumbnail if told not to', () => {
+        const orig = new Revision({ content, thumbnail: file, editor: editor.getObj(), msg: 'Initial text' })
+        const page = new Page({ revisions: [orig] })
+        page.addRevision(update, false)
+        expect(page.revisions[0].thumbnail).to.equal(undefined)
       })
     })
 
     describe('getRevision', () => {
-      beforeEach(() => runTestUpdate())
-
       it('returns null if asked for revision 0', () => {
+        actual.addRevision(update)
         expect(actual.getRevision(0)).to.equal(null)
       })
 
       it('returns null if asked for a revision greater than the number of revisions', () => {
+        actual.addRevision(update)
         expect(actual.getRevision(3)).to.equal(null)
       })
 
       it('returns a Revision instance if given a valid number', () => {
+        actual.addRevision(update)
         const revision = actual.getRevision(2)
         expect(revision).to.be.an.instanceOf(Revision)
       })
 
       it('returns the original revision if given 1', () => {
+        actual.addRevision(update)
         const revision = actual.getRevision(1)
         expect(revision?.content.title).to.equal(title)
       })
 
       it('returns a later revision if given a higher number', () => {
+        actual.addRevision(update)
         const revision = actual.getRevision(2)
         expect(revision?.content.title).to.equal(updatedTitle)
       })
     })
 
     describe('getRevisionFromStr', () => {
-      beforeEach(() => runTestUpdate())
-
       it('returns an error message if not given a string that can be parsed into an integer', () => {
+        actual.addRevision(update)
         const revision = actual.getRevisionFromStr('lolnope')
         expect(revision).to.equal('lolnope is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
       })
 
       it('returns an error message if given a number that\'s too low', () => {
+        actual.addRevision(update)
         const revision = actual.getRevisionFromStr('0')
         expect(revision).to.equal('0 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
       })
 
       it('returns an error message if given a number that\'s too high', () => {
+        actual.addRevision(update)
         const revision = actual.getRevisionFromStr('3')
         expect(revision).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
       })
 
       it('returns the original revision as 1', () => {
+        actual.addRevision(update)
         const revision = actual.getRevisionFromStr('1')
         expect(revision).to.be.an.instanceOf(Revision)
         expect((revision as Revision)?.content.title).to.equal(title)
       })
 
       it('returns later revisions for higher indices', () => {
+        actual.addRevision(update)
         const revision = actual.getRevisionFromStr('2')
         expect(revision).to.be.an.instanceOf(Revision)
         expect((revision as Revision)?.content.title).to.equal(updatedTitle)
@@ -172,7 +206,7 @@ describe('Page', () => {
 
     describe('rollback', () => {
       beforeEach(() => {
-        runTestUpdate()
+        actual.addRevision(update)
         actual.rollback(actual.getRevision(1) as Revision, editor)
       })
 

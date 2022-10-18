@@ -54,9 +54,13 @@ class Page {
     return this.revisions.length > 0 ? this.revisions[0] : null
   }
 
-  addRevision (revision: Revision): void {
-    this.revisions = [revision, ...this.revisions]
-    this.updated = revision.timestamp
+  addRevision (revision: Revision, inheritFiles = true): void {
+    const rev = new Revision(revision.getObj())
+    const { file, thumbnail } = this.revisions[0]
+    if (inheritFiles && file !== undefined && rev.file === undefined) rev.file = file
+    if (inheritFiles && thumbnail !== undefined && rev.thumbnail === undefined) rev.thumbnail = thumbnail
+    this.revisions = [rev, ...this.revisions]
+    this.updated = rev.timestamp
   }
 
   getRevision (num: number): Revision | null {
