@@ -23,7 +23,7 @@ class File {
     } else if (size < 1000000000) {
       const mb = size / 1000000
       return `${Math.round(mb * 10) / 10} MB`
-    } else if (size) {
+    } else if (size !== undefined) {
       const gb = size / 1000000000
       return `${Math.round(gb * 10) / 10} GB`
     } else {
