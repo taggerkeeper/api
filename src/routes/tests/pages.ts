@@ -36,7 +36,7 @@ const createTestSearchPages = async (editor: User): Promise<void> => {
   pages.push(new Page({ revisions: [{ content: { title: 'Editor Only', path: '/editor', body: 'Editor only.' }, permissions: { read: PermissionLevel.editor, write: PermissionLevel.editor }, editor: editor.getObj() }] }))
   pages.push(new Page({ revisions: [{ content: { title: 'Admin Only', path: '/admin', body: 'Admin only.' }, permissions: { read: PermissionLevel.admin, write: PermissionLevel.admin } }] }))
 
-  await Promise.all(pages.map(page => page.save()))
+  await Promise.all(pages.map(async page => await page.save()))
 }
 
 const testPageLoad = async (base: string, method: string = 'GET', page: Page, auth?: { Authorization: string }): Promise<{ id: any, path: any }> => {
