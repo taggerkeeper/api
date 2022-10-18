@@ -1,4 +1,4 @@
-import { S3Client } from '@aws-sdk/client-s3'
+import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import getEnvVar from '../../utils/get-env-var.js'
 import FileData from './data.js'
 
@@ -38,7 +38,19 @@ class File {
     return { location, key, mime, size }
   }
 
-  static getS3Client(): S3Client {
+  async delete (): Promise<void> {
+    const client = File.getS3Client()
+    const Bucket = getEnvVar('S3_BUCKET') as string
+    const command = new DeleteObjectCommand({ Bucket, Key: this.key })
+
+    try {
+      await client.send(command)
+    } catch (err) {
+      console.error(err)
+    }
+  }
+
+  static getS3Client (): S3Client {
     const accessKeyId = getEnvVar('S3_API_KEY') as string
     const secretAccessKey = getEnvVar('S3_API_SECRET') as string
     const region = getEnvVar('S3_REGION') as string

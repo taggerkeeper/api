@@ -1,4 +1,7 @@
 import { expect } from 'chai'
+import { mockClient } from 'aws-sdk-client-mock'
+import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
+import getEnvVar from '../../utils/get-env-var.js'
 import File from './file.js'
 import { isFileData } from './data.js'
 
@@ -47,6 +50,21 @@ describe('File', () => {
 
       it('returns a FileData object', () => {
         expect(isFileData(file.getObj())).to.equal(true)
+      })
+    })
+
+    describe('delete', () => {
+      const client = mockClient(S3Client)
+
+      beforeEach(() => client.reset())
+
+      it('sends a delete request to S3', async () => {
+        client.on(DeleteObjectCommand).resolves({})
+        const bucket = getEnvVar('S3_BUCKET') as string
+        const { key } = data
+        const file = new File(data)
+        await file.delete()
+        expect(JSON.stringify(client.call(0).args[0].input)).to.equal(`{"Bucket":"${bucket}","Key":"${key}"}`)
       })
     })
   })
