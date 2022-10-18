@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import Content from '../content/content.js'
+import File from '../file/file.js'
 import User from '../user/user.js'
 import Permissions from '../permissions/permissions.js'
 import { PermissionLevel } from '../permissions/data.js'
@@ -15,6 +16,7 @@ describe('Revision', () => {
   const editor = new User()
   const content = new Content({ title, body })
   const actual = new Revision({ content, editor: editor.getObj(), msg })
+  const file = new File({ location: '/path/to/file.txt', key: 'file.txt', mime: 'text/plain', size: 12345 })
 
   describe('constructor', () => {
     it('sets the content title', () => {
@@ -63,6 +65,16 @@ describe('Revision', () => {
       const timestamp = new Date('1 August 2022')
       const actual = new Revision({ content, editor: editor.getObj(), msg, timestamp })
       expect(actual.timestamp).to.equal(timestamp)
+    })
+
+    it('can set a file', () => {
+      const actual = new Revision({ content, file, editor: editor.getObj(), msg })
+      expect(actual.file?.location).to.equal(file.location)
+    })
+
+    it('can set a thumbnail', () => {
+      const actual = new Revision({ content, thumbnail: file, editor: editor.getObj(), msg })
+      expect(actual.thumbnail?.location).to.equal(file.location)
     })
   })
 
