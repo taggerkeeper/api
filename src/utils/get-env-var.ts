@@ -24,6 +24,10 @@ const envVarDefaults: any = {
   MONGO_USERNAME: { type: 'string', value: 'root' },
   MONGO_PASSWORD: { type: 'string', value: 'password' },
   MONGO_COLLECTION: { type: 'string', value: 'taggerkeeper' },
+  S3_API_KEY: { type: 'string', value: 'S3_API_KEY' },
+  S3_API_SECRET: { type: 'string', value: 'S3_API_SECRET' },
+  S3_REGION: { type: 'string', value: 'us-east-1' },
+  S3_BUCKET: { type: 'string', value: 'taggerkeeper' },
   RESERVED_PATHS: { type: 'string', value: 'login,logout,dashboard,connect' }
 }
 
