@@ -60,6 +60,7 @@
     "unified": "^10.1.2"
   },
   "devDependencies": {
+    "@aws-sdk/types": "^3.190.0",
     "@types/bcryptjs": "^2.4.2",
     "@types/chai": "^4.3.1",
     "@types/chai-string": "^1.4.2",
