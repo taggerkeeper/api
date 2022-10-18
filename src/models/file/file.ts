@@ -30,6 +30,11 @@ class File {
       return '0 B'
     }
   }
+
+  getObj (): FileData {
+    const { location, key, mime, size } = this
+    return { location, key, mime, size }
+  }
 }
 
 export default File

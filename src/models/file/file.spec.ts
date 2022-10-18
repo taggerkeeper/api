@@ -1,5 +1,6 @@
 import { expect } from 'chai'
 import File from './file.js'
+import { isFileData } from './data.js'
 
 describe('File', () => {
   const data = { location: '/path/to/file.txt', key: 'file.txt', mime: 'text/plain', size: 12345 }
@@ -15,24 +16,38 @@ describe('File', () => {
   })
 
   describe('Instance methods', () => {
-    it('reports bytes', () => {
-      const file = new File(Object.assign({}, data, { size: 120 }))
-      expect(file.reportSize()).to.equal('120 B')
+    describe('reportSize', () => {
+      it('reports bytes', () => {
+        const file = new File(Object.assign({}, data, { size: 120 }))
+        expect(file.reportSize()).to.equal('120 B')
+      })
+
+      it('reports kilobytes', () => {
+        const file = new File(Object.assign({}, data, { size: 120000 }))
+        expect(file.reportSize()).to.equal('120 kB')
+      })
+
+      it('reports megabytes', () => {
+        const file = new File(Object.assign({}, data, { size: 120000000 }))
+        expect(file.reportSize()).to.equal('120 MB')
+      })
+
+      it('reports gigabytes', () => {
+        const file = new File(Object.assign({}, data, { size: 120000000000 }))
+        expect(file.reportSize()).to.equal('120 GB')
+      })
     })
 
-    it('reports kilobytes', () => {
-      const file = new File(Object.assign({}, data, { size: 120000 }))
-      expect(file.reportSize()).to.equal('120 kB')
-    })
+    describe('getObj', () => {
+      const file = new File(data)
 
-    it('reports megabytes', () => {
-      const file = new File(Object.assign({}, data, { size: 120000000 }))
-      expect(file.reportSize()).to.equal('120 MB')
-    })
+      it('returns an object', () => {
+        expect(typeof file.getObj()).to.equal('object')
+      })
 
-    it('reports gigabytes', () => {
-      const file = new File(Object.assign({}, data, { size: 120000000000 }))
-      expect(file.reportSize()).to.equal('120 GB')
+      it('returns a FileData object', () => {
+        expect(isFileData(file.getObj())).to.equal(true)
+      })
     })
   })
 })
