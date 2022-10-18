@@ -15,6 +15,8 @@ describe('isRevisionData', () => {
     timestamp: new Date('1 August 2022')
   }
 
+  const fileData: any = { location: '/path/to/file.txt', key: 'file.txt', mime: 'text/plain', size: 12345 }
+
   it('returns true if given an object with minimum values', () => {
     expect(isRevisionData(min)).to.equal(true)
   })
@@ -71,6 +73,76 @@ describe('isRevisionData', () => {
   it('returns false if given an array for content', () => {
     const cpy = Object.assign({}, min, { content: [] })
     expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given a string for file', () => {
+    const cpy = Object.assign({}, min, { file: 'Hello, world!' })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given a number for file', () => {
+    const cpy = Object.assign({}, min, { file: 42 })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given true for file', () => {
+    const cpy = Object.assign({}, min, { file: true })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given false for file', () => {
+    const cpy = Object.assign({}, min, { file: false })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given an object for file that isn\'t FileData', () => {
+    const cpy = Object.assign({}, min, { file: { name: 'Title', content: 'Yup!' } })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given an array for file', () => {
+    const cpy = Object.assign({}, min, { file: [] })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns true if given FileData for file', () => {
+    const cpy = Object.assign({}, min, { file: fileData })
+    expect(isRevisionData(cpy)).to.equal(true)
+  })
+
+  it('returns false if given a string for thumbnail', () => {
+    const cpy = Object.assign({}, min, { thumbnail: 'Hello, world!' })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given a number for thumbnail', () => {
+    const cpy = Object.assign({}, min, { thumbnail: 42 })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given true for thumbnail', () => {
+    const cpy = Object.assign({}, min, { thumbnail: true })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given false for thumbnail', () => {
+    const cpy = Object.assign({}, min, { thumbnail: false })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given an object for thumbnail that isn\'t FileData', () => {
+    const cpy = Object.assign({}, min, { thumbnail: { name: 'Title', content: 'Yup!' } })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns false if given an array for thumbnail', () => {
+    const cpy = Object.assign({}, min, { thumbnail: [] })
+    expect(isRevisionData(cpy)).to.equal(false)
+  })
+
+  it('returns true if given FileData for thumbnail', () => {
+    const cpy = Object.assign({}, min, { thumbnail: fileData })
+    expect(isRevisionData(cpy)).to.equal(true)
   })
 
   it('returns false if given a string for permissions', () => {
