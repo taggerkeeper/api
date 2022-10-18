@@ -1,3 +1,5 @@
+import { S3Client } from '@aws-sdk/client-s3'
+import getEnvVar from '../../utils/get-env-var.js'
 import FileData from './data.js'
 
 class File {
@@ -34,6 +36,16 @@ class File {
   getObj (): FileData {
     const { location, key, mime, size } = this
     return { location, key, mime, size }
+  }
+
+  static getS3Client(): S3Client {
+    const accessKeyId = getEnvVar('S3_API_KEY') as string
+    const secretAccessKey = getEnvVar('S3_API_SECRET') as string
+    const region = getEnvVar('S3_REGION') as string
+    return new S3Client({
+      credentials: { accessKeyId, secretAccessKey },
+      region
+    })
   }
 }
 

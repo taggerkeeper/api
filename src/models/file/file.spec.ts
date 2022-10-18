@@ -50,4 +50,13 @@ describe('File', () => {
       })
     })
   })
+
+  describe('Static methods', () => {
+    describe('getS3Client', () => {
+      it('returns an AWS SDK S3 client', () => {
+        const client = File.getS3Client()
+        expect(client.constructor.name).to.equal('S3Client')
+      })
+    })
+  })
 })
