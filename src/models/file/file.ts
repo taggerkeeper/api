@@ -54,8 +54,10 @@ class File {
     const accessKeyId = getEnvVar('S3_API_KEY') as string
     const secretAccessKey = getEnvVar('S3_API_SECRET') as string
     const region = getEnvVar('S3_REGION') as string
+    const endpoint = (getEnvVar('S3_ENDPOINT') as string).replace('S3_REGION', region)
     return new S3Client({
       credentials: { accessKeyId, secretAccessKey },
+      endpoint,
       region
     })
   }
