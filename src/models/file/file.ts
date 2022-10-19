@@ -1,6 +1,7 @@
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import getEnvVar from '../../utils/get-env-var.js'
 import FileData from './data.js'
+import PublicFileData from './public'
 
 class File {
   location: string
@@ -35,6 +36,12 @@ class File {
 
   getObj (): FileData {
     const { location, key, mime, size } = this
+    return { location, key, mime, size }
+  }
+
+  getPublicObj (): PublicFileData {
+    const { location, key, mime } = this
+    const size = { bytes: this.size, str: this.reportSize() }
     return { location, key, mime, size }
   }
 

@@ -4,6 +4,7 @@ import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import getEnvVar from '../../utils/get-env-var.js'
 import File from './file.js'
 import { isFileData } from './data.js'
+import { isPublicFileData } from './public.js'
 
 describe('File', () => {
   const data = { location: '/path/to/file.txt', key: 'file.txt', mime: 'text/plain', size: 12345 }
@@ -50,6 +51,18 @@ describe('File', () => {
 
       it('returns a FileData object', () => {
         expect(isFileData(file.getObj())).to.equal(true)
+      })
+    })
+
+    describe('getPublicObj', () => {
+      const file = new File(data)
+
+      it('returns an object', () => {
+        expect(typeof file.getPublicObj()).to.equal('object')
+      })
+
+      it('returns a PublicFileData object', () => {
+        expect(isPublicFileData(file.getPublicObj())).to.equal(true)
       })
     })
 
