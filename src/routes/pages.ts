@@ -53,6 +53,34 @@ const router = Router()
  *             type: number
  *             description: "The timestamp of when this page was most recently updated (measured as milliseconds since January 1, 1970)."
  *             example: 1663863528000
+ *     File:
+ *       type: object
+ *       description: "Information about a file."
+ *       properties:
+ *         key:
+ *           type: string
+ *           description: "The name of the file."
+ *           example: "example.txt"
+ *         location:
+ *           type: string
+ *           description: "The URL from which the file can be accessed."
+ *           example: "https://s3.us-east-1.amazonaws.com/taggerkeeper/example.txt"
+ *         mime:
+ *           type: string
+ *           description: "The MIME type of the file."
+ *           example: "plain/text"
+ *         size:
+ *           type: object
+ *           description: "The size of the file."
+ *           properties:
+ *             bytes:
+ *               type: number
+ *               description: "The size of the file in bytes."
+ *               example: 120000
+ *             str:
+ *               type: string
+ *               description: "The size of the file as a human-readable string."
+ *               example: "120 kB"
  *     Revision:
  *       type: object
  *       description: "A page revision."
