@@ -21,23 +21,23 @@ describe('File', () => {
   describe('Instance methods', () => {
     describe('reportSize', () => {
       it('reports bytes', () => {
-        const file = new File(Object.assign({}, data, { size: 120 }))
-        expect(file.reportSize()).to.equal('120 B')
+        const file = new File(Object.assign({}, data, { size: 123 }))
+        expect(file.reportSize()).to.equal('123 B')
       })
 
       it('reports kilobytes', () => {
-        const file = new File(Object.assign({}, data, { size: 120000 }))
-        expect(file.reportSize()).to.equal('120 kB')
+        const file = new File(Object.assign({}, data, { size: 123456 }))
+        expect(file.reportSize()).to.equal('123.5 kB')
       })
 
       it('reports megabytes', () => {
-        const file = new File(Object.assign({}, data, { size: 120000000 }))
-        expect(file.reportSize()).to.equal('120 MB')
+        const file = new File(Object.assign({}, data, { size: 123456789 }))
+        expect(file.reportSize()).to.equal('123.5 MB')
       })
 
       it('reports gigabytes', () => {
-        const file = new File(Object.assign({}, data, { size: 120000000000 }))
-        expect(file.reportSize()).to.equal('120 GB')
+        const file = new File(Object.assign({}, data, { size: 123456789012 }))
+        expect(file.reportSize()).to.equal('123.5 GB')
       })
     })
 
