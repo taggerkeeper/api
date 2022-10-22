@@ -29,6 +29,7 @@ const envVarDefaults: any = {
   S3_API_SECRET: { type: 'string', value: 'S3_API_SECRET' },
   S3_REGION: { type: 'string', value: 'us-east-1' },
   S3_BUCKET: { type: 'string', value: 'taggerkeeper' },
+  S3_ACL: { type: 'string', value: 'public-read' },
   RESERVED_PATHS: { type: 'string', value: 'login,logout,dashboard,connect' }
 }
 
