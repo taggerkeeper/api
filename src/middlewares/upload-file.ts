@@ -13,7 +13,7 @@ const uploadFile = multer({
     acl: getEnvVar('S3_ACL') as string,
     key: (req: Express.Request, file: Express.Multer.File, callback: Function) => {
       const { base, ext } = getFilename(file.originalname)
-      callback(null, `${base}.${Math.round((Date.now())/1000).toString()}.${ext}`)
+      callback(null, `${base}.${Math.round((Date.now()) / 1000).toString()}.${ext}`)
     }
   })
 })
