@@ -18,4 +18,4 @@ const uploadFile = multer({
   })
 })
 
-export default uploadFile
+export default uploadFile.fields([{ name: 'file', maxCount: 1 }, { name: 'thumbnail', maxCount: 1 }])
