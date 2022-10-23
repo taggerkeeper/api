@@ -1,6 +1,6 @@
 import { S3Client, DeleteObjectCommand } from '@aws-sdk/client-s3'
 import getEnvVar from '../../utils/get-env-var.js'
-import FileData from './data.js'
+import FileData, { isFileData } from './data.js'
 import PublicFileData from './public'
 
 class File {
@@ -9,10 +9,10 @@ class File {
   mime: string
   size: number
 
-  constructor (data: FileData) {
+  constructor (data: FileData | Express.MulterS3.File) {
     this.location = data.location
     this.key = data.key
-    this.mime = data.mime
+    this.mime = isFileData(data) ? data.mime : data.contentType
     this.size = data.size
   }
 

@@ -8,10 +8,19 @@ import { isPublicFileData } from './public.js'
 
 describe('File', () => {
   const data = { location: '/path/to/file.txt', key: 'file.txt', mime: 'text/plain', size: 12345 }
+  const multerFile = { location: '/path/to/file.txt', key: 'file.txt', contentType: 'text/plain', size: 12345 }
 
   describe('constructor', () => {
     it('sets the data', () => {
       const file = new File(data)
+      expect(file.location).to.equal(data.location)
+      expect(file.key).to.equal(data.key)
+      expect(file.mime).to.equal(data.mime)
+      expect(file.size).to.equal(data.size)
+    })
+
+    it('can take a MulterS3 File', () => {
+      const file = new File(multerFile as Express.MulterS3.File)
       expect(file.location).to.equal(data.location)
       expect(file.key).to.equal(data.key)
       expect(file.mime).to.equal(data.mime)
