@@ -8,6 +8,7 @@ import getAPIInfo from '../../utils/get-api-info.js'
 import api from '../../server.js'
 
 import isUser from './expecters/is-user.js'
+import isEmailArr from './expecters/is-email-arr.js'
 
 describe('Users API', () => {
   let pkg: NPMPackage
@@ -419,9 +420,7 @@ describe('Users API', () => {
         })
 
         it('returns an array of your emails', () => {
-          expect(res.body).to.have.lengthOf(1)
-          expect(res.body[0].addr).to.equal(addr)
-          expect(res.body[0].verified).to.equal(verified)
+          isEmailArr(res.body, [{ addr, verified }])
         })
 
         it('does not send verification codes', () => {
@@ -446,9 +445,7 @@ describe('Users API', () => {
         })
 
         it('returns an array of the user\'s emails', () => {
-          expect(res.body).to.have.lengthOf(1)
-          expect(res.body[0].addr).to.equal(addr)
-          expect(res.body[0].verified).to.equal(verified)
+          isEmailArr(res.body, [{ addr, verified }])
         })
 
         it('does not send verification codes', () => {
@@ -571,11 +568,7 @@ describe('Users API', () => {
         })
 
         it('returns an array of your emails', () => {
-          expect(res.body).to.have.lengthOf(2)
-          expect(res.body[0].addr).to.equal(addr)
-          expect(res.body[0].verified).to.equal(verified)
-          expect(res.body[1].addr).to.equal(email)
-          expect(res.body[1].verified).to.equal(false)
+          isEmailArr(res.body, [{ addr, verified }, { addr: email, verified: false }])
         })
 
         it('provides a Location header', () => {
@@ -605,11 +598,7 @@ describe('Users API', () => {
         })
 
         it('returns an array of the user\'s emails', () => {
-          expect(res.body).to.have.lengthOf(2)
-          expect(res.body[0].addr).to.equal(addr)
-          expect(res.body[0].verified).to.equal(verified)
-          expect(res.body[1].addr).to.equal(email)
-          expect(res.body[1].verified).to.equal(false)
+          isEmailArr(res.body, [{ addr, verified }, { addr: email, verified: false }])
         })
 
         it('provides a Location header', () => {
