@@ -10,7 +10,9 @@ describe('addFilesToRevision', () => {
   let mockNext = sinon.spy()
   const data = {
     revision: { content: { title: 'New Revision', body: 'This is a test.' } },
+    /* eslint-disable  @typescript-eslint/consistent-type-assertions */
     file: { location: '/path/to/file.txt', key: 'file.txt', contentType: 'text/plain', size: 12345 } as Express.MulterS3.File,
+    /* eslint-disable  @typescript-eslint/consistent-type-assertions */
     thumbnail: { location: '/path/to/thumbnail.jpg', key: 'thumbnail.jpg', contentType: 'image/jpeg', size: 12345 } as Express.MulterS3.File
   }
 
