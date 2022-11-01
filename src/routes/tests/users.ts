@@ -7,6 +7,8 @@ import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import api from '../../server.js'
 
+import isUser from './expecters/is-user.js'
+
 describe('Users API', () => {
   let pkg: NPMPackage
   let base: string
@@ -121,10 +123,7 @@ describe('Users API', () => {
 
       it('returns a user object if everything works', async () => {
         res = await request(api).post(`${base}/users`).send({ name, email, password })
-        expect(res.body.name).to.equal(name)
-        expect(res.body.active).to.equal(true)
-        expect(res.body.admin).to.equal(false)
-        expect(res.body.id).not.to.equal(undefined)
+        isUser(res.body, { name, active: true, admin: false })
       })
 
       it('adds a user to the database if everything works', async () => {
@@ -180,10 +179,7 @@ describe('Users API', () => {
       })
 
       it('returns a user object', () => {
-        expect(res.body.name).to.equal(name)
-        expect(res.body.active).to.equal(true)
-        expect(res.body.admin).to.equal(false)
-        expect(res.body.id).not.to.equal(undefined)
+        isUser(res.body, { name, active: true, admin: false })
       })
     })
 
