@@ -2,11 +2,12 @@ import { expect } from 'chai'
 import request from 'supertest'
 import UserData, { isUserData } from '../../models/user/data.js'
 import UserModel from '../../models/user/model.js'
-import User, { TokenSet } from '../../models/user/user.js'
+import User from '../../models/user/user.js'
 import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import api from '../../server.js'
 
+import getTokens from './initializers/get-tokens.js'
 import isUser from './expecters/is-user.js'
 import isEmailArr from './expecters/is-email-arr.js'
 
@@ -188,14 +189,10 @@ describe('Users API', () => {
       const user = new User()
       const name = 'New Name'
       const password = 'Longer passwords are still better passwords, even when you change them.'
-      let tokens: TokenSet
 
       describe('Self calls', () => {
         beforeEach(async () => {
-          user.active = true
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
@@ -217,14 +214,9 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          user.active = true
           await user.save()
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
@@ -246,14 +238,9 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          user.active = true
           await user.save()
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
@@ -276,7 +263,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          user.active = true
           await user.save()
           res = await request(api).put(`${base}/users/${user.id ?? ''}`).send({ name, password })
         })
@@ -304,7 +290,6 @@ describe('Users API', () => {
     const verified = true
     const emails = [{ addr, verified }]
     const user = new User({ name: 'Subject', emails })
-    let tokens: TokenSet
 
     beforeEach(async () => {
       await user.save()
@@ -315,9 +300,7 @@ describe('Users API', () => {
 
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -336,13 +319,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
-          await user.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -361,13 +339,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
-          await user.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -387,7 +360,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`)
         })
 
@@ -408,9 +380,7 @@ describe('Users API', () => {
     describe('GET /users/:uid/emails', () => {
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -429,13 +399,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
-          await user.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -454,13 +419,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
-          await user.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -476,7 +436,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`)
         })
 
@@ -493,9 +452,7 @@ describe('Users API', () => {
     describe('HEAD /users/:uid/emails', () => {
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -506,13 +463,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
-          await user.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -523,13 +475,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
-          await user.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
@@ -541,7 +488,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`)
         })
 
@@ -556,9 +502,7 @@ describe('Users API', () => {
 
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
@@ -582,13 +526,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
-          await user.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
@@ -612,13 +551,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
-          await user.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
@@ -634,7 +568,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).send({ email })
         })
 
@@ -654,7 +587,6 @@ describe('Users API', () => {
     const verified = true
     const emails = [{ addr, verified }]
     const user = new User({ name: 'Subject', emails })
-    let tokens: TokenSet
 
     beforeEach(async () => {
       await user.save()
@@ -665,9 +597,7 @@ describe('Users API', () => {
 
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -686,13 +616,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
-          await user.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -711,13 +636,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
-          await user.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -737,7 +657,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
@@ -758,9 +677,7 @@ describe('Users API', () => {
     describe('GET /users/:uid/emails/:addr', () => {
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -780,13 +697,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
-          await user.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -806,13 +718,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
-          await user.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -829,7 +736,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
@@ -847,9 +753,7 @@ describe('Users API', () => {
     describe('HEAD /users/:uid/emails/:addr', () => {
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -864,13 +768,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
-          await user.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -885,13 +784,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
-          await user.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -907,7 +801,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
@@ -931,8 +824,7 @@ describe('Users API', () => {
       describe('Self calls', () => {
         beforeEach(async () => {
           const { code } = user.emails[0]
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
@@ -958,13 +850,9 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
           const { code } = user.emails[0]
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
@@ -990,13 +878,9 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
           const { code } = user.emails[0]
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
@@ -1033,9 +917,7 @@ describe('Users API', () => {
     describe('DELETE /users/:uid/emails/:addr', () => {
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -1057,13 +939,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await user.save()
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -1085,13 +962,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await user.save()
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
@@ -1109,7 +981,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
@@ -1128,7 +999,6 @@ describe('Users API', () => {
 
   describe('/users/:uid/admin', () => {
     const user = new User()
-    let tokens: TokenSet
 
     beforeEach(async () => {
       await user.save()
@@ -1193,9 +1063,7 @@ describe('Users API', () => {
     describe('POST /users/:uid/admin', () => {
       describe('Self calls', () => {
         beforeEach(async () => {
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
@@ -1211,13 +1079,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          await user.save()
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
@@ -1239,13 +1102,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          await user.save()
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
@@ -1262,7 +1120,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          await user.save()
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`)
         })
 
@@ -1281,9 +1138,7 @@ describe('Users API', () => {
       describe('Self calls', () => {
         beforeEach(async () => {
           user.admin = true
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
@@ -1305,14 +1160,10 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
           user.admin = true
           await user.save()
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
@@ -1334,14 +1185,10 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
           user.admin = true
           await user.save()
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
@@ -1377,7 +1224,6 @@ describe('Users API', () => {
 
   describe('/users/:uid/active', () => {
     const user = new User()
-    let tokens: TokenSet
 
     beforeEach(async () => {
       await user.save()
@@ -1440,12 +1286,14 @@ describe('Users API', () => {
     })
 
     describe('POST /users/:uid/active', () => {
+      beforeEach(async () => {
+        user.active = false
+        await user.save()
+      })
+
       describe('Self calls', () => {
         beforeEach(async () => {
-          user.active = false
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
@@ -1461,14 +1309,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          user.active = false
-          await user.save()
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
@@ -1490,14 +1332,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          user.active = false
-          await user.save()
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
@@ -1514,8 +1350,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          user.active = false
-          await user.save()
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`)
         })
 
@@ -1531,12 +1365,14 @@ describe('Users API', () => {
     })
 
     describe('DELETE /users/:uid/active', () => {
+      beforeEach(async () => {
+        user.active = true
+        await user.save()
+      })
+
       describe('Self calls', () => {
         beforeEach(async () => {
-          user.active = true
-          await user.save()
-          tokens = await user.generateTokens()
-          await user.save()
+          const tokens = await getTokens({ user })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
@@ -1552,14 +1388,8 @@ describe('Users API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-
         beforeEach(async () => {
-          user.active = true
-          await user.save()
-          await admin.save()
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const tokens = await getTokens({ admin: true })
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
@@ -1581,14 +1411,8 @@ describe('Users API', () => {
       })
 
       describe('Another user calls', () => {
-        const other = new User({ name: 'Other' })
-
         beforeEach(async () => {
-          user.active = true
-          await user.save()
-          await other.save()
-          tokens = await other.generateTokens()
-          await other.save()
+          const tokens = await getTokens()
           const auth = { Authorization: `Bearer ${tokens.access}` }
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
@@ -1605,8 +1429,6 @@ describe('Users API', () => {
 
       describe('Anonymous calls', () => {
         beforeEach(async () => {
-          user.active = true
-          await user.save()
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`)
         })
 
