@@ -3,7 +3,7 @@ import { RevisionsDiff } from '../models/revision/revision.js'
 
 const clone = rfdc()
 
-const stripUndefinedAddedRemoved =  (diff: RevisionsDiff): RevisionsDiff => {
+const stripUndefinedAddedRemoved = (diff: RevisionsDiff): RevisionsDiff => {
   const cpy = clone(diff)
   const arrs = [cpy.content.title, cpy.content.path, cpy.content.body, cpy.permissions.read, cpy.permissions.write]
   for (const arr of arrs) {
