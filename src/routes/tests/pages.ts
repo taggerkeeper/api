@@ -12,6 +12,7 @@ import RevisionData from '../../models/revision/data.js'
 import User from '../../models/user/user.js'
 import api from '../../server.js'
 
+import createTestPage from './initializers/create-test-page.js'
 import getTokens from './initializers/get-tokens.js'
 import doesDiff from './expecters/does-diff.js'
 
@@ -582,8 +583,6 @@ describe('Pages API', () => {
     const allow = 'OPTIONS, HEAD, GET, PUT, DELETE'
 
     describe('OPTIONS /pages/:pid', () => {
-      let page: Page
-
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
           beforeEach(async () => {
@@ -599,9 +598,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}`)
           })
 
           it('returns 204 and correct headers', () => {
@@ -613,9 +611,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -627,9 +624,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -641,9 +637,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -674,9 +669,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -688,9 +682,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -702,9 +695,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -716,9 +708,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -749,9 +740,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -763,9 +753,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -777,9 +766,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -791,9 +779,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -824,9 +811,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -838,9 +824,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -852,9 +837,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -866,9 +850,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -1568,9 +1551,7 @@ describe('Pages API', () => {
 
       describe('An anonymous user', () => {
         it('can update a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1578,9 +1559,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1588,9 +1567,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1598,9 +1575,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1625,9 +1600,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1637,9 +1610,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1649,9 +1620,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t update a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1659,9 +1628,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t update a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1684,9 +1651,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1696,9 +1661,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1708,9 +1671,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1720,9 +1681,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t update a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1745,9 +1704,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1757,9 +1714,7 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone], trashed: new Date() })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1767,9 +1722,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1779,9 +1732,7 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite], trashed: new Date() })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1789,9 +1740,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1801,9 +1750,7 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite], trashed: new Date() })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1811,9 +1758,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1823,9 +1768,7 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite], trashed: new Date() })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1845,9 +1788,7 @@ describe('Pages API', () => {
     describe('DELETE /pages/:pid', () => {
       describe('An anonymous user', () => {
         it('can delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1855,9 +1796,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1865,9 +1804,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t delete a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1875,18 +1812,14 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('won\'t delete a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1894,9 +1827,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1904,9 +1835,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t delete a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1914,9 +1843,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1939,9 +1866,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1949,9 +1874,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1959,9 +1882,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1969,9 +1890,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1979,9 +1898,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t delete a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1989,9 +1906,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1999,9 +1914,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t delete a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -2009,9 +1922,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -2034,9 +1945,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2044,9 +1953,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2054,9 +1961,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2064,9 +1969,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2074,9 +1977,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2084,9 +1985,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2094,9 +1993,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t delete a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -2104,9 +2001,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -2129,9 +2024,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2139,9 +2032,7 @@ describe('Pages API', () => {
         })
 
         it('can hard delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [revisions.anyone] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2149,9 +2040,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2159,9 +2048,7 @@ describe('Pages API', () => {
         })
 
         it('can hard delete a page that only users can edit', async () => {
-          const page = new Page({ revisions: [revisions.authWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2169,9 +2056,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2179,9 +2064,7 @@ describe('Pages API', () => {
         })
 
         it('can hard delete a page that only editors can edit', async () => {
-          const page = new Page({ revisions: [revisions.editorWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2189,9 +2072,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2199,9 +2080,7 @@ describe('Pages API', () => {
         })
 
         it('can hard delete a page that only admins can edit', async () => {
-          const page = new Page({ revisions: [revisions.adminWrite] })
-          await page.save()
-          const pid = page.id ?? ''
+          const pid = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2223,8 +2102,6 @@ describe('Pages API', () => {
     const allow = 'OPTIONS, HEAD, GET'
 
     describe('OPTIONS /pages/:pid/revisions', () => {
-      let page: Page
-
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
           beforeEach(async () => {
@@ -2240,9 +2117,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2254,9 +2130,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2268,9 +2143,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2282,9 +2156,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2315,9 +2188,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2329,9 +2201,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2343,9 +2214,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2357,9 +2227,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2390,9 +2259,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2404,9 +2272,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2418,9 +2285,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2432,9 +2298,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2465,9 +2330,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2479,9 +2343,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2493,9 +2356,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2507,9 +2369,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2522,8 +2383,6 @@ describe('Pages API', () => {
     })
 
     describe('HEAD /pages/:pid/revisions', () => {
-      let page: Page
-
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
           beforeEach(async () => {
@@ -2539,9 +2398,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2553,9 +2411,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2567,9 +2424,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2581,9 +2437,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2614,9 +2469,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2628,9 +2482,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2642,9 +2495,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2656,9 +2508,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2689,9 +2540,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2703,9 +2553,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2717,9 +2566,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2731,9 +2579,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2764,9 +2611,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2778,9 +2624,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2792,9 +2637,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2806,9 +2650,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2821,8 +2664,6 @@ describe('Pages API', () => {
     })
 
     describe('GET /pages/:pid/revisions', () => {
-      let page: Page
-
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
           beforeEach(async () => {
@@ -2843,9 +2684,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2865,9 +2705,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2883,9 +2722,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2901,9 +2739,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2943,9 +2780,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2965,9 +2801,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2987,9 +2822,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3005,9 +2839,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3047,9 +2880,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3069,9 +2901,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3091,9 +2922,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3113,9 +2943,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3155,9 +2984,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3177,9 +3005,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3199,9 +3026,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3221,9 +3047,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3248,8 +3073,6 @@ describe('Pages API', () => {
     const allow = 'OPTIONS, HEAD, GET, PUT'
 
     describe('OPTIONS /pages/:pid/revisions/:revision', () => {
-      let page: Page
-
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
           beforeEach(async () => {
@@ -3265,9 +3088,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3279,9 +3101,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3293,9 +3114,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3307,9 +3127,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3340,9 +3159,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3354,9 +3172,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3368,9 +3185,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3382,9 +3198,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3415,9 +3230,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3429,9 +3243,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3443,9 +3256,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3457,9 +3269,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3490,9 +3301,8 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyone] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.anyone])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3504,9 +3314,8 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.auth] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.auth])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3518,9 +3327,8 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editor] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.editor])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3532,9 +3340,8 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.admin] })
-            await page.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.admin])
+            res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3547,7 +3354,7 @@ describe('Pages API', () => {
     })
 
     describe('HEAD /pages/:pid/revisions/:revision', () => {
-      let page: Page
+      let pid: string
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -3564,13 +3371,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`)
             })
 
             it('returns 400 and correct headers', () => {
@@ -3582,7 +3388,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`)
             })
 
             it('returns 200 and correct headers', () => {
@@ -3594,7 +3400,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
             it('returns 200 and correct headers', () => {
@@ -3607,13 +3413,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3625,7 +3430,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3637,7 +3442,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3650,13 +3455,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3668,7 +3472,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3680,7 +3484,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3693,13 +3497,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3711,7 +3514,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3723,7 +3526,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3755,13 +3558,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -3773,7 +3575,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -3785,7 +3587,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -3798,13 +3600,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -3816,7 +3617,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -3828,7 +3629,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -3840,20 +3641,13 @@ describe('Pages API', () => {
         })
 
         describe('requesting from a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3865,7 +3659,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3877,7 +3671,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3890,13 +3684,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3908,7 +3701,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3920,7 +3713,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -3952,13 +3745,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -3970,7 +3762,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -3982,7 +3774,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -3995,13 +3787,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4013,7 +3804,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4025,7 +3816,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4038,13 +3829,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4056,7 +3846,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4068,7 +3858,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4081,13 +3871,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4099,7 +3888,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4111,7 +3900,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4143,13 +3932,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4161,7 +3949,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4173,7 +3961,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4186,13 +3974,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4204,7 +3991,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4216,7 +4003,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4229,13 +4016,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4247,7 +4033,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4259,7 +4045,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4272,13 +4058,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4290,7 +4075,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4302,7 +4087,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).head(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4316,7 +4101,7 @@ describe('Pages API', () => {
     })
 
     describe('GET /pages/:pid/revisions/:revision', () => {
-      let page: Page
+      let pid: string
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -4338,13 +4123,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4360,7 +4144,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4382,7 +4166,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4399,13 +4183,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4421,7 +4204,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4437,7 +4220,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4454,13 +4237,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4476,7 +4258,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4492,7 +4274,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4509,13 +4291,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4531,7 +4312,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4547,7 +4328,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4588,13 +4369,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4610,7 +4390,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4632,7 +4412,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4649,13 +4429,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4671,7 +4450,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4693,7 +4472,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4710,13 +4489,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4732,7 +4510,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4748,7 +4526,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4765,13 +4543,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4787,7 +4564,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4803,7 +4580,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -4844,13 +4621,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4866,7 +4642,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4888,7 +4664,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4905,13 +4681,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4927,7 +4702,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4949,7 +4724,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -4966,13 +4741,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -4988,7 +4762,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5010,7 +4784,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5027,13 +4801,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -5049,7 +4822,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -5065,7 +4838,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 404 and correct headers', () => {
@@ -5106,13 +4879,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -5128,7 +4900,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5150,7 +4922,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5167,13 +4939,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -5189,7 +4960,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5211,7 +4982,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5228,13 +4999,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -5250,7 +5020,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5272,7 +5042,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5289,13 +5059,12 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
-            await page.save()
+            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
           })
 
           describe('a revision that doesn\'t exist', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/3`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
             it('returns 400 and correct headers', () => {
@@ -5311,7 +5080,7 @@ describe('Pages API', () => {
 
           describe('a revision', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5333,7 +5102,7 @@ describe('Pages API', () => {
 
           describe('the difference between two revisions', () => {
             beforeEach(async () => {
-              res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions/1?compare=2`).set(auth)
+              res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
             it('returns 200 and correct headers', () => {
@@ -5351,8 +5120,6 @@ describe('Pages API', () => {
     })
 
     describe('PUT /pages/:pid/revisions/:revision', () => {
-      let page: Page
-
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
           beforeEach(async () => {
@@ -5373,9 +5140,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            const pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5392,9 +5158,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            const pid = await createTestPage([revisions.authWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
           it('returns 401 and correct headers', () => {
@@ -5411,9 +5176,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            const pid = await createTestPage([revisions.editorWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
           it('returns 401 and correct headers', () => {
@@ -5430,9 +5194,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
+            const pid = await createTestPage([revisions.adminWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
           it('returns 401 and correct headers', () => {
@@ -5473,9 +5236,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5492,9 +5254,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.authWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5511,9 +5272,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.editorWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 403 and correct headers', () => {
@@ -5529,9 +5289,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.adminWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 403 and correct headers', () => {
@@ -5571,9 +5330,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5590,9 +5348,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.authWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5609,9 +5366,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.editorWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5628,9 +5384,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.adminWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 403 and correct headers', () => {
@@ -5670,9 +5425,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5689,9 +5443,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.authWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.authWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5708,9 +5461,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.editorWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.editorWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -5727,9 +5479,8 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [revisions.adminWrite, revisions.anyone] })
-            await page.save()
-            res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
+            const pid = await createTestPage([revisions.adminWrite, revisions.anyone])
+            res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
