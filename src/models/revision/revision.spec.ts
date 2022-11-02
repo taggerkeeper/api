@@ -1,12 +1,12 @@
-import {expect} from 'chai'
+import { expect } from 'chai'
 import Content from '../content/content.js'
 import File from '../file/file.js'
 import User from '../user/user.js'
 import Permissions from '../permissions/permissions.js'
-import {PermissionLevel} from '../permissions/data.js'
+import { PermissionLevel } from '../permissions/data.js'
 import Revision from './revision.js'
-import {isRevisionData} from './data.js'
-import {isPublicRevisionData} from './public.js'
+import { isRevisionData } from './data.js'
+import { isPublicRevisionData } from './public.js'
 
 describe('Revision', () => {
   const before = new Date()
