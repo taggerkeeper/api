@@ -138,6 +138,16 @@ describe('Revision', () => {
         expect(write[1].added).to.equal(true)
         expect(write[1].value).to.equal('editor')
       })
+
+      it('compares the earlier version to the later version', () => {
+        const a = new Revision({ content: { title: 'Revision 1', path: '/test', body: 'This is the original version.' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } })
+        const b = new Revision({ content: { title: 'Revision 2', path: '/test', body: 'This is the updated version.' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.editor } })
+        a.number = 1
+        b.number = 2
+        const diff = b.diff(a)
+        expect(diff.content.title[1].removed).to.equal(true)
+        expect(diff.content.title[1].value).to.equal('1')
+      })
     })
   })
 })

@@ -70,17 +70,20 @@ class Revision {
   }
 
   diff (other: Revision): RevisionsDiff {
+    const a = (this.number ?? 1) <= (other.number ?? 2) ? this : other
+    const b = (this.number ?? 1) > (other.number ?? 2) ? this : other
+
     return {
       content: {
-        title: diffWords(this.content.title, other.content.title),
-        path: diffWords(this.content.path, other.content.path),
-        body: diffWords(this.content.body, other.content.body)
+        title: diffWords(a.content.title, b.content.title),
+        path: diffWords(a.content.path, b.content.path),
+        body: diffWords(a.content.body, b.content.body)
       },
-      file: diffFiles(this.file, other.file),
-      thumbnail: diffFiles(this.file, other.file),
+      file: diffFiles(a.file, b.file),
+      thumbnail: diffFiles(a.file, b.file),
       permissions: {
-        read: diffWords(this.permissions.read, other.permissions.read),
-        write: diffWords(this.permissions.write, other.permissions.write)
+        read: diffWords(a.permissions.read, b.permissions.read),
+        write: diffWords(a.permissions.write, b.permissions.write)
       }
     }
   }
