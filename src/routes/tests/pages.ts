@@ -3,14 +3,17 @@ import request from 'supertest'
 import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import loadPageById from '../../models/page/loaders/by-id.js'
 import getAPIInfo from '../../utils/get-api-info.js'
-import ContentData from '../../models/content/data.js'
-import PermissionsData, { PermissionLevel } from '../../models/permissions/data.js'
+import { PermissionLevel } from '../../models/permissions/data.js'
+import Revision from '../../models/revision/revision.js'
 import Page from '../../models/page/page.js'
 import PageData from '../../models/page/data.js'
 import PageModel from '../../models/page/model.js'
 import RevisionData from '../../models/revision/data.js'
-import User, { TokenSet } from '../../models/user/user.js'
+import User from '../../models/user/user.js'
 import api from '../../server.js'
+
+import getTokens from './initializers/get-tokens.js'
+import doesDiff from './expecters/does-diff.js'
 
 const parseLinks = (header: string): any => {
   const links: any = {}
@@ -53,6 +56,31 @@ describe('Pages API', () => {
   let pkg: NPMPackage
   let base: string
   let res: any
+  const auth = { Authorization: 'Bearer none' }
+  const admin = new User({ name: 'Admin', admin: true })
+  const editor = new User()
+  const title = 'New Page'
+  const body = 'This is a new page.'
+  const revisions: { [key: string]: RevisionData } = {
+    anyone: { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } },
+    auth: { content: { title, body }, permissions: { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated } },
+    editor: { content: { title, body }, permissions: { read: PermissionLevel.editor, write: PermissionLevel.editor } },
+    admin: { content: { title, body }, permissions: { read: PermissionLevel.admin, write: PermissionLevel.admin } },
+    authWrite: { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.authenticated } },
+    editorWrite: { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.editor } },
+    adminWrite: { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.admin } },
+    anyoneUpdate: { content: { title: 'Updated Page', body: 'This is an update' }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } },
+    authUpdate: { content: { title: 'Updated Page', body: 'This is an update' }, permissions: { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated } },
+    editorUpdate: { content: { title: 'Updated Page', body: 'This is an update' }, permissions: { read: PermissionLevel.editor, write: PermissionLevel.editor } },
+    adminUpdate: { content: { title: 'Updated Page', body: 'This is an update' }, permissions: { read: PermissionLevel.admin, write: PermissionLevel.admin } }
+  }
+
+  before(async () => {
+    await editor.save()
+    for (const key of Object.keys(revisions)) {
+      revisions[key].editor = editor.getObj()
+    }
+  })
 
   beforeEach(async () => {
     pkg = await loadPackage() as NPMPackage
@@ -118,20 +146,13 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated calls', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          tokens = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).head(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).head(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(204)
           expect(res.headers.allow).to.equal(allow)
@@ -145,7 +166,7 @@ describe('Pages API', () => {
         })
 
         it('ignores the trashed element', async () => {
-          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(204)
           expect(res.headers.allow).to.equal(allow)
@@ -160,15 +181,13 @@ describe('Pages API', () => {
       })
 
       describe('Editor calls', () => {
-        let tokens: TokenSet
-
         beforeEach(async () => {
-          tokens = await editor.generateTokens()
-          await editor.save()
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).head(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).head(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(204)
           expect(res.headers.allow).to.equal(allow)
@@ -182,7 +201,7 @@ describe('Pages API', () => {
         })
 
         it('ignores the trashed element', async () => {
-          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(204)
           expect(res.headers.allow).to.equal(allow)
@@ -197,20 +216,13 @@ describe('Pages API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-        let tokens: TokenSet
-
-        before(async () => {
-          await admin.save()
-        })
-
         beforeEach(async () => {
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).head(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).head(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(204)
           expect(res.headers.allow).to.equal(allow)
@@ -224,7 +236,7 @@ describe('Pages API', () => {
         })
 
         it('returns correct status and headers for trashed query', async () => {
-          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(204)
           expect(res.headers.allow).to.equal(allow)
@@ -293,20 +305,13 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated calls', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          tokens = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(200)
           expect(res.headers.allow).to.equal(allow)
@@ -320,7 +325,7 @@ describe('Pages API', () => {
         })
 
         it('returns your results', async () => {
-          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}`).set(auth)
           expect(res.body.total).to.equal(11)
           expect(res.body.start).to.equal(4)
           expect(res.body.end).to.equal(5)
@@ -328,7 +333,7 @@ describe('Pages API', () => {
         })
 
         it('ignores the trashed element (headers & status)', async () => {
-          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(200)
           expect(res.headers.allow).to.equal(allow)
@@ -342,7 +347,7 @@ describe('Pages API', () => {
         })
 
         it('ignores the trashed element (body)', async () => {
-          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           expect(res.body.total).to.equal(11)
           expect(res.body.start).to.equal(4)
           expect(res.body.end).to.equal(5)
@@ -351,15 +356,13 @@ describe('Pages API', () => {
       })
 
       describe('Editor calls', () => {
-        let tokens: TokenSet
-
         beforeEach(async () => {
-          tokens = await editor.generateTokens()
-          await editor.save()
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(200)
           expect(res.headers.allow).to.equal(allow)
@@ -373,7 +376,7 @@ describe('Pages API', () => {
         })
 
         it('returns your results', async () => {
-          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}`).set(auth)
           expect(res.body.total).to.equal(12)
           expect(res.body.start).to.equal(4)
           expect(res.body.end).to.equal(5)
@@ -381,7 +384,7 @@ describe('Pages API', () => {
         })
 
         it('ignores the trashed element (headers & status)', async () => {
-          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(200)
           expect(res.headers.allow).to.equal(allow)
@@ -395,7 +398,7 @@ describe('Pages API', () => {
         })
 
         it('ignores the trashed element (body)', async () => {
-          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           expect(res.body.total).to.equal(12)
           expect(res.body.start).to.equal(4)
           expect(res.body.end).to.equal(5)
@@ -404,20 +407,13 @@ describe('Pages API', () => {
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-        let tokens: TokenSet
-
-        before(async () => {
-          await admin.save()
-        })
-
         beforeEach(async () => {
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(200)
           expect(res.headers.allow).to.equal(allow)
@@ -431,7 +427,7 @@ describe('Pages API', () => {
         })
 
         it('returns your results', async () => {
-          res = await request(api).get(`${base}/pages?${query}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}`).set(auth)
           expect(res.body.total).to.equal(13)
           expect(res.body.start).to.equal(4)
           expect(res.body.end).to.equal(5)
@@ -439,7 +435,7 @@ describe('Pages API', () => {
         })
 
         it('returns correct status and headers for a trashed query', async () => {
-          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
           expect(res.status).to.equal(200)
           expect(res.headers.allow).to.equal(allow)
@@ -453,7 +449,7 @@ describe('Pages API', () => {
         })
 
         it('returns your results for a trashed query', async () => {
-          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           expect(res.body.total).to.equal(5)
           expect(res.body.start).to.equal(4)
           expect(res.body.end).to.equal(5)
@@ -495,7 +491,7 @@ describe('Pages API', () => {
       })
     })
 
-    describe('DELETED /pages', () => {
+    describe('DELETE /pages', () => {
       const total = 3
 
       beforeEach(async () => {
@@ -521,76 +517,60 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated calls', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          tokens = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages`).set(auth)
           expect(res.status).to.equal(403)
           expect(res.headers.allow).to.equal(allow)
           expect(res.headers['access-control-allow-methods']).to.equal(allow)
         })
 
         it('doesn\'t delete trashed pages', async () => {
-          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages`).set(auth)
           const check = await PageModel.countDocuments({})
           expect(check).to.equal(total)
         })
       })
 
       describe('Editor calls', () => {
-        let tokens: TokenSet
-
         beforeEach(async () => {
-          tokens = await editor.generateTokens()
-          await editor.save()
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages`).set(auth)
           expect(res.status).to.equal(403)
           expect(res.headers.allow).to.equal(allow)
           expect(res.headers['access-control-allow-methods']).to.equal(allow)
         })
 
         it('doesn\'t delete trashed pages', async () => {
-          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages`).set(auth)
           const check = await PageModel.countDocuments({})
           expect(check).to.equal(total)
         })
       })
 
       describe('Admin calls', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-        let tokens: TokenSet
-
-        before(async () => {
-          await admin.save()
-        })
-
         beforeEach(async () => {
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('returns correct status and headers', async () => {
-          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages`).set(auth)
           expect(res.status).to.equal(204)
           expect(res.headers.allow).to.equal(allow)
           expect(res.headers['access-control-allow-methods']).to.equal(allow)
         })
 
         it('deletes trashed pages', async () => {
-          res = await request(api).delete(`${base}/pages`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages`).set(auth)
           const check = await PageModel.countDocuments({})
           expect(check).to.equal(0)
         })
@@ -600,23 +580,9 @@ describe('Pages API', () => {
 
   describe('/pages/:pid', () => {
     const allow = 'OPTIONS, HEAD, GET, PUT, DELETE'
-    const title = 'New Page'
-    const body = 'This is a new page.'
-    const anyone = { content: { title, body }, permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone } }
-    const authenticated = { content: { title, body }, permissions: { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated } }
-    const editor = { content: { title, body }, permissions: { read: PermissionLevel.editor, write: PermissionLevel.editor } }
-    const admin = { content: { title, body }, permissions: { read: PermissionLevel.admin, write: PermissionLevel.admin } }
 
     describe('OPTIONS /pages/:pid', () => {
       let page: Page
-      const content = { title: 'New Page', body: 'This is a new page.' }
-      const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      const orig: RevisionData = { content, permissions }
-
-      beforeEach(() => {
-        permissions.read = PermissionLevel.anyone
-        permissions.write = PermissionLevel.anyone
-      })
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -633,7 +599,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
           })
@@ -647,8 +613,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
           })
@@ -661,16 +626,8 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
           })
@@ -684,8 +641,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}`)
           })
@@ -699,18 +655,14 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated user', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -722,11 +674,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -738,12 +688,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -754,20 +701,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -779,12 +716,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -796,18 +730,14 @@ describe('Pages API', () => {
       })
 
       describe('Editor', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -819,12 +749,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -836,13 +763,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -854,13 +777,9 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -872,13 +791,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -890,18 +805,14 @@ describe('Pages API', () => {
       })
 
       describe('Admin', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -913,11 +824,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -929,12 +838,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -945,20 +851,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -970,12 +866,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -990,7 +883,7 @@ describe('Pages API', () => {
     describe('HEAD /pages/:pid', () => {
       describe('Anonymous calls', () => {
         it('returns status and headers for a page that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'HEAD', page)
 
           expect(id.status).to.equal(200)
@@ -1003,7 +896,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'HEAD', page)
 
           expect(id.status).to.equal(404)
@@ -1016,7 +909,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'HEAD', page)
 
           expect(id.status).to.equal(404)
@@ -1029,7 +922,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'HEAD', page)
 
           expect(id.status).to.equal(404)
@@ -1049,21 +942,13 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated calls', () => {
-        const user = new User({ name: 'Authenticated User' })
-        const auth = { Authorization: '' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const { access } = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens()
           auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers for a page that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1076,7 +961,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1089,7 +974,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(404)
@@ -1102,7 +987,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(404)
@@ -1122,21 +1007,13 @@ describe('Pages API', () => {
       })
 
       describe('Editor calls', () => {
-        const user = new User({ name: 'Editor' })
-        const auth = { Authorization: '' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const { access } = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens({ user: editor })
           auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers for a page that anyone can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, anyone, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1149,7 +1026,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only users can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, authenticated, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1162,7 +1039,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only editors can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, editor, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1175,7 +1052,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only admins can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, admin, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(404)
@@ -1195,21 +1072,13 @@ describe('Pages API', () => {
       })
 
       describe('Admin calls', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        const auth = { Authorization: '' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const { access } = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens({ user: admin })
           auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers for a page that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1222,7 +1091,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1235,7 +1104,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1248,7 +1117,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'HEAD', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1271,7 +1140,7 @@ describe('Pages API', () => {
     describe('GET /pages/:pid', () => {
       describe('Anonymous calls', () => {
         it('returns status and headers that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'GET', page)
 
           expect(id.status).to.equal(200)
@@ -1284,7 +1153,7 @@ describe('Pages API', () => {
         })
 
         it('returns content that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'GET', page)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1295,7 +1164,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'GET', page)
 
           expect(id.status).to.equal(404)
@@ -1308,7 +1177,7 @@ describe('Pages API', () => {
         })
 
         it('returns an error message when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'GET', page)
 
           expect(id.body.message).to.equal('Page not found.')
@@ -1316,7 +1185,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'GET', page)
 
           expect(id.status).to.equal(404)
@@ -1329,7 +1198,7 @@ describe('Pages API', () => {
         })
 
         it('returns an error message when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'GET', page)
 
           expect(id.body.message).to.equal('Page not found.')
@@ -1337,7 +1206,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'GET', page)
 
           expect(id.status).to.equal(404)
@@ -1350,7 +1219,7 @@ describe('Pages API', () => {
         })
 
         it('returns an error message when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'GET', page)
 
           expect(id.body.message).to.equal('Page not found.')
@@ -1367,21 +1236,13 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated calls', () => {
-        const user = new User({ name: 'Authenticated User' })
-        const auth = { Authorization: '' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const { access } = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens()
           auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1394,7 +1255,7 @@ describe('Pages API', () => {
         })
 
         it('returns content that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1405,7 +1266,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1418,7 +1279,7 @@ describe('Pages API', () => {
         })
 
         it('returns content when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1429,7 +1290,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(404)
@@ -1442,7 +1303,7 @@ describe('Pages API', () => {
         })
 
         it('returns an error message when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.message).to.equal('Page not found.')
@@ -1450,7 +1311,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(404)
@@ -1463,7 +1324,7 @@ describe('Pages API', () => {
         })
 
         it('returns an error message when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.message).to.equal('Page not found.')
@@ -1480,21 +1341,13 @@ describe('Pages API', () => {
       })
 
       describe('Editor calls', () => {
-        const user = new User({ name: 'Editor' })
-        const auth = { Authorization: '' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const { access } = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens({ user: editor })
           auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers that anyone can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, anyone, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1507,7 +1360,7 @@ describe('Pages API', () => {
         })
 
         it('returns content that anyone can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, anyone, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1518,7 +1371,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only users can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, authenticated, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1531,7 +1384,7 @@ describe('Pages API', () => {
         })
 
         it('returns content when only users can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, authenticated, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1542,7 +1395,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only editors can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, editor, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1555,7 +1408,7 @@ describe('Pages API', () => {
         })
 
         it('returns content when only an editor can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, editor, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1566,7 +1419,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only admins can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, admin, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(404)
@@ -1579,7 +1432,7 @@ describe('Pages API', () => {
         })
 
         it('returns an error message when only admins can read', async () => {
-          const page = new Page({ revisions: [Object.assign({}, admin, { editor: user.getObj() })] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.message).to.equal('Page not found.')
@@ -1596,21 +1449,13 @@ describe('Pages API', () => {
       })
 
       describe('Admin calls', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        const auth = { Authorization: '' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const { access } = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens({ user: admin })
           auth.Authorization = `Bearer ${access}`
         })
 
         it('returns status and headers for a page that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1623,7 +1468,7 @@ describe('Pages API', () => {
         })
 
         it('returns content that anyone can read', async () => {
-          const page = new Page({ revisions: [anyone] })
+          const page = new Page({ revisions: [revisions.anyone] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1634,7 +1479,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1647,7 +1492,7 @@ describe('Pages API', () => {
         })
 
         it('returns content when only users can read', async () => {
-          const page = new Page({ revisions: [authenticated] })
+          const page = new Page({ revisions: [revisions.auth] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1658,7 +1503,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1671,7 +1516,7 @@ describe('Pages API', () => {
         })
 
         it('returns content when only editors can read', async () => {
-          const page = new Page({ revisions: [editor] })
+          const page = new Page({ revisions: [revisions.editor] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1682,7 +1527,7 @@ describe('Pages API', () => {
         })
 
         it('returns status and headers when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.status).to.equal(200)
@@ -1695,7 +1540,7 @@ describe('Pages API', () => {
         })
 
         it('returns content when only admins can read', async () => {
-          const page = new Page({ revisions: [admin] })
+          const page = new Page({ revisions: [revisions.admin] })
           const { id, path } = await testPageLoad(base, 'GET', page, auth)
 
           expect(id.body.revisions[0].content.title).to.equal(title)
@@ -1716,30 +1561,14 @@ describe('Pages API', () => {
     })
 
     describe('PUT /pages/:pid', () => {
-      const editor = new User()
-      const admin = new User({ name: 'Admin', admin: true })
-      let content: ContentData
-      let permissions: PermissionsData
-      let orig: RevisionData
-
       const title = 'New Revision'
       const body = 'This is the revised body.'
-      const update = { title, body, msg: 'New revision' }
-
-      before(async () => {
-        await editor.save()
-      })
-
-      beforeEach(() => {
-        content = { title: 'Original Revision', body: 'This is the original body.' }
-        permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-        orig = { content, permissions, msg: 'Initial text' }
-        orig.editor = editor.getObj()
-      })
+      const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+      const update = { title, body, permissions, msg: 'New revision' }
 
       describe('An anonymous user', () => {
         it('can update a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
@@ -1749,8 +1578,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
@@ -1760,8 +1588,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
@@ -1771,8 +1598,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
@@ -1792,22 +1618,17 @@ describe('Pages API', () => {
 
       describe('An authenticated user', () => {
         const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
-        })
 
         beforeEach(async () => {
-          tokens = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens({ user })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('can update a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1816,11 +1637,10 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1829,22 +1649,20 @@ describe('Pages API', () => {
         })
 
         it('can\'t update a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.revisions).to.have.lengthOf(1)
         })
 
         it('can\'t update a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.revisions).to.have.lengthOf(1)
@@ -1852,7 +1670,7 @@ describe('Pages API', () => {
 
         it('catches an invalid path', async () => {
           const path = '/login'
-          const res = await request(api).put(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
           expect(res.status).to.equal(400)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
@@ -1860,18 +1678,16 @@ describe('Pages API', () => {
       })
 
       describe('An editor', () => {
-        let tokens: TokenSet
-
         beforeEach(async () => {
-          tokens = await editor.generateTokens()
-          await editor.save()
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('can update a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1880,11 +1696,10 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1893,11 +1708,10 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1906,11 +1720,10 @@ describe('Pages API', () => {
         })
 
         it('can\'t update a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.revisions).to.have.lengthOf(1)
@@ -1918,7 +1731,7 @@ describe('Pages API', () => {
 
         it('catches an invalid path', async () => {
           const path = '/login'
-          const res = await request(api).put(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
           expect(res.status).to.equal(400)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
@@ -1926,22 +1739,16 @@ describe('Pages API', () => {
       })
 
       describe('An admin', () => {
-        let tokens: TokenSet
-
-        before(async () => {
-          await admin.save()
-        })
-
         beforeEach(async () => {
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('can update a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1950,21 +1757,20 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig], trashed: new Date() })
+          const page = new Page({ revisions: [revisions.anyone], trashed: new Date() })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.equal(undefined)
         })
 
         it('can update a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1973,22 +1779,20 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig], trashed: new Date() })
+          const page = new Page({ revisions: [revisions.authWrite], trashed: new Date() })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.equal(undefined)
         })
 
         it('can update a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -1997,22 +1801,20 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig], trashed: new Date() })
+          const page = new Page({ revisions: [revisions.editorWrite], trashed: new Date() })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.equal(undefined)
         })
 
         it('can update a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
           expect(res.status).to.equal(200)
@@ -2021,11 +1823,10 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig], trashed: new Date() })
+          const page = new Page({ revisions: [revisions.adminWrite], trashed: new Date() })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).put(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.equal(undefined)
@@ -2033,7 +1834,7 @@ describe('Pages API', () => {
 
         it('catches an invalid path', async () => {
           const path = '/login'
-          const res = await request(api).put(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` }).send(update)
+          const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
           expect(res.status).to.equal(400)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
@@ -2042,26 +1843,9 @@ describe('Pages API', () => {
     })
 
     describe('DELETE /pages/:pid', () => {
-      const editor = new User()
-      const admin = new User({ name: 'Admin', admin: true })
-      let content: ContentData
-      let permissions: PermissionsData
-      let orig: RevisionData
-
-      before(async () => {
-        await editor.save()
-      })
-
-      beforeEach(() => {
-        content = { title: 'Original Revision', body: 'This is the original body.' }
-        permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-        orig = { content, permissions, msg: 'Initial text' }
-        orig.editor = editor.getObj()
-      })
-
       describe('An anonymous user', () => {
         it('can delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).delete(`${base}/pages/${pid}`)
@@ -2071,7 +1855,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
@@ -2081,8 +1865,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t delete a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).delete(`${base}/pages/${pid}`)
@@ -2092,8 +1875,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
           const after = await loadPageById(pid, admin)
@@ -2102,8 +1884,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t delete a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).delete(`${base}/pages/${pid}`)
@@ -2113,8 +1894,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
@@ -2124,8 +1904,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t delete a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).delete(`${base}/pages/${pid}`)
@@ -2135,8 +1914,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
@@ -2155,99 +1933,86 @@ describe('Pages API', () => {
       })
 
       describe('An authenticated user', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          tokens = await user.generateTokens()
-          await user.save()
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('can delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('can delete a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can\'t hard delete a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('can\'t delete a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.trashed).to.equal(undefined)
         })
 
         it('can\'t hard delete a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('can\'t delete a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.trashed).to.equal(undefined)
         })
 
         it('can\'t hard delete a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after).to.be.an.instanceOf(Page)
@@ -2255,7 +2020,7 @@ describe('Pages API', () => {
 
         it('catches an invalid path', async () => {
           const path = '/login'
-          const res = await request(api).delete(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const res = await request(api).delete(`${base}/pages${path}`).set(auth)
           expect(res.status).to.equal(400)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
@@ -2263,94 +2028,86 @@ describe('Pages API', () => {
       })
 
       describe('An editor', () => {
-        let tokens: TokenSet
-
         beforeEach(async () => {
-          tokens = await editor.generateTokens()
-          await editor.save()
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('can delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('can delete a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can\'t hard delete a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('can delete a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can\'t hard delete a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('can\'t delete a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after?.trashed).to.equal(undefined)
         })
 
         it('can\'t hard delete a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
           expect(after).to.be.an.instanceOf(Page)
@@ -2358,7 +2115,7 @@ describe('Pages API', () => {
 
         it('catches an invalid path', async () => {
           const path = '/login'
-          const res = await request(api).delete(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const res = await request(api).delete(`${base}/pages${path}`).set(auth)
           expect(res.status).to.equal(400)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
@@ -2366,98 +2123,86 @@ describe('Pages API', () => {
       })
 
       describe('An admin', () => {
-        let tokens: TokenSet
-
-        before(async () => {
-          await admin.save()
-        })
-
         beforeEach(async () => {
-          tokens = await admin.generateTokens()
-          await admin.save()
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         it('can delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can hard delete a page anyone can edit', async () => {
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.anyone] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.equal(null)
         })
 
         it('can delete a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can hard delete a page that only users can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.authenticated
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.authWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.equal(null)
         })
 
         it('can delete a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can hard delete a page that only editors can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.editor
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.editorWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.equal(null)
         })
 
         it('can delete a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
         it('can hard delete a page that only admins can edit', async () => {
-          if (orig.permissions !== undefined) orig.permissions.write = PermissionLevel.admin
-          const page = new Page({ revisions: [orig] })
+          const page = new Page({ revisions: [revisions.adminWrite] })
           await page.save()
           const pid = page.id ?? ''
-          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set({ Authorization: `Bearer ${tokens.access}` })
+          res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
           expect(after).to.equal(null)
@@ -2465,7 +2210,7 @@ describe('Pages API', () => {
 
         it('catches an invalid path', async () => {
           const path = '/login'
-          const res = await request(api).delete(`${base}/pages${path}`).set({ Authorization: `Bearer ${tokens.access}` })
+          const res = await request(api).delete(`${base}/pages${path}`).set(auth)
           expect(res.status).to.equal(400)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
@@ -2479,14 +2224,6 @@ describe('Pages API', () => {
 
     describe('OPTIONS /pages/:pid/revisions', () => {
       let page: Page
-      const content = { title: 'New Page', body: 'This is a new page.' }
-      const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      const orig: RevisionData = { content, permissions }
-
-      beforeEach(() => {
-        permissions.read = PermissionLevel.anyone
-        permissions.write = PermissionLevel.anyone
-      })
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -2503,7 +2240,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -2517,8 +2254,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -2531,16 +2267,8 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -2554,8 +2282,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -2569,18 +2296,14 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated user', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -2592,11 +2315,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2608,12 +2329,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2624,20 +2342,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2649,12 +2357,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2666,18 +2371,14 @@ describe('Pages API', () => {
       })
 
       describe('Editor', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -2689,12 +2390,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2706,13 +2404,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2724,13 +2418,9 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2742,13 +2432,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -2760,18 +2446,14 @@ describe('Pages API', () => {
       })
 
       describe('Admin', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -2783,11 +2465,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2799,12 +2479,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2815,20 +2492,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2840,12 +2507,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -2859,14 +2523,6 @@ describe('Pages API', () => {
 
     describe('HEAD /pages/:pid/revisions', () => {
       let page: Page
-      const content = { title: 'New Page', body: 'This is a new page.' }
-      const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      const orig: RevisionData = { content, permissions }
-
-      beforeEach(() => {
-        permissions.read = PermissionLevel.anyone
-        permissions.write = PermissionLevel.anyone
-      })
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -2883,7 +2539,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
             res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -2897,8 +2553,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
             res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -2911,16 +2566,8 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
             res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -2934,8 +2581,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
             res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -2949,18 +2595,14 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated user', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -2972,11 +2614,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -2988,12 +2628,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3004,20 +2641,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3029,12 +2656,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3046,18 +2670,14 @@ describe('Pages API', () => {
       })
 
       describe('Editor', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -3069,12 +2689,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3086,13 +2703,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3104,13 +2717,9 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3122,13 +2731,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3140,18 +2745,14 @@ describe('Pages API', () => {
       })
 
       describe('Admin', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -3163,11 +2764,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3179,12 +2778,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3195,20 +2791,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3220,12 +2806,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).head(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3239,14 +2822,6 @@ describe('Pages API', () => {
 
     describe('GET /pages/:pid/revisions', () => {
       let page: Page
-      const content = { title: 'New Page', body: 'This is a new page.' }
-      const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      const orig: RevisionData = { content, permissions }
-
-      beforeEach(() => {
-        permissions.read = PermissionLevel.anyone
-        permissions.write = PermissionLevel.anyone
-      })
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -3268,7 +2843,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
             res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -3290,8 +2865,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
             res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -3308,16 +2882,8 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
             res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -3335,8 +2901,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
             res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`)
           })
@@ -3354,18 +2919,14 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated user', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -3382,11 +2943,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3406,12 +2965,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3430,20 +2986,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3459,12 +3005,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3480,18 +3023,14 @@ describe('Pages API', () => {
       })
 
       describe('Editor', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -3508,12 +3047,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3533,13 +3069,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3559,13 +3091,9 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3585,13 +3113,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3607,18 +3131,14 @@ describe('Pages API', () => {
       })
 
       describe('Admin', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/login/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/login/revisions`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -3635,11 +3155,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3659,12 +3177,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3683,20 +3198,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3716,12 +3221,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).get(`${base}/pages/${page.id ?? ''}/revisions`).set(auth)
           })
 
           it('returns 200 and correct headers', () => {
@@ -3747,14 +3249,6 @@ describe('Pages API', () => {
 
     describe('OPTIONS /pages/:pid/revisions/:revision', () => {
       let page: Page
-      const content = { title: 'New Page', body: 'This is a new page.' }
-      const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      const orig: RevisionData = { content, permissions }
-
-      beforeEach(() => {
-        permissions.read = PermissionLevel.anyone
-        permissions.write = PermissionLevel.anyone
-      })
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -3771,7 +3265,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
@@ -3785,8 +3279,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
@@ -3799,16 +3292,8 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
@@ -3822,8 +3307,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
             res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
@@ -3837,18 +3321,14 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated user', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions/1`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -3860,11 +3340,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3876,12 +3354,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3892,20 +3367,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3917,12 +3382,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -3934,18 +3396,14 @@ describe('Pages API', () => {
       })
 
       describe('Editor', () => {
-        const user = new User()
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions/1`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -3957,12 +3415,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3974,13 +3429,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -3992,13 +3443,9 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -4010,13 +3457,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            orig.editor = user.getObj()
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 404 and correct headers', () => {
@@ -4028,18 +3471,14 @@ describe('Pages API', () => {
       })
 
       describe('Admin', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        let tokens: TokenSet
-
-        before(async () => {
-          await user.save()
+        beforeEach(async () => {
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
           beforeEach(async () => {
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/login/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/login/revisions/1`).set(auth)
           })
 
           it('returns 400 and correct headers', () => {
@@ -4051,11 +3490,9 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.anyone] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -4067,12 +3504,9 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.authenticated
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.auth] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -4083,20 +3517,10 @@ describe('Pages API', () => {
         })
 
         describe('calling a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            orig.editor = editor.getObj()
-            permissions.read = PermissionLevel.editor
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.editor] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -4108,12 +3532,9 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            permissions.read = PermissionLevel.admin
-            page = new Page({ revisions: [orig] })
+            page = new Page({ revisions: [revisions.admin] })
             await page.save()
-            tokens = await user.generateTokens()
-            await user.save()
-            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set({ Authorization: `Bearer ${tokens.access}` })
+            res = await request(api).options(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
 
           it('returns 204 and correct headers', () => {
@@ -4127,18 +3548,6 @@ describe('Pages API', () => {
 
     describe('HEAD /pages/:pid/revisions/:revision', () => {
       let page: Page
-      const orig: RevisionData = {
-        content: { title: 'Version 1', body: 'This is the original text.' },
-        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      }
-      const update: RevisionData = {
-        content: { title: 'Version 2', body: 'This is an update.' },
-        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      }
-
-      beforeEach(() => {
-        update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      })
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -4155,7 +3564,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4198,8 +3607,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4241,16 +3649,8 @@ describe('Pages API', () => {
         })
 
         describe('requesting from a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
-            update.editor = editor.getObj()
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4293,8 +3693,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4337,17 +3736,9 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated user', () => {
-        const user = new User()
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const tokens = await user.generateTokens()
-          auth.Authorization = `Bearer ${tokens.access}`
-          await user.save()
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -4364,7 +3755,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4407,8 +3798,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4457,9 +3847,7 @@ describe('Pages API', () => {
           })
 
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
-            update.editor = editor.getObj()
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4502,8 +3890,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4546,18 +3933,9 @@ describe('Pages API', () => {
       })
 
       describe('An editor', () => {
-        const user = new User()
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          update.editor = user.getObj()
-          const tokens = await user.generateTokens()
-          auth.Authorization = `Bearer ${tokens.access}`
-          await user.save()
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -4574,7 +3952,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4617,8 +3995,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4661,8 +4038,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4705,8 +4081,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4749,17 +4124,9 @@ describe('Pages API', () => {
       })
 
       describe('An admin', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const tokens = await user.generateTokens()
-          auth.Authorization = `Bearer ${tokens.access}`
-          await user.save()
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -4776,7 +4143,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4819,8 +4186,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4863,8 +4229,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4907,8 +4272,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -4953,18 +4317,6 @@ describe('Pages API', () => {
 
     describe('GET /pages/:pid/revisions/:revision', () => {
       let page: Page
-      const orig: RevisionData = {
-        content: { title: 'Version 1', body: 'This is the original text.' },
-        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      }
-      const update: RevisionData = {
-        content: { title: 'Version 2', body: 'This is an update.' },
-        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      }
-
-      beforeEach(() => {
-        update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      })
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -4986,7 +4338,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5018,13 +4370,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -5040,49 +4392,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(1)
-              expect(read[0].value).to.equal('anyone')
-
-              expect(write).to.have.lengthOf(1)
-              expect(write[0].value).to.equal('anyone')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.anyoneUpdate))
             })
           })
         })
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5136,16 +4453,8 @@ describe('Pages API', () => {
         })
 
         describe('requesting from a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
-            update.editor = editor.getObj()
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5200,8 +4509,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5256,17 +4564,9 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated user', () => {
-        const user = new User()
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const tokens = await user.generateTokens()
-          auth.Authorization = `Bearer ${tokens.access}`
-          await user.save()
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -5288,7 +4588,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5320,13 +4620,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -5342,49 +4642,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(1)
-              expect(read[0].value).to.equal('anyone')
-
-              expect(write).to.have.lengthOf(1)
-              expect(write[0].value).to.equal('anyone')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.anyoneUpdate))
             })
           })
         })
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5416,13 +4681,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -5438,62 +4703,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(2)
-              expect(read[0].removed).to.equal(true)
-              expect(read[0].value).to.equal('anyone')
-              expect(read[1].added).to.equal(true)
-              expect(read[1].value).to.equal('authenticated')
-
-              expect(write).to.have.lengthOf(2)
-              expect(write[0].removed).to.equal(true)
-              expect(write[0].value).to.equal('anyone')
-              expect(write[1].added).to.equal(true)
-              expect(write[1].value).to.equal('authenticated')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.authUpdate))
             })
           })
         })
 
         describe('requesting from a page only editors can read', () => {
-          const editor = new User()
-
-          before(async () => {
-            await editor.save()
-          })
-
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
-            update.editor = editor.getObj()
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5548,8 +4765,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5604,18 +4820,9 @@ describe('Pages API', () => {
       })
 
       describe('An editor', () => {
-        const user = new User()
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          update.editor = user.getObj()
-          const tokens = await user.generateTokens()
-          auth.Authorization = `Bearer ${tokens.access}`
-          await user.save()
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -5637,7 +4844,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5669,13 +4876,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -5691,49 +4898,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(1)
-              expect(read[0].value).to.equal('anyone')
-
-              expect(write).to.have.lengthOf(1)
-              expect(write[0].value).to.equal('anyone')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.anyoneUpdate))
             })
           })
         })
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5765,13 +4937,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -5787,55 +4959,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(2)
-              expect(read[0].removed).to.equal(true)
-              expect(read[0].value).to.equal('anyone')
-              expect(read[1].added).to.equal(true)
-              expect(read[1].value).to.equal('authenticated')
-
-              expect(write).to.have.lengthOf(2)
-              expect(write[0].removed).to.equal(true)
-              expect(write[0].value).to.equal('anyone')
-              expect(write[1].added).to.equal(true)
-              expect(write[1].value).to.equal('authenticated')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.authUpdate))
             })
           })
         })
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5867,13 +4998,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -5889,55 +5020,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(2)
-              expect(read[0].removed).to.equal(true)
-              expect(read[0].value).to.equal('anyone')
-              expect(read[1].added).to.equal(true)
-              expect(read[1].value).to.equal('editor')
-
-              expect(write).to.have.lengthOf(2)
-              expect(write[0].removed).to.equal(true)
-              expect(write[0].value).to.equal('anyone')
-              expect(write[1].added).to.equal(true)
-              expect(write[1].value).to.equal('editor')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.editorUpdate))
             })
           })
         })
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -5992,17 +5082,9 @@ describe('Pages API', () => {
       })
 
       describe('An admin', () => {
-        const user = new User({ name: 'Admin', admin: true })
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const tokens = await user.generateTokens()
-          auth.Authorization = `Bearer ${tokens.access}`
-          await user.save()
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -6024,7 +5106,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -6056,13 +5138,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -6078,49 +5160,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(1)
-              expect(read[0].value).to.equal('anyone')
-
-              expect(write).to.have.lengthOf(1)
-              expect(write[0].value).to.equal('anyone')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.anyoneUpdate))
             })
           })
         })
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -6152,13 +5199,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -6174,55 +5221,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(2)
-              expect(read[0].removed).to.equal(true)
-              expect(read[0].value).to.equal('anyone')
-              expect(read[1].added).to.equal(true)
-              expect(read[1].value).to.equal('authenticated')
-
-              expect(write).to.have.lengthOf(2)
-              expect(write[0].removed).to.equal(true)
-              expect(write[0].value).to.equal('anyone')
-              expect(write[1].added).to.equal(true)
-              expect(write[1].value).to.equal('authenticated')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.authUpdate))
             })
           })
         })
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.editor, write: PermissionLevel.editor }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -6254,13 +5260,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -6276,55 +5282,14 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(2)
-              expect(read[0].removed).to.equal(true)
-              expect(read[0].value).to.equal('anyone')
-              expect(read[1].added).to.equal(true)
-              expect(read[1].value).to.equal('editor')
-
-              expect(write).to.have.lengthOf(2)
-              expect(write[0].removed).to.equal(true)
-              expect(write[0].value).to.equal('anyone')
-              expect(write[1].added).to.equal(true)
-              expect(write[1].value).to.equal('editor')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.editorUpdate))
             })
           })
         })
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.admin, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminUpdate, revisions.anyone] })
             await page.save()
           })
 
@@ -6356,13 +5321,13 @@ describe('Pages API', () => {
             })
 
             it('returns the revision requested', () => {
-              expect(res.body.content.title).to.equal(orig.content.title)
-              expect(res.body.content.path).to.equal('/version-1')
-              expect(res.body.content.body).to.equal(orig.content.body)
+              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
+              expect(res.body.content.path).to.equal('/new-page')
+              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
               expect(res.body.permissions.read).not.to.equal(undefined)
               expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(orig.permissions?.read)
-              expect(res.body.permissions.write).to.equal(orig.permissions?.write)
+              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
+              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
             })
           })
 
@@ -6378,47 +5343,7 @@ describe('Pages API', () => {
             })
 
             it('returns the difference', () => {
-              const { title, path, body } = res.body.content
-              const { read, write } = res.body.permissions
-
-              expect(title).to.have.lengthOf(3)
-              expect(title[0].value).to.equal('Version ')
-              expect(title[1].removed).to.equal(true)
-              expect(title[1].value).to.equal('1')
-              expect(title[2].added).to.equal(true)
-              expect(title[2].value).to.equal('2')
-
-              expect(path).to.have.lengthOf(3)
-              expect(path[0].value).to.equal('/version-')
-              expect(path[1].removed).to.equal(true)
-              expect(path[1].value).to.equal('1')
-              expect(path[2].added).to.equal(true)
-              expect(path[2].value).to.equal('2')
-
-              expect(body).to.have.lengthOf(7)
-              expect(body[0].value).to.equal('This is ')
-              expect(body[1].removed).to.equal(true)
-              expect(body[1].value).to.equal('the')
-              expect(body[2].added).to.equal(true)
-              expect(body[2].value).to.equal('an')
-              expect(body[3].value).to.equal(' ')
-              expect(body[4].removed).to.equal(true)
-              expect(body[4].value).to.equal('original text')
-              expect(body[5].added).to.equal(true)
-              expect(body[5].value).to.equal('update')
-              expect(body[6].value).to.equal('.')
-
-              expect(read).to.have.lengthOf(2)
-              expect(read[0].removed).to.equal(true)
-              expect(read[0].value).to.equal('anyone')
-              expect(read[1].added).to.equal(true)
-              expect(read[1].value).to.equal('admin')
-
-              expect(write).to.have.lengthOf(2)
-              expect(write[0].removed).to.equal(true)
-              expect(write[0].value).to.equal('anyone')
-              expect(write[1].added).to.equal(true)
-              expect(write[1].value).to.equal('admin')
+              doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.adminUpdate))
             })
           })
         })
@@ -6427,18 +5352,6 @@ describe('Pages API', () => {
 
     describe('PUT /pages/:pid/revisions/:revision', () => {
       let page: Page
-      const orig: RevisionData = {
-        content: { title: 'Version 1', body: 'This is the original text.' },
-        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      }
-      const update: RevisionData = {
-        content: { title: 'Version 2', body: 'This is an update.' },
-        permissions: { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      }
-
-      beforeEach(() => {
-        update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-      })
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -6460,7 +5373,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
@@ -6479,8 +5392,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
@@ -6499,8 +5411,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.editor }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
@@ -6519,8 +5430,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`)
           })
@@ -6539,17 +5449,9 @@ describe('Pages API', () => {
       })
 
       describe('Authenticated user', () => {
-        const user = new User()
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const tokens = await user.generateTokens()
-          await user.save()
-          auth.Authorization = `Bearer ${tokens.access}`
+          const { access } = await getTokens()
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -6571,7 +5473,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6590,8 +5492,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6610,8 +5511,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.editor }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6629,8 +5529,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6648,17 +5547,9 @@ describe('Pages API', () => {
       })
 
       describe('Editor', () => {
-        const user = new User()
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await user.save()
-        })
-
         beforeEach(async () => {
-          const tokens = await user.generateTokens()
-          await user.save()
-          auth.Authorization = `Bearer ${tokens.access}`
+          const { access } = await getTokens({ user: editor })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -6680,8 +5571,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            update.editor = user.getObj()
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6700,9 +5590,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            update.editor = user.getObj()
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6721,9 +5609,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            update.editor = user.getObj()
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.editor }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6742,9 +5628,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            update.editor = user.getObj()
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6762,17 +5646,9 @@ describe('Pages API', () => {
       })
 
       describe('Admin', () => {
-        const admin = new User({ name: 'Admin', admin: true })
-        const auth = { Authorization: 'Bearer empty' }
-
-        before(async () => {
-          await admin.save()
-        })
-
         beforeEach(async () => {
-          const tokens = await admin.generateTokens()
-          await admin.save()
-          auth.Authorization = `Bearer ${tokens.access}`
+          const { access } = await getTokens({ user: admin })
+          auth.Authorization = `Bearer ${access}`
         })
 
         describe('calling an invalid path', () => {
@@ -6794,7 +5670,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.anyoneUpdate, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6813,8 +5689,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.authenticated }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.authWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6833,8 +5708,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.editor }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.editorWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
@@ -6853,8 +5727,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            update.permissions = { read: PermissionLevel.anyone, write: PermissionLevel.admin }
-            page = new Page({ revisions: [update, orig] })
+            page = new Page({ revisions: [revisions.adminWrite, revisions.anyone] })
             await page.save()
             res = await request(api).put(`${base}/pages/${page.id ?? ''}/revisions/1`).set(auth)
           })
