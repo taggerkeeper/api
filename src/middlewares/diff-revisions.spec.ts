@@ -83,6 +83,8 @@ describe('diffRevisions', () => {
           { count: 1, value: '.' }
         ]
       },
+      file: { before: null, after: null },
+      thumbnail: { before: null, after: null },
       permissions: {
         read: [
           { value: 'anyone', count: 1 }
