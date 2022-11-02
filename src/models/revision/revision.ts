@@ -3,6 +3,7 @@ import Content from '../content/content.js'
 import { isFileData } from '../file/data.js'
 import File from '../file/file.js'
 import diffFiles, { FilesDiff } from '../file/diff.js'
+import stripUndefinedAddedRemoved from '../../utils/strip-undefined-added-removed.js'
 import { isUserData } from '../user/data.js'
 import User from '../user/user.js'
 import Permissions from '../permissions/permissions.js'
@@ -73,7 +74,7 @@ class Revision {
     const a = (this.number ?? 1) <= (other.number ?? 2) ? this : other
     const b = (this.number ?? 1) > (other.number ?? 2) ? this : other
 
-    return {
+    return stripUndefinedAddedRemoved({
       content: {
         title: diffWords(a.content.title, b.content.title),
         path: diffWords(a.content.path, b.content.path),
@@ -85,7 +86,7 @@ class Revision {
         read: diffWords(a.permissions.read, b.permissions.read),
         write: diffWords(a.permissions.write, b.permissions.write)
       }
-    }
+    })
   }
 }
 
