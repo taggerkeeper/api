@@ -1,11 +1,27 @@
+import { diffWords, Change } from 'diff'
 import Content from '../content/content.js'
 import { isFileData } from '../file/data.js'
 import File from '../file/file.js'
+import diffFiles, { FilesDiff } from '../file/diff.js'
 import { isUserData } from '../user/data.js'
 import User from '../user/user.js'
 import Permissions from '../permissions/permissions.js'
 import RevisionData from './data.js'
 import PublicRevisionData from './public.js'
+
+interface RevisionsDiff {
+  content: {
+    title: Change[]
+    path: Change[]
+    body: Change[]
+  }
+  file: FilesDiff
+  thumbnail: FilesDiff
+  permissions: {
+    read: Change[]
+    write: Change[]
+  }
+}
 
 class Revision {
   number?: number
@@ -52,6 +68,23 @@ class Revision {
     if (this.editor !== undefined) obj.editor = this.editor.getPublicObj()
     return obj
   }
+
+  diff (other: Revision): RevisionsDiff {
+    return {
+      content: {
+        title: diffWords(this.content.title, other.content.title),
+        path: diffWords(this.content.path, other.content.path),
+        body: diffWords(this.content.body, other.content.body)
+      },
+      file: diffFiles(this.file, other.file),
+      thumbnail: diffFiles(this.file, other.file),
+      permissions: {
+        read: diffWords(this.permissions.read, other.permissions.read),
+        write: diffWords(this.permissions.write, other.permissions.write)
+      }
+    }
+  }
 }
 
 export default Revision
+export { RevisionsDiff }
