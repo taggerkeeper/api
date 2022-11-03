@@ -583,7 +583,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}`)
           })
 
@@ -596,7 +596,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}`)
           })
 
@@ -609,7 +609,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}`)
           })
 
@@ -622,7 +622,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}`)
           })
 
@@ -654,7 +654,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -667,7 +667,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -680,7 +680,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -693,7 +693,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -725,7 +725,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -738,7 +738,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -751,7 +751,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -764,7 +764,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -796,7 +796,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -809,7 +809,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -822,7 +822,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -835,7 +835,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}`).set(auth)
           })
 
@@ -1536,7 +1536,7 @@ describe('Pages API', () => {
 
       describe('An anonymous user', () => {
         it('can update a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1544,7 +1544,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1552,7 +1552,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1560,7 +1560,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t update a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1585,7 +1585,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1595,7 +1595,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1605,7 +1605,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t update a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1613,7 +1613,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t update a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1636,7 +1636,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1646,7 +1646,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1656,7 +1656,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1666,7 +1666,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t update a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1689,7 +1689,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1699,7 +1699,7 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone], true)
+          const { pid } = await createTestPage([revisions.anyone], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1707,7 +1707,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1717,7 +1717,7 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite], true)
+          const { pid } = await createTestPage([revisions.authWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1725,7 +1725,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1735,7 +1735,7 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite], true)
+          const { pid } = await createTestPage([revisions.editorWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1743,7 +1743,7 @@ describe('Pages API', () => {
         })
 
         it('can update a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
@@ -1753,7 +1753,7 @@ describe('Pages API', () => {
         })
 
         it('can untrash a page only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite], true)
+          const { pid } = await createTestPage([revisions.adminWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1773,7 +1773,7 @@ describe('Pages API', () => {
     describe('DELETE /pages/:pid', () => {
       describe('An anonymous user', () => {
         it('can delete a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1781,7 +1781,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1789,7 +1789,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t delete a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1797,14 +1797,14 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('won\'t delete a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1812,7 +1812,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1820,7 +1820,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t delete a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1828,7 +1828,7 @@ describe('Pages API', () => {
         })
 
         it('won\'t hard delete a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(401)
@@ -1851,7 +1851,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1859,7 +1859,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1867,7 +1867,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1875,7 +1875,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1883,7 +1883,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t delete a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1891,7 +1891,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1899,7 +1899,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t delete a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1907,7 +1907,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1930,7 +1930,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1938,7 +1938,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1946,7 +1946,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1954,7 +1954,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1962,7 +1962,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1970,7 +1970,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -1978,7 +1978,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t delete a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -1986,7 +1986,7 @@ describe('Pages API', () => {
         })
 
         it('can\'t hard delete a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(403)
@@ -2009,7 +2009,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2017,7 +2017,7 @@ describe('Pages API', () => {
         })
 
         it('can hard delete a page anyone can edit', async () => {
-          const pid = await createTestPage([revisions.anyone])
+          const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2025,7 +2025,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2033,7 +2033,7 @@ describe('Pages API', () => {
         })
 
         it('can hard delete a page that only users can edit', async () => {
-          const pid = await createTestPage([revisions.authWrite])
+          const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2041,7 +2041,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2049,7 +2049,7 @@ describe('Pages API', () => {
         })
 
         it('can hard delete a page that only editors can edit', async () => {
-          const pid = await createTestPage([revisions.editorWrite])
+          const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2057,7 +2057,7 @@ describe('Pages API', () => {
         })
 
         it('can delete a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2065,7 +2065,7 @@ describe('Pages API', () => {
         })
 
         it('can hard delete a page that only admins can edit', async () => {
-          const pid = await createTestPage([revisions.adminWrite])
+          const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
           expect(res.status).to.equal(200)
@@ -2102,7 +2102,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2115,7 +2115,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2128,7 +2128,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2141,7 +2141,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2173,7 +2173,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2186,7 +2186,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2199,7 +2199,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2212,7 +2212,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2244,7 +2244,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2257,7 +2257,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2270,7 +2270,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2283,7 +2283,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2315,7 +2315,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2328,7 +2328,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2341,7 +2341,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2354,7 +2354,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2383,7 +2383,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).head(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2396,7 +2396,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).head(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2409,7 +2409,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).head(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2422,7 +2422,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).head(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2454,7 +2454,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2467,7 +2467,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2480,7 +2480,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2493,7 +2493,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2525,7 +2525,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2538,7 +2538,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2551,7 +2551,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2564,7 +2564,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2596,7 +2596,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2609,7 +2609,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2622,7 +2622,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2635,7 +2635,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).head(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2669,7 +2669,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2690,7 +2690,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2707,7 +2707,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2724,7 +2724,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
@@ -2765,7 +2765,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2786,7 +2786,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2807,7 +2807,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2824,7 +2824,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2865,7 +2865,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2886,7 +2886,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2907,7 +2907,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2928,7 +2928,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2969,7 +2969,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -2990,7 +2990,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -3011,7 +3011,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -3032,7 +3032,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
@@ -3073,7 +3073,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`)
           })
 
@@ -3086,7 +3086,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`)
           })
 
@@ -3099,7 +3099,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`)
           })
 
@@ -3112,7 +3112,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`)
           })
 
@@ -3144,7 +3144,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3157,7 +3157,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3170,7 +3170,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3183,7 +3183,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3215,7 +3215,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3228,7 +3228,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3241,7 +3241,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3254,7 +3254,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3286,7 +3286,7 @@ describe('Pages API', () => {
 
         describe('calling a page anyone can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyone])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3299,7 +3299,7 @@ describe('Pages API', () => {
 
         describe('calling a page only users can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.auth])
+            const { pid } = await createTestPage([revisions.auth])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3312,7 +3312,7 @@ describe('Pages API', () => {
 
         describe('calling a page only editors can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editor])
+            const { pid } = await createTestPage([revisions.editor])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3325,7 +3325,7 @@ describe('Pages API', () => {
 
         describe('calling a page only admins can read', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.admin])
+            const { pid } = await createTestPage([revisions.admin])
             res = await request(api).options(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -3356,7 +3356,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3398,7 +3398,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.authUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3440,7 +3440,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.editorUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3482,7 +3482,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.adminUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3543,7 +3543,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3585,7 +3585,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.authUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3627,7 +3627,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.editorUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3669,7 +3669,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.adminUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3730,7 +3730,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3772,7 +3772,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.authUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3814,7 +3814,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.editorUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3856,7 +3856,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.adminUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3917,7 +3917,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -3959,7 +3959,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.authUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4001,7 +4001,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.editorUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4043,7 +4043,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.adminUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4108,7 +4108,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4168,7 +4168,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.authUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4222,7 +4222,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.editorUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4276,7 +4276,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.adminUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4354,7 +4354,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4414,7 +4414,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.authUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4474,7 +4474,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.editorUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4528,7 +4528,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.adminUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4606,7 +4606,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4666,7 +4666,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.authUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4726,7 +4726,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.editorUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4786,7 +4786,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.adminUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4864,7 +4864,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page anyone can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4924,7 +4924,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only users can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.authUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.authUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -4984,7 +4984,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only editors can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.editorUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.editorUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -5044,7 +5044,7 @@ describe('Pages API', () => {
 
         describe('requesting from a page only admins can read', () => {
           beforeEach(async () => {
-            pid = await createTestPage([revisions.adminUpdate, revisions.anyone])
+            ({ pid } = await createTestPage([revisions.adminUpdate, revisions.anyone]))
           })
 
           describe('a revision that doesn\'t exist', () => {
@@ -5125,7 +5125,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
@@ -5143,7 +5143,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.authWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.authWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
@@ -5161,7 +5161,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editorWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.editorWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
@@ -5179,7 +5179,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.adminWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.adminWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
@@ -5221,7 +5221,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5239,7 +5239,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.authWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.authWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5257,7 +5257,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editorWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.editorWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5274,7 +5274,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.adminWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.adminWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5315,7 +5315,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5333,7 +5333,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.authWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.authWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5351,7 +5351,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editorWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.editorWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5369,7 +5369,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.adminWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.adminWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5410,7 +5410,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page anyone can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
+            const { pid } = await createTestPage([revisions.anyoneUpdate, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5428,7 +5428,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only users can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.authWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.authWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5446,7 +5446,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only editors can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.editorWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.editorWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
@@ -5464,7 +5464,7 @@ describe('Pages API', () => {
 
         describe('rolling back a page only admins can edit', () => {
           beforeEach(async () => {
-            const pid = await createTestPage([revisions.adminWrite, revisions.anyone])
+            const { pid } = await createTestPage([revisions.adminWrite, revisions.anyone])
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
