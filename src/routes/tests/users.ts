@@ -534,8 +534,7 @@ describe('Users API', () => {
 
         it('returns the email', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.addr).to.equal(addr)
-          expect(res.body.verified).to.equal(verified)
+          expect(res.body).to.containSubset({ addr, verified })
           expect(res.body.code).to.equal(undefined)
         })
       })
@@ -549,8 +548,7 @@ describe('Users API', () => {
 
         it('returns the email', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.addr).to.equal(addr)
-          expect(res.body.verified).to.equal(verified)
+          expect(res.body).to.containSubset({ addr, verified })
           expect(res.body.code).to.equal(undefined)
         })
       })
@@ -647,8 +645,7 @@ describe('Users API', () => {
 
         it('returns the verified email record', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.addr).to.equal(addr)
-          expect(res.body.verified).to.equal(true)
+          expect(res.body).to.containSubset({ addr, verified: true })
           expect(res.body.code).to.equal(undefined)
         })
 
@@ -669,8 +666,7 @@ describe('Users API', () => {
 
         it('returns the verified email record', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.addr).to.equal(addr)
-          expect(res.body.verified).to.equal(true)
+          expect(res.body).to.containSubset({ addr, verified: true })
           expect(res.body.code).to.equal(undefined)
         })
 
@@ -867,9 +863,7 @@ describe('Users API', () => {
 
         it('returns the user\'s updated record', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.id).to.equal(user.id)
-          expect(res.body.name).to.equal(user.name)
-          expect(res.body.admin).to.equal(true)
+          expect(res.body).to.containSubset({ id: user.id, name: user.name, admin: true })
         })
 
         it('saves the updated user record to the database', async () => {
@@ -919,9 +913,7 @@ describe('Users API', () => {
 
         it('returns the user\'s updated record', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.id).to.equal(user.id)
-          expect(res.body.name).to.equal(user.name)
-          expect(res.body.admin).to.equal(false)
+          expect(res.body).to.containSubset({ id: user.id, name: user.name, admin: false })
         })
 
         it('saves the updated user record to the database', async () => {
@@ -941,9 +933,7 @@ describe('Users API', () => {
 
         it('returns the user\'s updated record', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.id).to.equal(user.id)
-          expect(res.body.name).to.equal(user.name)
-          expect(res.body.admin).to.equal(false)
+          expect(res.body).to.containSubset({ id: user.id, name: user.name, admin: false })
         })
 
         it('saves the updated user record to the database', async () => {
@@ -1070,9 +1060,7 @@ describe('Users API', () => {
 
         it('returns the user\'s updated record', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.id).to.equal(user.id)
-          expect(res.body.name).to.equal(user.name)
-          expect(res.body.active).to.equal(true)
+          expect(res.body).to.containSubset({ id: user.id, name: user.name, active: true })
         })
 
         it('saves the updated user record to the database', async () => {
@@ -1146,9 +1134,7 @@ describe('Users API', () => {
 
         it('returns the user\'s updated record', () => {
           hasStatusAndHeaders(res, 200, headers)
-          expect(res.body.id).to.equal(user.id)
-          expect(res.body.name).to.equal(user.name)
-          expect(res.body.active).to.equal(false)
+          expect(res.body).to.containSubset({ id: user.id, name: user.name, active: false })
         })
 
         it('saves the updated user record to the database', async () => {

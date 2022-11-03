@@ -1,8 +1,10 @@
-import { expect } from 'chai'
+import chai, { expect } from 'chai'
+import chaiSubset from 'chai-subset'
 import request from 'supertest'
 import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import loadPageById from '../../models/page/loaders/by-id.js'
 import getAPIInfo from '../../utils/get-api-info.js'
+import isPopulatedArray from '../../utils/is-populated-array.js'
 import { PermissionLevel } from '../../models/permissions/data.js'
 import Revision from '../../models/revision/revision.js'
 import Page from '../../models/page/page.js'
@@ -17,6 +19,8 @@ import getTokens from './initializers/get-tokens.js'
 import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
 import hasLinkHeader from './expecters/has-link-header.js'
 import doesDiff from './expecters/does-diff.js'
+
+chai.use(chaiSubset)
 
 describe('Pages API', () => {
   let pkg: NPMPackage
@@ -171,9 +175,7 @@ describe('Pages API', () => {
 
         it('returns your results', async () => {
           res = await request(api).get(`${base}/pages?${query}`)
-          expect(res.body.total).to.equal(10)
-          expect(res.body.start).to.equal(4)
-          expect(res.body.end).to.equal(5)
+          expect(res.body).to.containSubset({ total: 10, start: 4, end: 5 })
           expect(res.body.pages).to.have.lengthOf(2)
         })
 
@@ -185,14 +187,12 @@ describe('Pages API', () => {
 
         it('ignores the trashed element (body)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`)
-          expect(res.body.total).to.equal(10)
-          expect(res.body.start).to.equal(4)
-          expect(res.body.end).to.equal(5)
+          expect(res.body).to.containSubset({ total: 10, start: 4, end: 5 })
           expect(res.body.pages).to.have.lengthOf(2)
         })
       })
 
-      describe('Authenticated calls', () => {
+      describe('Authenticated user calls', () => {
         beforeEach(async () => {
           const { access } = await getTokens()
           auth.Authorization = `Bearer ${access}`
@@ -206,9 +206,7 @@ describe('Pages API', () => {
 
         it('returns your results', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
-          expect(res.body.total).to.equal(11)
-          expect(res.body.start).to.equal(4)
-          expect(res.body.end).to.equal(5)
+          expect(res.body).to.containSubset({ total: 11, start: 4, end: 5 })
           expect(res.body.pages).to.have.lengthOf(2)
         })
 
@@ -220,9 +218,7 @@ describe('Pages API', () => {
 
         it('ignores the trashed element (body)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
-          expect(res.body.total).to.equal(11)
-          expect(res.body.start).to.equal(4)
-          expect(res.body.end).to.equal(5)
+          expect(res.body).to.containSubset({ total: 11, start: 4, end: 5 })
           expect(res.body.pages).to.have.lengthOf(2)
         })
       })
@@ -241,9 +237,7 @@ describe('Pages API', () => {
 
         it('returns your results', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
-          expect(res.body.total).to.equal(12)
-          expect(res.body.start).to.equal(4)
-          expect(res.body.end).to.equal(5)
+          expect(res.body).to.containSubset({ total: 12, start: 4, end: 5 })
           expect(res.body.pages).to.have.lengthOf(2)
         })
 
@@ -255,9 +249,7 @@ describe('Pages API', () => {
 
         it('ignores the trashed element (body)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
-          expect(res.body.total).to.equal(12)
-          expect(res.body.start).to.equal(4)
-          expect(res.body.end).to.equal(5)
+          expect(res.body).to.containSubset({ total: 12, start: 4, end: 5 })
           expect(res.body.pages).to.have.lengthOf(2)
         })
       })
@@ -276,9 +268,7 @@ describe('Pages API', () => {
 
         it('returns your results', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
-          expect(res.body.total).to.equal(13)
-          expect(res.body.start).to.equal(4)
-          expect(res.body.end).to.equal(5)
+          expect(res.body).to.containSubset({ total: 13, start: 4, end: 5 })
           expect(res.body.pages).to.have.lengthOf(2)
         })
 
@@ -290,9 +280,7 @@ describe('Pages API', () => {
 
         it('returns your results for a trashed query', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
-          expect(res.body.total).to.equal(5)
-          expect(res.body.start).to.equal(4)
-          expect(res.body.end).to.equal(5)
+          expect(res.body).to.containSubset({ total: 5, start: 4, end: 5 })
           expect(res.body.pages).to.have.lengthOf(1)
         })
       })
@@ -317,15 +305,11 @@ describe('Pages API', () => {
         const elems = res.headers.location.split('/')
         const id = elems[elems.length - 1]
         const page = await PageModel.findById(id)
-        const rev = page?.revisions[0]
+        const content = { title: data.title, path: '/new-page', body: data.body }
+        const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
         expect(page).not.to.equal(null)
-        expect(rev).not.to.equal(undefined)
-        expect(rev?.content.title).to.equal(data.title)
-        expect(rev?.content.path).to.equal('/new-page')
-        expect(rev?.content.body).to.equal(data.body)
-        expect(rev?.permissions?.read).to.equal(PermissionLevel.anyone)
-        expect(rev?.permissions?.write).to.equal(PermissionLevel.anyone)
-        expect(rev?.editor).to.equal(undefined)
+        expect(page?.revisions[0]).to.containSubset({ content, permissions })
+        expect(page?.revisions[0]?.editor).to.equal(undefined)
       })
     })
 
@@ -1141,8 +1125,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1153,8 +1136,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1247,8 +1229,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).get(`${base}/pages${path}`)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -1270,8 +1251,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1282,8 +1262,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1300,8 +1279,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1312,8 +1290,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1378,8 +1355,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).get(`${base}/pages${path}`).set(auth)
           expect(res.status).to.equal(400)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -1401,8 +1377,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1413,8 +1388,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1431,8 +1405,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1443,8 +1416,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1461,8 +1433,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1473,8 +1444,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1511,8 +1481,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).get(`${base}/pages${path}`).set(auth)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -1534,8 +1503,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1546,8 +1514,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1564,8 +1531,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1576,8 +1542,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1594,8 +1559,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1606,8 +1570,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1624,8 +1587,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
 
@@ -1636,8 +1598,7 @@ describe('Pages API', () => {
 
             it('returns the page', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.revisions[0].content.title).to.equal(title)
-              expect(res.body.revisions[0].content.body).to.equal(body)
+              expect(res.body.revisions[0].content).to.containSubset({ title, body })
             })
           })
         })
@@ -1646,8 +1607,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).get(`${base}/pages${path}`).set(auth)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
     })
@@ -1695,8 +1655,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).put(`${base}/pages${path}`).send(update)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -1748,8 +1707,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -1801,8 +1759,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -1888,8 +1845,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
     })
@@ -1963,8 +1919,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).delete(`${base}/pages${path}`)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -2042,8 +1997,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).delete(`${base}/pages${path}`).set(auth)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -2121,8 +2075,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).delete(`${base}/pages${path}`).set(auth)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
 
@@ -2200,8 +2153,7 @@ describe('Pages API', () => {
           const path = '/login'
           const res = await request(api).delete(`${base}/pages${path}`).set(auth)
           hasStatusAndHeaders(res, 400, headers)
-          expect(res.body.path).to.equal(path)
-          expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
+          expect(res.body).to.containSubset({ path, message: 'First element cannot be any of login, logout, dashboard, or connect.' })
         })
       })
     })
@@ -2705,8 +2657,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -2718,11 +2669,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2776,8 +2724,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -2789,11 +2736,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2805,11 +2749,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2851,8 +2792,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -2864,11 +2804,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2880,11 +2817,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2896,11 +2830,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2930,8 +2861,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -2943,11 +2873,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2959,11 +2886,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2975,11 +2899,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
 
@@ -2991,11 +2912,8 @@ describe('Pages API', () => {
 
           it('returns the page\'s revisions', () => {
             hasStatusAndHeaders(res, 200, headers)
-            expect(Array.isArray(res.body)).to.equal(true)
-            expect(res.body).to.have.lengthOf(1)
-            expect(res.body[0].content.title).to.equal('New Page')
-            expect(res.body[0].content.path).to.equal('/new-page')
-            expect(res.body[0].content.body).to.equal('This is a new page.')
+            expect(isPopulatedArray(res.body)).to.equal(true)
+            expect(res.body[0].content).to.containSubset({ title: 'New Page', path: '/new-page', body: 'This is a new page.' })
           })
         })
       })
@@ -3895,6 +3813,14 @@ describe('Pages API', () => {
 
     describe('GET /pages/:pid/revisions/:revision', () => {
       let pid: string
+      const anyoneRevisionMatch = {
+        content: {
+          title: revisions.anyone.content.title,
+          path: '/new-page',
+          body: revisions.anyone.content.body
+        },
+        permissions: Object.assign({}, revisions.anyone.permissions)
+      }
 
       describe('Anonymous user', () => {
         describe('calling an invalid path', () => {
@@ -3904,8 +3830,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -3932,13 +3857,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4085,8 +4004,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset(({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' }))
           })
         })
 
@@ -4113,13 +4031,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4158,13 +4070,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4272,8 +4178,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -4300,13 +4205,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4345,13 +4244,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4390,13 +4283,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4465,8 +4352,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -4493,13 +4379,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4538,13 +4418,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4583,13 +4457,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4628,13 +4496,7 @@ describe('Pages API', () => {
 
             it('returns the revision requested', () => {
               hasStatusAndHeaders(res, 200, headers)
-              expect(res.body.content.title).to.equal(revisions.anyone.content.title)
-              expect(res.body.content.path).to.equal('/new-page')
-              expect(res.body.content.body).to.equal(revisions.anyone.content.body)
-              expect(res.body.permissions.read).not.to.equal(undefined)
-              expect(res.body.permissions.write).not.to.equal(undefined)
-              expect(res.body.permissions.read).to.equal(revisions.anyone.permissions?.read)
-              expect(res.body.permissions.write).to.equal(revisions.anyone.permissions?.write)
+              expect(res.body).to.containSubset(anyoneRevisionMatch)
             })
           })
 
@@ -4661,8 +4523,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -4732,8 +4593,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -4801,8 +4661,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
@@ -4871,8 +4730,7 @@ describe('Pages API', () => {
 
           it('returns an error', () => {
             hasStatusAndHeaders(res, 400, headers)
-            expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
-            expect(res.body.path).to.equal('/login')
+            expect(res.body).to.containSubset({ path: '/login', message: 'First element cannot be any of login, logout, dashboard, or connect.' })
           })
         })
 
