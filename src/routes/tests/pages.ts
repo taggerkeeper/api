@@ -6,13 +6,13 @@ import getAPIInfo from '../../utils/get-api-info.js'
 import { PermissionLevel } from '../../models/permissions/data.js'
 import Revision from '../../models/revision/revision.js'
 import Page from '../../models/page/page.js'
-import PageData from '../../models/page/data.js'
 import PageModel from '../../models/page/model.js'
 import RevisionData from '../../models/revision/data.js'
 import User from '../../models/user/user.js'
 import api from '../../server.js'
 
 import createTestPage from './initializers/create-test-page.js'
+import createTestSearchPages from './initializers/create-test-search-pages.js'
 import getTokens from './initializers/get-tokens.js'
 import doesDiff from './expecters/does-diff.js'
 
@@ -26,21 +26,6 @@ const parseLinks = (header: string): any => {
     }
   })
   return links
-}
-
-const createTestSearchPages = async (editor: User): Promise<void> => {
-  const pages = []
-  for (let i = 1; i <= 15; i++) {
-    const data: PageData = { revisions: [{ content: { title: `Test Page #${i}`, path: `/test-${i}`, body: 'This is a test page.' } }] }
-    if (i > 10) data.trashed = new Date()
-    pages.push(new Page(data))
-  }
-
-  pages.push(new Page({ revisions: [{ content: { title: 'Authenticated Only', path: '/auth', body: 'Authenticated only.' }, permissions: { read: PermissionLevel.authenticated, write: PermissionLevel.authenticated } }] }))
-  pages.push(new Page({ revisions: [{ content: { title: 'Editor Only', path: '/editor', body: 'Editor only.' }, permissions: { read: PermissionLevel.editor, write: PermissionLevel.editor }, editor: editor.getObj() }] }))
-  pages.push(new Page({ revisions: [{ content: { title: 'Admin Only', path: '/admin', body: 'Admin only.' }, permissions: { read: PermissionLevel.admin, write: PermissionLevel.admin } }] }))
-
-  await Promise.all(pages.map(async page => await page.save()))
 }
 
 const testPageLoad = async (base: string, method: string = 'GET', page: Page, auth?: { Authorization: string }): Promise<{ id: any, path: any }> => {
