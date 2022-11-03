@@ -15,19 +15,8 @@ import createTestPage from './initializers/create-test-page.js'
 import createTestSearchPages from './initializers/create-test-search-pages.js'
 import getTokens from './initializers/get-tokens.js'
 import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
+import hasLinkHeader from './expecters/has-link-header.js'
 import doesDiff from './expecters/does-diff.js'
-
-const parseLinks = (header: string): any => {
-  const links: any = {}
-  const coll = header.split(',').map(link => link.trim())
-  coll.forEach(link => {
-    const match = link.match(/<(.*?)>; rel="(.*?)"/i)
-    if (match !== null && match.length > 2) {
-      links[match[2]] = match[1]
-    }
-  })
-  return links
-}
 
 describe('Pages API', () => {
   let pkg: NPMPackage
@@ -97,24 +86,14 @@ describe('Pages API', () => {
       describe('Anonymous calls', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).head(`${base}/pages?${query}`)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '10' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('ignores the trashed element', async () => {
           res = await request(api).head(`${base}/pages?${query}&trashed=true`)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '10' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
       })
 
@@ -126,24 +105,14 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).head(`${base}/pages?${query}`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '11' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('ignores the trashed element', async () => {
           res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '11' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
       })
 
@@ -155,24 +124,14 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).head(`${base}/pages?${query}`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '12' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('ignores the trashed element', async () => {
           res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '12' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
       })
 
@@ -184,24 +143,14 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).head(`${base}/pages?${query}`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '13' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('returns correct status and headers for trashed query', async () => {
           res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '5' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).not.to.include('next')
-          expect(rels).not.to.include('last')
-          expect(rels).to.have.lengthOf(2)
+          hasLinkHeader(res, ['first', 'previous'])
         })
       })
     })
@@ -216,13 +165,8 @@ describe('Pages API', () => {
       describe('Anonymous calls', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).get(`${base}/pages?${query}`)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '10' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('returns your results', async () => {
@@ -235,13 +179,8 @@ describe('Pages API', () => {
 
         it('ignores the trashed element (headers & status)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '10' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('ignores the trashed element (body)', async () => {
@@ -261,13 +200,8 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '11' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('returns your results', async () => {
@@ -280,13 +214,8 @@ describe('Pages API', () => {
 
         it('ignores the trashed element (headers & status)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '11' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('ignores the trashed element (body)', async () => {
@@ -306,13 +235,8 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '12' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('returns your results', async () => {
@@ -325,13 +249,8 @@ describe('Pages API', () => {
 
         it('ignores the trashed element (headers & status)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '12' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('ignores the trashed element (body)', async () => {
@@ -351,13 +270,8 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '13' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).to.include('next')
-          expect(rels).to.include('last')
-          expect(rels).to.have.lengthOf(4)
+          hasLinkHeader(res, ['first', 'previous', 'next', 'last'])
         })
 
         it('returns your results', async () => {
@@ -370,13 +284,8 @@ describe('Pages API', () => {
 
         it('returns correct status and headers for a trashed query', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
-          const rels = Object.keys(parseLinks(res.headers.link))
           hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '5' }))
-          expect(rels).to.include('first')
-          expect(rels).to.include('previous')
-          expect(rels).not.to.include('next')
-          expect(rels).not.to.include('last')
-          expect(rels).to.have.lengthOf(2)
+          hasLinkHeader(res, ['first', 'previous'])
         })
 
         it('returns your results for a trashed query', async () => {
