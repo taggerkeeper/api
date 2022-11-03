@@ -14,6 +14,7 @@ import api from '../../server.js'
 import createTestPage from './initializers/create-test-page.js'
 import createTestSearchPages from './initializers/create-test-search-pages.js'
 import getTokens from './initializers/get-tokens.js'
+import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
 import doesDiff from './expecters/does-diff.js'
 
 const parseLinks = (header: string): any => {
@@ -67,6 +68,10 @@ describe('Pages API', () => {
   describe('/pages', () => {
     const allow = 'OPTIONS, HEAD, GET, POST, DELETE'
     const editor = new User()
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     before(async () => {
       await editor.save()
@@ -78,9 +83,7 @@ describe('Pages API', () => {
       })
 
       it('returns correct status and headers', () => {
-        expect(res.status).to.equal(204)
-        expect(res.headers.allow).to.equal(allow)
-        expect(res.headers['access-control-allow-methods']).to.equal(allow)
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
@@ -95,29 +98,23 @@ describe('Pages API', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).head(`${base}/pages?${query}`)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '10' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('10')
         })
 
         it('ignores the trashed element', async () => {
           res = await request(api).head(`${base}/pages?${query}&trashed=true`)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '10' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('10')
         })
       })
 
@@ -130,29 +127,23 @@ describe('Pages API', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).head(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '11' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('11')
         })
 
         it('ignores the trashed element', async () => {
           res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '11' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('11')
         })
       })
 
@@ -165,29 +156,23 @@ describe('Pages API', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).head(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '12' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('12')
         })
 
         it('ignores the trashed element', async () => {
           res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '12' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('12')
         })
       })
 
@@ -200,29 +185,23 @@ describe('Pages API', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).head(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '13' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('13')
         })
 
         it('returns correct status and headers for trashed query', async () => {
           res = await request(api).head(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, Object.assign({}, headers, { 'x-total-count': '5' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).not.to.include('next')
           expect(rels).not.to.include('last')
           expect(rels).to.have.lengthOf(2)
-          expect(res.headers['x-total-count']).to.equal('5')
         })
       })
     })
@@ -238,15 +217,12 @@ describe('Pages API', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).get(`${base}/pages?${query}`)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(200)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '10' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('10')
         })
 
         it('returns your results', async () => {
@@ -260,15 +236,12 @@ describe('Pages API', () => {
         it('ignores the trashed element (headers & status)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(200)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '10' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('10')
         })
 
         it('ignores the trashed element (body)', async () => {
@@ -289,15 +262,12 @@ describe('Pages API', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(200)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '11' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('11')
         })
 
         it('returns your results', async () => {
@@ -311,15 +281,12 @@ describe('Pages API', () => {
         it('ignores the trashed element (headers & status)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(200)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '11' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('11')
         })
 
         it('ignores the trashed element (body)', async () => {
@@ -340,15 +307,12 @@ describe('Pages API', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(200)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '12' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('12')
         })
 
         it('returns your results', async () => {
@@ -362,15 +326,12 @@ describe('Pages API', () => {
         it('ignores the trashed element (headers & status)', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(200)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '12' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('12')
         })
 
         it('ignores the trashed element (body)', async () => {
@@ -391,15 +352,12 @@ describe('Pages API', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).get(`${base}/pages?${query}`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(200)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '13' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).to.include('next')
           expect(rels).to.include('last')
           expect(rels).to.have.lengthOf(4)
-          expect(res.headers['x-total-count']).to.equal('13')
         })
 
         it('returns your results', async () => {
@@ -413,15 +371,12 @@ describe('Pages API', () => {
         it('returns correct status and headers for a trashed query', async () => {
           res = await request(api).get(`${base}/pages?${query}&trashed=true`).set(auth)
           const rels = Object.keys(parseLinks(res.headers.link))
-          expect(res.status).to.equal(200)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 200, Object.assign({}, headers, { 'x-total-count': '5' }))
           expect(rels).to.include('first')
           expect(rels).to.include('previous')
           expect(rels).not.to.include('next')
           expect(rels).not.to.include('last')
           expect(rels).to.have.lengthOf(2)
-          expect(res.headers['x-total-count']).to.equal('5')
         })
 
         it('returns your results for a trashed query', async () => {
@@ -445,9 +400,7 @@ describe('Pages API', () => {
       })
 
       it('returns correct status and headers', () => {
-        expect(res.status).to.equal(201)
-        expect(res.headers.allow).to.equal(allow)
-        expect(res.headers['access-control-allow-methods']).to.equal(allow)
+        hasStatusAndHeaders(res, 201, headers)
         expect(res.headers.location).not.to.equal(undefined)
       })
 
@@ -480,9 +433,7 @@ describe('Pages API', () => {
       describe('Anonymous calls', () => {
         it('returns correct status and headers', async () => {
           res = await request(api).delete(`${base}/pages`)
-          expect(res.status).to.equal(400)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 400, headers)
         })
 
         it('doesn\'t delete trashed pages', async () => {
@@ -500,9 +451,7 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).delete(`${base}/pages`).set(auth)
-          expect(res.status).to.equal(403)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('doesn\'t delete trashed pages', async () => {
@@ -520,9 +469,7 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).delete(`${base}/pages`).set(auth)
-          expect(res.status).to.equal(403)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('doesn\'t delete trashed pages', async () => {
@@ -540,9 +487,7 @@ describe('Pages API', () => {
 
         it('returns correct status and headers', async () => {
           res = await request(api).delete(`${base}/pages`).set(auth)
-          expect(res.status).to.equal(204)
-          expect(res.headers.allow).to.equal(allow)
-          expect(res.headers['access-control-allow-methods']).to.equal(allow)
+          hasStatusAndHeaders(res, 204, headers)
         })
 
         it('deletes trashed pages', async () => {
@@ -556,6 +501,10 @@ describe('Pages API', () => {
 
   describe('/pages/:pid', () => {
     const allow = 'OPTIONS, HEAD, GET, PUT, DELETE'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     describe('OPTIONS /pages/:pid', () => {
       describe('Anonymous user', () => {
@@ -565,9 +514,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -578,9 +525,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -591,9 +536,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -604,9 +547,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -617,9 +558,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -636,9 +575,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -649,9 +586,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -662,9 +597,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -675,9 +608,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -688,9 +619,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -707,9 +636,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -720,9 +647,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -733,9 +658,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -746,9 +669,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -759,9 +680,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -778,9 +697,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -791,9 +708,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -804,9 +719,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -817,9 +730,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -830,9 +741,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
       })
@@ -854,9 +763,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -866,9 +773,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -884,9 +789,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -896,9 +799,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -914,9 +815,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -926,9 +825,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -944,9 +841,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -956,9 +851,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -966,7 +859,7 @@ describe('Pages API', () => {
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).head(`${base}/pages${path}`)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
         })
       })
 
@@ -987,9 +880,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -999,9 +890,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1017,9 +906,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -1029,9 +916,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1047,9 +932,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -1059,9 +942,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -1077,9 +958,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -1089,9 +968,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -1120,9 +997,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -1132,9 +1007,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1150,9 +1023,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -1162,9 +1033,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1180,9 +1049,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -1192,9 +1059,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1210,9 +1075,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -1222,9 +1085,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -1232,7 +1093,7 @@ describe('Pages API', () => {
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).head(`${base}/pages${path}`).set(auth)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
         })
       })
 
@@ -1253,9 +1114,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -1265,9 +1124,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1283,9 +1140,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -1295,9 +1150,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1313,9 +1166,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -1325,9 +1176,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1343,9 +1192,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -1355,9 +1202,7 @@ describe('Pages API', () => {
             })
 
             it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -1365,7 +1210,7 @@ describe('Pages API', () => {
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).head(`${base}/pages${path}`).set(auth)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
         })
       })
     })
@@ -1385,13 +1230,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1402,13 +1242,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1425,13 +1260,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1441,13 +1271,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1463,13 +1288,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1479,13 +1299,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1501,13 +1316,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1517,13 +1327,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1532,7 +1337,7 @@ describe('Pages API', () => {
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).get(`${base}/pages${path}`)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -1554,13 +1359,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1571,13 +1371,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1594,13 +1389,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1611,13 +1401,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1634,13 +1419,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1650,13 +1430,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1672,13 +1447,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1688,13 +1458,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1725,13 +1490,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1742,13 +1502,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1765,13 +1520,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1782,13 +1532,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1805,13 +1550,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1822,13 +1562,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1845,13 +1580,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1861,13 +1591,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error message', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -1876,7 +1601,7 @@ describe('Pages API', () => {
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).get(`${base}/pages${path}`).set(auth)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -1898,13 +1623,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1915,13 +1635,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1938,13 +1653,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1955,13 +1665,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1978,13 +1683,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -1995,13 +1695,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -2018,13 +1713,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -2035,13 +1725,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${path}`).set(auth)
             })
 
-            it('returns status and headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
-            it('returns content', () => {
+            it('returns the page', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.revisions[0].content.title).to.equal(title)
               expect(res.body.revisions[0].content.body).to.equal(body)
             })
@@ -2051,7 +1736,7 @@ describe('Pages API', () => {
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).get(`${base}/pages${path}`).set(auth)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2069,7 +1754,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
         })
 
@@ -2077,7 +1762,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after?.revisions).to.have.lengthOf(1)
         })
 
@@ -2085,7 +1770,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after?.revisions).to.have.lengthOf(1)
         })
 
@@ -2093,14 +1778,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).send(update)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after?.revisions).to.have.lengthOf(1)
         })
 
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).put(`${base}/pages${path}`).send(update)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2119,7 +1804,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(user.id?.toString())
         })
@@ -2129,7 +1814,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(user.id?.toString())
         })
@@ -2138,7 +1823,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after?.revisions).to.have.lengthOf(1)
         })
 
@@ -2146,14 +1831,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after?.revisions).to.have.lengthOf(1)
         })
 
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2170,7 +1855,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(editor.id?.toString())
         })
@@ -2180,7 +1865,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(editor.id?.toString())
         })
@@ -2190,7 +1875,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(editor.id?.toString())
         })
@@ -2199,14 +1884,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after?.revisions).to.have.lengthOf(1)
         })
 
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2223,7 +1908,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
@@ -2232,7 +1917,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
@@ -2241,7 +1926,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
@@ -2250,7 +1935,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
@@ -2259,7 +1944,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
@@ -2268,7 +1953,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
@@ -2277,7 +1962,7 @@ describe('Pages API', () => {
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
           const after = await loadPageById(pid, admin)
           const mostRecentEditorId = after?.revisions[0].editor?.id
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
@@ -2286,14 +1971,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).put(`${base}/pages${path}`).set(auth).send(update)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2306,7 +1991,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2314,7 +1999,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2322,14 +2007,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
         it('won\'t hard delete a page that only users can edit', async () => {
           const { pid } = await createTestPage([revisions.authWrite])
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2337,7 +2022,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
@@ -2345,7 +2030,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2353,7 +2038,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
@@ -2361,14 +2046,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(401)
+          hasStatusAndHeaders(res, 401, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).delete(`${base}/pages${path}`)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2384,7 +2069,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2392,7 +2077,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2400,7 +2085,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2408,7 +2093,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2416,7 +2101,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
@@ -2424,7 +2109,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2432,7 +2117,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
@@ -2440,14 +2125,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).delete(`${base}/pages${path}`).set(auth)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2463,7 +2148,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2471,7 +2156,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2479,7 +2164,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2487,7 +2172,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2495,7 +2180,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2503,7 +2188,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
@@ -2511,7 +2196,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after?.trashed).to.equal(undefined)
         })
 
@@ -2519,14 +2204,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
           expect(after).to.be.an.instanceOf(Page)
         })
 
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).delete(`${base}/pages${path}`).set(auth)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2542,7 +2227,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2550,7 +2235,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.anyone])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.equal(null)
         })
 
@@ -2558,7 +2243,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2566,7 +2251,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.equal(null)
         })
 
@@ -2574,7 +2259,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2582,7 +2267,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.equal(null)
         })
 
@@ -2590,7 +2275,7 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after?.trashed).to.be.an.instanceOf(Date)
         })
 
@@ -2598,14 +2283,14 @@ describe('Pages API', () => {
           const { pid } = await createTestPage([revisions.adminWrite])
           res = await request(api).delete(`${base}/pages/${pid}?hard=true`).set(auth)
           const after = await loadPageById(pid, admin)
-          expect(res.status).to.equal(200)
+          hasStatusAndHeaders(res, 200, headers)
           expect(after).to.equal(null)
         })
 
         it('catches an invalid path', async () => {
           const path = '/login'
           const res = await request(api).delete(`${base}/pages${path}`).set(auth)
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.path).to.equal(path)
           expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
         })
@@ -2615,6 +2300,10 @@ describe('Pages API', () => {
 
   describe('/pages/:pid/revisions', () => {
     const allow = 'OPTIONS, HEAD, GET'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     describe('OPTIONS /pages/:pid/revisions', () => {
       describe('Anonymous user', () => {
@@ -2624,9 +2313,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -2637,9 +2324,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2650,9 +2335,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -2663,9 +2346,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -2676,9 +2357,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -2695,9 +2374,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -2708,9 +2385,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2721,9 +2396,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2734,9 +2407,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -2747,9 +2418,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -2766,9 +2435,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -2779,9 +2446,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2792,9 +2457,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2805,9 +2468,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2818,9 +2479,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -2837,9 +2496,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -2850,9 +2507,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2863,9 +2518,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2876,9 +2529,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -2889,9 +2540,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
       })
@@ -2905,9 +2554,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -2918,9 +2565,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -2931,9 +2576,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -2944,9 +2587,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -2957,9 +2598,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -2976,9 +2615,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -2989,9 +2626,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -3002,9 +2637,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -3015,9 +2648,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -3028,9 +2659,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -3047,9 +2676,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -3060,9 +2687,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -3073,9 +2698,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -3086,9 +2709,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -3099,9 +2720,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -3118,9 +2737,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -3131,9 +2748,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -3144,9 +2759,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -3157,9 +2770,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
 
@@ -3170,9 +2781,7 @@ describe('Pages API', () => {
           })
 
           it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 200, headers)
           })
         })
       })
@@ -3185,13 +2794,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/login/revisions`)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -3203,13 +2807,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3224,13 +2823,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
-          it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 404, headers)
             expect(res.body.message).to.equal('Page not found.')
           })
         })
@@ -3241,13 +2835,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
-          it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 404, headers)
             expect(res.body.message).to.equal('Page not found.')
           })
         })
@@ -3258,13 +2847,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`)
           })
 
-          it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 404, headers)
             expect(res.body.message).to.equal('Page not found.')
           })
         })
@@ -3281,13 +2865,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/login/revisions`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -3299,13 +2878,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3320,13 +2894,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3341,13 +2910,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 404, headers)
             expect(res.body.message).to.equal('Page not found.')
           })
         })
@@ -3358,13 +2922,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 404, headers)
             expect(res.body.message).to.equal('Page not found.')
           })
         })
@@ -3381,13 +2940,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/login/revisions`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -3399,13 +2953,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3420,13 +2969,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3441,13 +2985,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3462,13 +3001,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 404, headers)
             expect(res.body.message).to.equal('Page not found.')
           })
         })
@@ -3485,13 +3019,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/login/revisions`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -3503,13 +3032,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3524,13 +3048,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3545,13 +3064,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3566,13 +3080,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/${pid}/revisions`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the page\'s revisions', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(Array.isArray(res.body)).to.equal(true)
             expect(res.body).to.have.lengthOf(1)
             expect(res.body[0].content.title).to.equal('New Page')
@@ -3586,6 +3095,10 @@ describe('Pages API', () => {
 
   describe('/pages/:pid/revisions/:revision', () => {
     const allow = 'OPTIONS, HEAD, GET, PUT'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     describe('OPTIONS /pages/:pid/revisions/:revision', () => {
       describe('Anonymous user', () => {
@@ -3595,9 +3108,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -3608,9 +3119,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3621,9 +3130,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -3634,9 +3141,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -3647,9 +3152,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -3666,9 +3169,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -3679,9 +3180,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3692,9 +3191,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3705,9 +3202,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
 
@@ -3718,9 +3213,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -3737,9 +3230,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -3750,9 +3241,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3763,9 +3252,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3776,9 +3263,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3789,9 +3274,7 @@ describe('Pages API', () => {
           })
 
           it('returns 404 and correct headers', () => {
-            expect(res.status).to.equal(404)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 404, headers)
           })
         })
       })
@@ -3808,9 +3291,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -3821,9 +3302,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3834,9 +3313,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3847,9 +3324,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
 
@@ -3860,9 +3335,7 @@ describe('Pages API', () => {
           })
 
           it('returns 204 and correct headers', () => {
-            expect(res.status).to.equal(204)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 204, headers)
           })
         })
       })
@@ -3878,9 +3351,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -3895,9 +3366,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -3907,9 +3376,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -3919,9 +3386,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -3937,9 +3402,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -3949,9 +3412,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -3961,9 +3422,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -3979,9 +3438,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -3991,9 +3448,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4003,9 +3458,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -4021,9 +3474,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4033,9 +3484,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4045,9 +3494,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -4065,9 +3512,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -4082,9 +3527,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4094,9 +3537,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4106,9 +3547,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4124,9 +3563,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4136,9 +3573,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4148,9 +3583,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4166,9 +3599,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4178,9 +3609,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4190,9 +3619,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -4208,9 +3635,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4220,9 +3645,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4232,9 +3655,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -4252,9 +3673,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -4269,9 +3688,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4281,9 +3698,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4293,9 +3708,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4311,9 +3724,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4323,9 +3734,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4335,9 +3744,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4353,9 +3760,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4365,9 +3770,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4377,9 +3780,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4395,9 +3796,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4407,9 +3806,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
 
@@ -4419,9 +3816,7 @@ describe('Pages API', () => {
             })
 
             it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 404, headers)
             })
           })
         })
@@ -4439,9 +3834,7 @@ describe('Pages API', () => {
           })
 
           it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
+            hasStatusAndHeaders(res, 400, headers)
           })
         })
 
@@ -4456,9 +3849,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4468,9 +3859,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4480,9 +3869,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4498,9 +3885,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4510,9 +3895,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4522,9 +3905,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4540,9 +3921,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4552,9 +3931,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4564,9 +3941,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4582,9 +3957,7 @@ describe('Pages API', () => {
             })
 
             it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 400, headers)
             })
           })
 
@@ -4594,9 +3967,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
 
@@ -4606,9 +3977,7 @@ describe('Pages API', () => {
             })
 
             it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
+              hasStatusAndHeaders(res, 200, headers)
             })
           })
         })
@@ -4624,13 +3993,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/login/revisions/1`)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -4646,13 +4010,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -4662,13 +4021,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -4684,13 +4038,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.anyoneUpdate))
             })
           })
@@ -4706,13 +4055,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4722,13 +4066,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4738,13 +4077,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4760,13 +4094,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4776,13 +4105,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4792,13 +4116,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4814,13 +4133,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4830,13 +4144,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4846,13 +4155,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -4870,13 +4174,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/login/revisions/1`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -4892,13 +4191,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -4908,13 +4202,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -4930,13 +4219,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.anyoneUpdate))
             })
           })
@@ -4952,13 +4236,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -4968,13 +4247,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -4990,13 +4264,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.authUpdate))
             })
           })
@@ -5012,13 +4281,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5028,13 +4292,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5044,13 +4303,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5066,13 +4320,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5082,13 +4331,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5098,13 +4342,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5122,13 +4361,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/login/revisions/1`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -5144,13 +4378,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -5160,13 +4389,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -5182,13 +4406,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.anyoneUpdate))
             })
           })
@@ -5204,13 +4423,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -5220,13 +4434,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -5242,13 +4451,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.authUpdate))
             })
           })
@@ -5264,13 +4468,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -5280,13 +4479,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -5302,13 +4496,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.editorUpdate))
             })
           })
@@ -5324,13 +4513,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5340,13 +4524,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5356,13 +4535,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 404 and correct headers', () => {
-              expect(res.status).to.equal(404)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 404, headers)
               expect(res.body.message).to.equal('Page not found.')
             })
           })
@@ -5380,13 +4554,8 @@ describe('Pages API', () => {
             res = await request(api).get(`${base}/pages/login/revisions/1`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -5402,13 +4571,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -5418,13 +4582,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -5440,13 +4599,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.anyoneUpdate))
             })
           })
@@ -5462,13 +4616,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -5478,13 +4627,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -5500,13 +4644,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.authUpdate))
             })
           })
@@ -5522,13 +4661,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -5538,13 +4672,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -5560,13 +4689,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.editorUpdate))
             })
           })
@@ -5582,13 +4706,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/3`).set(auth)
             })
 
-            it('returns 400 and correct headers', () => {
-              expect(res.status).to.equal(400)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns an error', () => {
+              hasStatusAndHeaders(res, 400, headers)
               expect(res.body.message).to.equal('3 is not a valid number for any revision of this page. Please provide a number between 1 and 2.')
             })
           })
@@ -5598,13 +4717,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the revision requested', () => {
+              hasStatusAndHeaders(res, 200, headers)
               expect(res.body.content.title).to.equal(revisions.anyone.content.title)
               expect(res.body.content.path).to.equal('/new-page')
               expect(res.body.content.body).to.equal(revisions.anyone.content.body)
@@ -5620,13 +4734,8 @@ describe('Pages API', () => {
               res = await request(api).get(`${base}/pages/${pid}/revisions/1?compare=2`).set(auth)
             })
 
-            it('returns 200 and correct headers', () => {
-              expect(res.status).to.equal(200)
-              expect(res.headers.allow).to.equal(allow)
-              expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            })
-
             it('returns the difference', () => {
+              hasStatusAndHeaders(res, 200, headers)
               doesDiff(res.body, new Revision(revisions.anyone), new Revision(revisions.adminUpdate))
             })
           })
@@ -5641,13 +4750,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/login/revisions/1`)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -5659,13 +4763,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5677,14 +4776,9 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
-          it('returns 401 and correct headers', () => {
-            expect(res.status).to.equal(401)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            expect(res.headers['www-authenticate']).to.equal('Bearer error="invalid_token" error_description="The access token could not be verified."')
-          })
-
           it('returns an error', () => {
+            const authenticate = 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+            hasStatusAndHeaders(res, 401, Object.assign({}, headers, { 'www-authenticate': authenticate }))
             expect(res.body.message).to.equal('This method requires authentication.')
           })
         })
@@ -5695,14 +4789,9 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
-          it('returns 401 and correct headers', () => {
-            expect(res.status).to.equal(401)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            expect(res.headers['www-authenticate']).to.equal('Bearer error="invalid_token" error_description="The access token could not be verified."')
-          })
-
           it('returns an error', () => {
+            const authenticate = 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+            hasStatusAndHeaders(res, 401, Object.assign({}, headers, { 'www-authenticate': authenticate }))
             expect(res.body.message).to.equal('This method requires authentication.')
           })
         })
@@ -5713,14 +4802,9 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`)
           })
 
-          it('returns 401 and correct headers', () => {
-            expect(res.status).to.equal(401)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-            expect(res.headers['www-authenticate']).to.equal('Bearer error="invalid_token" error_description="The access token could not be verified."')
-          })
-
           it('returns an error', () => {
+            const authenticate = 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+            hasStatusAndHeaders(res, 401, Object.assign({}, headers, { 'www-authenticate': authenticate }))
             expect(res.body.message).to.equal('This method requires authentication.')
           })
         })
@@ -5737,13 +4821,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/login/revisions/1`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -5755,13 +4834,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5773,13 +4847,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5791,13 +4860,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 403 and correct headers', () => {
-            expect(res.status).to.equal(403)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 403, headers)
             expect(res.body.message).to.equal('You do not have permission to update this page.')
           })
         })
@@ -5808,13 +4872,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 403 and correct headers', () => {
-            expect(res.status).to.equal(403)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 403, headers)
             expect(res.body.message).to.equal('You do not have permission to update this page.')
           })
         })
@@ -5831,13 +4890,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/login/revisions/1`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -5849,13 +4903,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5867,13 +4916,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5885,13 +4929,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5903,13 +4942,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 403 and correct headers', () => {
-            expect(res.status).to.equal(403)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 403, headers)
             expect(res.body.message).to.equal('You do not have permission to update this page.')
           })
         })
@@ -5926,13 +4960,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/login/revisions/1`).set(auth)
           })
 
-          it('returns 400 and correct headers', () => {
-            expect(res.status).to.equal(400)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns an error', () => {
+            hasStatusAndHeaders(res, 400, headers)
             expect(res.body.message).to.equal('First element cannot be any of login, logout, dashboard, or connect.')
             expect(res.body.path).to.equal('/login')
           })
@@ -5944,13 +4973,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5962,13 +4986,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5980,13 +4999,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })
@@ -5998,13 +5012,8 @@ describe('Pages API', () => {
             res = await request(api).put(`${base}/pages/${pid}/revisions/1`).set(auth)
           })
 
-          it('returns 200 and correct headers', () => {
-            expect(res.status).to.equal(200)
-            expect(res.headers.allow).to.equal(allow)
-            expect(res.headers['access-control-allow-methods']).to.equal(allow)
-          })
-
           it('returns the updated page', () => {
+            hasStatusAndHeaders(res, 200, headers)
             expect(res.body.revisions).to.have.lengthOf(3)
             expect(res.body.revisions[0].msg).to.equal('Rolling back to revision #1')
           })

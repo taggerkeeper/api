@@ -11,6 +11,8 @@ import getEnvVar from '../../utils/get-env-var.js'
 import parseCookie, { CookieInfo } from '../../parse/cookie.js'
 import api from '../../server.js'
 
+import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
+
 describe('Tokens API', () => {
   let pkg: NPMPackage
   let base: string
@@ -40,57 +42,63 @@ describe('Tokens API', () => {
   })
 
   describe('/tokens', () => {
+    const allow = 'OPTIONS, POST'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
+
     describe('OPTIONS /tokens', () => {
       beforeEach(async () => {
         res = await request(api).options(`${base}/tokens`)
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, POST')
-      })
-
-      it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, POST')
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
     describe('POST /tokens', () => {
-      it('returns 400 if not given all necessary fields', async () => {
-        const responses = await Promise.all([
-          request(api).post(`${base}/tokens`),
-          request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr }),
-          request(api).post(`${base}/tokens`).send({ password })
-        ])
-        expect(responses.map(res => res.status).join(' ')).to.equal('400 400 400')
+      it('returns an error if not given any data', async () => {
+        res = await request(api).post(`${base}/tokens`)
+        hasStatusAndHeaders(res, 400, headers)
       })
 
-      it('returns 400 if not given valid credentials', async () => {
-        const responses = await Promise.all([
-          request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password: 'lolnope' }),
-          request(api).post(`${base}/tokens`).send({ addr: 'nothere@testing.com', password })
-        ])
-        expect(responses.map(res => res.status).join(' ')).to.equal('400 400')
+      it('returns an error if only given an address', async () => {
+        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr })
+        hasStatusAndHeaders(res, 400, headers)
       })
 
-      it('returns 400 if given a valid email/password combination but the email isn\'t verified', async () => {
+      it('returns an error if only given a password', async () => {
+        res = await request(api).post(`${base}/tokens`).send({ password })
+        hasStatusAndHeaders(res, 400, headers)
+      })
+
+      it('returns an error if the password is wrong', async () => {
+        res = await request(api).post(`${base}/tokens`).send({ addr: verifiedData.emails[0].addr, password: 'lolnope' })
+        hasStatusAndHeaders(res, 400, headers)
+      })
+
+      it('returns an error if the email is wrong', async () => {
+        res = await request(api).post(`${base}/tokens`).send({ addr: 'nothere@testing.com', password })
+        hasStatusAndHeaders(res, 400, headers)
+      })
+
+      it('returns an error if the email isn\'t verified', async () => {
         res = await request(api).post(`${base}/tokens`).send({ addr: unverifiedData.emails[0].addr, password })
-        expect(res.status).to.equal(400)
+        hasStatusAndHeaders(res, 400, headers)
       })
 
-      it('returns 400 if not given a passcode when OTP is enabled', async () => {
+      it('returns an error if OTP is enabled but no passcode is provided', async () => {
         res = await request(api).post(`${base}/tokens`).send({ addr: enabledData.emails[0].addr, password })
-        expect(res.status).to.equal(400)
+        hasStatusAndHeaders(res, 400, headers)
       })
 
-      it('returns 400 if given a bad passcode when OTP is enabled', async () => {
+      it('returns an error if OTP is enabled and a bad passcode is provided', async () => {
         const valid = speakeasy.totp({ secret: enabledData.otp.secret, encoding: 'base32' })
         const passcode = valid === 'nope' ? 'lolnope' : 'nope'
         res = await request(api).post(`${base}/tokens`).send({ addr: enabledData.emails[0].addr, password, passcode })
-        expect(res.status).to.equal(400)
+        hasStatusAndHeaders(res, 400, headers)
       })
 
       it('authenticates the user if given a valid, verified email/password combination', async () => {
@@ -98,7 +106,7 @@ describe('Tokens API', () => {
         const accessObj = jwt.verify(res.body.token, secret) as any
         const cookie = parseCookie(res.headers['set-cookie'][0])
         const cookieObj = jwt.verify(cookie?.value ?? '', secret) as any
-        expect(res.status).to.equal(200)
+        hasStatusAndHeaders(res, 200, headers)
         expect(res.body.token).to.be.a('string')
         expect(accessObj.name).to.equal(verifiedData.name)
         expect(cookie?.name).to.equal('refresh')
@@ -109,7 +117,7 @@ describe('Tokens API', () => {
       it('authenticates if given a valid passcode when OTP is enabled', async () => {
         const passcode = speakeasy.totp({ secret: enabledData.otp.secret, encoding: 'base32' })
         res = await request(api).post(`${base}/tokens`).send({ addr: enabledData.emails[0].addr, password, passcode })
-        expect(res.status).to.equal(200)
+        hasStatusAndHeaders(res, 200, headers)
       })
     })
   })
@@ -117,6 +125,11 @@ describe('Tokens API', () => {
   describe('/tokens/:uid', () => {
     let user: User
     let auth: { Authorization: string }
+    const allow = 'OPTIONS, PUT'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     beforeEach(async () => {
       user = users[0]
@@ -132,16 +145,8 @@ describe('Tokens API', () => {
         res = await request(api).options(`${base}/tokens/${id ?? ''}`).send({ refresh })
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, PUT')
-      })
-
-      it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, PUT')
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
@@ -153,11 +158,8 @@ describe('Tokens API', () => {
           res = await request(api).put(path).set(auth)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
-        })
-
         it('provides an error message', () => {
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.message).to.equal('This method requires a body with elements \'refresh\'')
         })
       })
@@ -169,11 +171,9 @@ describe('Tokens API', () => {
           res = await request(api).put(path).send({ refresh: refresh === '111' ? '000' : '111' }).set(auth)
         })
 
-        it('returns 401', () => {
-          expect(res.status).to.equal(401)
-        })
-
         it('provides an error message', () => {
+          const authenticate = 'Bearer error="invalid_token" error_description="The access token could not be verified."'
+          hasStatusAndHeaders(res, 401, Object.assign({}, headers, { 'www-authenticate': authenticate }))
           expect(res.body.message).to.equal('Could not verify refresh token.')
         })
       })
@@ -192,23 +192,11 @@ describe('Tokens API', () => {
           cookieObject = jwt.verify(cookie?.value ?? '', secret) as any
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
-        it('returns an access token', () => {
+        it('returns an access token and refresh token', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.token).to.be.a('string')
-        })
-
-        it('returns a JSON web token with the user\'s data', () => {
           expect(accessObject.name).to.equal(user.name)
-        })
-
-        it('returns a refresh token as a cookie', () => {
           expect(cookie?.name).to.equal('refresh')
-        })
-
-        it('returns a JSON web token as a cookie', () => {
           expect(cookieObject.uid).to.equal(user.id)
           expect(cookieObject.refresh).not.to.equal(undefined)
         })

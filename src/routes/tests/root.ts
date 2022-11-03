@@ -5,6 +5,8 @@ import loadPackage, { NPMPackage } from '../../utils/load-package.js'
 import getAPIInfo from '../../utils/get-api-info.js'
 import api from '../../server.js'
 
+import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
+
 const clearDatabase = async (): Promise<void> => {
   await Promise.all(Object.values(mongoose.connection.collections).map(async (coll) => { await coll.deleteMany({}) }))
 }
@@ -18,6 +20,12 @@ describe('API Root', () => {
   let root: string
   let res: any
 
+  const allow = 'OPTIONS, GET'
+  const headers = {
+    allow,
+    'access-control-allow-methods': allow
+  }
+
   beforeEach(async () => {
     pkg = await loadPackage() as NPMPackage
     const info = getAPIInfo(pkg)
@@ -30,16 +38,8 @@ describe('API Root', () => {
       res = await request(api).options(base)
     })
 
-    it('returns 204', () => {
-      expect(res.status).to.equal(204)
-    })
-
-    it('returns Allow header', () => {
-      expect(res.headers.allow).to.equal('OPTIONS, GET')
-    })
-
-    it('returns Access-Control-Allow-Methods header', () => {
-      expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, GET')
+    it('returns status and headers', () => {
+      hasStatusAndHeaders(res, 204, headers)
     })
   })
 
@@ -48,8 +48,8 @@ describe('API Root', () => {
       res = await request(api).head(base)
     })
 
-    it('returns 204', () => {
-      expect(res.status).to.equal(204)
+    it('returns status and headers', () => {
+      hasStatusAndHeaders(res, 204, headers)
     })
   })
 
@@ -58,8 +58,8 @@ describe('API Root', () => {
       res = await request(api).get(base)
     })
 
-    it('returns 200', () => {
-      expect(res.status).to.equal(200)
+    it('returns status and headers', () => {
+      hasStatusAndHeaders(res, 200, headers)
     })
 
     it('directs user to documentation', () => {

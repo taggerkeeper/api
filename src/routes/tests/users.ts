@@ -8,6 +8,7 @@ import getAPIInfo from '../../utils/get-api-info.js'
 import api from '../../server.js'
 
 import getTokens from './initializers/get-tokens.js'
+import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
 import isUser from './expecters/is-user.js'
 import isEmailArr from './expecters/is-email-arr.js'
 
@@ -29,102 +30,69 @@ describe('Users API', () => {
   })
 
   describe('/users', () => {
+    const allow = 'OPTIONS, POST'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
+
     describe('OPTIONS /users', () => {
       beforeEach(async () => {
         res = await request(api).options(`${base}/users`)
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, POST')
-      })
-
-      it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, POST')
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
     describe('POST /users', () => {
-      it('returns 400 if there\'s no body', async () => {
-        res = await request(api).post(`${base}/users`)
-        expect(res.status).to.equal(400)
-      })
-
       it('returns an error message if there\'s no body', async () => {
         res = await request(api).post(`${base}/users`)
+        hasStatusAndHeaders(res, 400, headers)
         expect(res.body.message).to.equal('This method requires a body with elements \'name\', \'email\', and \'password\'')
-      })
-
-      it('returns 400 if there\'s only a name', async () => {
-        res = await request(api).post(`${base}/users`).send({ name })
-        expect(res.status).to.equal(400)
       })
 
       it('returns an error message if there\'s only a name', async () => {
         res = await request(api).post(`${base}/users`).send({ name })
+        hasStatusAndHeaders(res, 400, headers)
         expect(res.body.message).to.equal('This method requires a body with elements \'email\' and \'password\'')
-      })
-
-      it('returns 400 if there\'s only an email', async () => {
-        res = await request(api).post(`${base}/users`).send({ email })
-        expect(res.status).to.equal(400)
       })
 
       it('returns an error message if there\'s only an email', async () => {
         res = await request(api).post(`${base}/users`).send({ email })
+        hasStatusAndHeaders(res, 400, headers)
         expect(res.body.message).to.equal('This method requires a body with elements \'name\' and \'password\'')
-      })
-
-      it('returns 400 if there\'s only a password', async () => {
-        res = await request(api).post(`${base}/users`).send({ password })
-        expect(res.status).to.equal(400)
       })
 
       it('returns an error message if there\'s only a password', async () => {
         res = await request(api).post(`${base}/users`).send({ password })
+        hasStatusAndHeaders(res, 400, headers)
         expect(res.body.message).to.equal('This method requires a body with elements \'name\' and \'email\'')
-      })
-
-      it('returns 400 if there\'s only a name and an email', async () => {
-        res = await request(api).post(`${base}/users`).send({ name, email })
-        expect(res.status).to.equal(400)
       })
 
       it('returns an error message if there\'s only a name and an email', async () => {
         res = await request(api).post(`${base}/users`).send({ name, email })
+        hasStatusAndHeaders(res, 400, headers)
         expect(res.body.message).to.equal('This method requires a body with elements \'password\'')
-      })
-
-      it('returns 400 if there\'s only a name and a password', async () => {
-        res = await request(api).post(`${base}/users`).send({ name, password })
-        expect(res.status).to.equal(400)
       })
 
       it('returns an error message if there\'s only a name and a password', async () => {
         res = await request(api).post(`${base}/users`).send({ name, password })
+        hasStatusAndHeaders(res, 400, headers)
         expect(res.body.message).to.equal('This method requires a body with elements \'email\'')
-      })
-
-      it('returns 400 if there\'s only an email and a password', async () => {
-        res = await request(api).post(`${base}/users`).send({ email, password })
-        expect(res.status).to.equal(400)
       })
 
       it('returns an error message if there\'s only an email and a password', async () => {
         res = await request(api).post(`${base}/users`).send({ email, password })
+        hasStatusAndHeaders(res, 400, headers)
         expect(res.body.message).to.equal('This method requires a body with elements \'name\'')
-      })
-
-      it('returns 201 if everything works', async () => {
-        res = await request(api).post(`${base}/users`).send({ name, email, password })
-        expect(res.status).to.equal(201)
       })
 
       it('returns a user object if everything works', async () => {
         res = await request(api).post(`${base}/users`).send({ name, email, password })
+        hasStatusAndHeaders(res, 201, headers)
+        expect(res.headers.location.startsWith(`${root}/users/`)).to.equal(true)
         isUser(res.body, { name, active: true, admin: false })
       })
 
@@ -138,6 +106,11 @@ describe('Users API', () => {
 
   describe('/users/:uid', () => {
     let user: UserData
+    const allow = 'OPTIONS, HEAD, GET, PUT'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     beforeEach(async () => {
       user = await UserModel.create({ name })
@@ -148,16 +121,8 @@ describe('Users API', () => {
         res = await request(api).options(`${base}/users/${user._id?.toString() ?? 'fail'}`)
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, HEAD, GET, PUT')
-      })
-
-      it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, HEAD, GET, PUT')
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
@@ -166,8 +131,8 @@ describe('Users API', () => {
         res = await request(api).head(`${base}/users/${user._id?.toString() ?? 'fail'}`)
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
@@ -176,11 +141,8 @@ describe('Users API', () => {
         res = await request(api).get(`${base}/users/${user._id?.toString() ?? 'fail'}`)
       })
 
-      it('returns 200', () => {
-        expect(res.status).to.equal(200)
-      })
-
       it('returns a user object', () => {
+        hasStatusAndHeaders(res, 200, headers)
         isUser(res.body, { name, active: true, admin: false })
       })
     })
@@ -197,11 +159,8 @@ describe('Users API', () => {
           res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('sends the user\'s updated data, including the new name', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.name).to.equal(name)
         })
 
@@ -221,11 +180,8 @@ describe('Users API', () => {
           res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('sends the user\'s updated data, including the new name', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.name).to.equal(name)
         })
 
@@ -245,11 +201,8 @@ describe('Users API', () => {
           res = await request(api).put(`${base}/users/${user.id ?? ''}`).set(auth).send({ name, password })
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
         it('sends an error message', () => {
+          hasStatusAndHeaders(res, 403, headers)
           expect(res.body.message).to.equal('This method requires authentication by the subject or an administrator.')
         })
 
@@ -267,11 +220,8 @@ describe('Users API', () => {
           res = await request(api).put(`${base}/users/${user.id ?? ''}`).send({ name, password })
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
-        })
-
         it('sends an error message', () => {
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.message).to.equal('This method requires authentication.')
         })
 
@@ -290,14 +240,17 @@ describe('Users API', () => {
     const verified = true
     const emails = [{ addr, verified }]
     const user = new User({ name: 'Subject', emails })
+    const allow = 'OPTIONS, HEAD, GET, POST'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     beforeEach(async () => {
       await user.save()
     })
 
     describe('OPTIONS /users/:uid/emails', () => {
-      const expected = 'OPTIONS, HEAD, GET, POST'
-
       describe('Self calls', () => {
         beforeEach(async () => {
           const { access } = await getTokens({ user })
@@ -305,16 +258,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 204', () => {
-          expect(res.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 204, headers)
         })
       })
 
@@ -325,16 +270,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 204', () => {
-          expect(res.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 204, headers)
         })
       })
 
@@ -345,16 +282,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 403, headers)
         })
       })
 
@@ -363,16 +292,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
       })
     })
@@ -385,15 +306,9 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns an array of your emails', () => {
+          hasStatusAndHeaders(res, 200, headers)
           isEmailArr(res.body, [{ addr, verified }])
-        })
-
-        it('does not send verification codes', () => {
           expect(res.body[0].code).to.equal(undefined)
         })
       })
@@ -405,15 +320,9 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns an array of the user\'s emails', () => {
+          hasStatusAndHeaders(res, 200, headers)
           isEmailArr(res.body, [{ addr, verified }])
-        })
-
-        it('does not send verification codes', () => {
           expect(res.body[0].code).to.equal(undefined)
         })
       })
@@ -425,11 +334,8 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
         it('does not return the user\'s emails', () => {
+          hasStatusAndHeaders(res, 403, headers)
           expect(Array.isArray(res.body)).to.equal(false)
         })
       })
@@ -439,11 +345,8 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
-        })
-
         it('does not return the user\'s emails', () => {
+          hasStatusAndHeaders(res, 400, headers)
           expect(Array.isArray(res.body)).to.equal(false)
         })
       })
@@ -458,7 +361,7 @@ describe('Users API', () => {
         })
 
         it('returns 204', () => {
-          expect(res.status).to.equal(204)
+          hasStatusAndHeaders(res, 204, headers)
         })
       })
 
@@ -470,7 +373,7 @@ describe('Users API', () => {
         })
 
         it('returns 204', () => {
-          expect(res.status).to.equal(204)
+          hasStatusAndHeaders(res, 204, headers)
         })
       })
 
@@ -482,7 +385,7 @@ describe('Users API', () => {
         })
 
         it('returns 403', () => {
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
         })
       })
 
@@ -491,8 +394,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
+        it('returns 401', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
       })
     })
@@ -507,19 +410,10 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
-        it('returns 201', () => {
-          expect(res.status).to.equal(201)
-        })
-
         it('returns an array of your emails', () => {
-          isEmailArr(res.body, [{ addr, verified }, { addr: email, verified: false }])
-        })
-
-        it('provides a Location header', () => {
+          hasStatusAndHeaders(res, 201, headers)
           expect(res.headers.location).to.equal(`${root}/users/${user.id ?? ''}/emails/${email}`)
-        })
-
-        it('does not send verification codes', () => {
+          isEmailArr(res.body, [{ addr, verified }, { addr: email, verified: false }])
           expect(res.body[0].code).to.equal(undefined)
           expect(res.body[1].code).to.equal(undefined)
         })
@@ -532,19 +426,10 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
-        it('returns 201', () => {
-          expect(res.status).to.equal(201)
-        })
-
         it('returns an array of the user\'s emails', () => {
+          hasStatusAndHeaders(res, 201, headers)
           isEmailArr(res.body, [{ addr, verified }, { addr: email, verified: false }])
-        })
-
-        it('provides a Location header', () => {
           expect(res.headers.location).to.equal(`${root}/users/${user.id ?? ''}/emails/${email}`)
-        })
-
-        it('does not send verification codes', () => {
           expect(res.body[0].code).to.equal(undefined)
           expect(res.body[1].code).to.equal(undefined)
         })
@@ -557,11 +442,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).set(auth).send({ email })
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
         it('does not return the user\'s emails', () => {
+          hasStatusAndHeaders(res, 403, headers)
           expect(Array.isArray(res.body)).to.equal(false)
         })
       })
@@ -571,11 +453,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/emails`).send({ email })
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
-        })
-
         it('does not return the user\'s emails', () => {
+          hasStatusAndHeaders(res, 400, headers)
           expect(Array.isArray(res.body)).to.equal(false)
         })
       })
@@ -587,14 +466,17 @@ describe('Users API', () => {
     const verified = true
     const emails = [{ addr, verified }]
     const user = new User({ name: 'Subject', emails })
+    const allow = 'OPTIONS, HEAD, GET, PUT, DELETE'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     beforeEach(async () => {
       await user.save()
     })
 
     describe('OPTIONS /users/:uid/emails/:addr', () => {
-      const expected = 'OPTIONS, HEAD, GET, PUT, DELETE'
-
       describe('Self calls', () => {
         beforeEach(async () => {
           const { access } = await getTokens({ user })
@@ -602,16 +484,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 204', () => {
-          expect(res.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 204, headers)
         })
       })
 
@@ -622,16 +496,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 204', () => {
-          expect(res.status).to.equal(204)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 204, headers)
         })
       })
 
@@ -642,16 +508,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 403, headers)
         })
       })
 
@@ -660,16 +518,8 @@ describe('Users API', () => {
           res = await request(api).options(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
-        })
-
-        it('returns Allow header', () => {
-          expect(res.headers.allow).to.equal(expected)
-        })
-
-        it('returns Access-Control-Allow-Methods header', () => {
-          expect(res.headers['access-control-allow-methods']).to.equal(expected)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
       })
     })
@@ -682,16 +532,10 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the email', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.addr).to.equal(addr)
           expect(res.body.verified).to.equal(verified)
-        })
-
-        it('does not return the verification code', () => {
           expect(res.body.code).to.equal(undefined)
         })
       })
@@ -703,16 +547,10 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the email', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.addr).to.equal(addr)
           expect(res.body.verified).to.equal(verified)
-        })
-
-        it('does not return the verification code', () => {
           expect(res.body.code).to.equal(undefined)
         })
       })
@@ -724,11 +562,8 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
         it('doesn\'t return the email', () => {
+          hasStatusAndHeaders(res, 403, headers)
           expect(res.body.addr).to.equal(undefined)
           expect(res.body.verified).to.equal(undefined)
         })
@@ -739,11 +574,8 @@ describe('Users API', () => {
           res = await request(api).get(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
-        })
-
         it('doesn\'t return the email', () => {
+          hasStatusAndHeaders(res, 400, headers)
           expect(res.body.addr).to.equal(undefined)
           expect(res.body.verified).to.equal(undefined)
         })
@@ -758,12 +590,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 204', () => {
-          expect(res.status).to.equal(204)
-        })
-
-        it('doesn\'t return any content', () => {
-          expect(JSON.stringify(res.body)).to.equal('{}')
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 204, headers)
         })
       })
 
@@ -774,12 +602,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 204', () => {
-          expect(res.status).to.equal(204)
-        })
-
-        it('doesn\'t return any content', () => {
-          expect(JSON.stringify(res.body)).to.equal('{}')
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 204, headers)
         })
       })
 
@@ -790,12 +614,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
-        it('doesn\'t return any content', () => {
-          expect(JSON.stringify(res.body)).to.equal('{}')
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 403, headers)
         })
       })
 
@@ -804,12 +624,8 @@ describe('Users API', () => {
           res = await request(api).head(`${base}/users/${user.id ?? ''}/emails/${addr}`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
-        })
-
-        it('doesn\'t return any content', () => {
-          expect(JSON.stringify(res.body)).to.equal('{}')
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
       })
     })
@@ -829,16 +645,10 @@ describe('Users API', () => {
           res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the verified email record', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.addr).to.equal(addr)
           expect(res.body.verified).to.equal(true)
-        })
-
-        it('does not return the verification code', () => {
           expect(res.body.code).to.equal(undefined)
         })
 
@@ -857,16 +667,10 @@ describe('Users API', () => {
           res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the verified email record', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.addr).to.equal(addr)
           expect(res.body.verified).to.equal(true)
-        })
-
-        it('does not return the verification code', () => {
           expect(res.body.code).to.equal(undefined)
         })
 
@@ -885,8 +689,8 @@ describe('Users API', () => {
           res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth).send({ code })
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('doesn\'t verify the record in the database', async () => {
@@ -902,8 +706,8 @@ describe('Users API', () => {
           res = await request(api).put(`${base}/users/${user.id ?? ''}/emails/${addr}`).send({ code })
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
 
         it('doesn\'t verify the record in the database', async () => {
@@ -922,11 +726,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the user\'s new email records', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(Array.isArray(res.body)).to.equal(true)
           expect(res.body).to.have.lengthOf(0)
         })
@@ -945,11 +746,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the user\'s new email records', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(Array.isArray(res.body)).to.equal(true)
           expect(res.body).to.have.lengthOf(0)
         })
@@ -968,11 +766,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/emails/${addr}`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
         it('doesn\'t delete the email from the user record in the database', async () => {
+          hasStatusAndHeaders(res, 403, headers)
           const record = await UserModel.findById(user.id) as UserData
           const emails = record.emails ?? []
           expect(emails).to.have.lengthOf(1)
@@ -985,7 +780,7 @@ describe('Users API', () => {
         })
 
         it('returns 400', () => {
-          expect(res.status).to.equal(400)
+          hasStatusAndHeaders(res, 400, headers)
         })
 
         it('doesn\'t delete the email from the user record in the database', async () => {
@@ -999,6 +794,11 @@ describe('Users API', () => {
 
   describe('/users/:uid/admin', () => {
     const user = new User()
+    const allow = 'OPTIONS, HEAD, GET, POST, DELETE'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     beforeEach(async () => {
       await user.save()
@@ -1009,40 +809,24 @@ describe('Users API', () => {
         res = await request(api).options(`${base}/users/${user.id ?? ''}/admin`)
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, HEAD, GET, POST, DELETE')
-      })
-
-      it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, HEAD, GET, POST, DELETE')
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
     describe('GET /users/:uid/admin', () => {
-      const results: { user?: any, admin?: any } = {}
+      it('returns false if the user is not an admin', async () => {
+        res = await request(api).get(`${base}/users/${user.id ?? ''}/admin`)
+        hasStatusAndHeaders(res, 200, headers)
+        expect(res.body).to.equal(false)
+      })
 
-      beforeEach(async () => {
+      it('returns true if the user is an admin', async () => {
         const admin = new User({ name: 'Admin', admin: true })
         await admin.save()
-        results.user = await request(api).get(`${base}/users/${user.id ?? ''}/admin`)
-        results.admin = await request(api).get(`${base}/users/${admin.id ?? ''}/admin`)
-      })
-
-      it('returns 200', () => {
-        expect(results.user.status).to.equal(200)
-        expect(results.admin.status).to.equal(200)
-      })
-
-      it('returns false if the user is not an admin', () => {
-        expect(results.user.body).to.equal(false)
-      })
-
-      it('returns true if the user is an admin', () => {
-        expect(results.admin.body).to.equal(true)
+        res = await request(api).get(`${base}/users/${admin.id ?? ''}/admin`)
+        hasStatusAndHeaders(res, 200, headers)
+        expect(res.body).to.equal(true)
       })
     })
 
@@ -1051,12 +835,8 @@ describe('Users API', () => {
         res = await request(api).head(`${base}/users/${user.id ?? ''}/admin`)
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns no content', () => {
-        expect(JSON.stringify(res.body)).to.equal('{}')
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
@@ -1068,8 +848,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('does not promote the user record in the database', async () => {
@@ -1085,11 +865,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the user\'s updated record', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.id).to.equal(user.id)
           expect(res.body.name).to.equal(user.name)
           expect(res.body.admin).to.equal(true)
@@ -1108,11 +885,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
-        })
-
         it('does not promote the user record in the database', async () => {
+          hasStatusAndHeaders(res, 403, headers)
           const record = await UserModel.findById(user.id) as UserData
           expect(record.admin).to.equal(false)
         })
@@ -1123,8 +897,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/admin`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
 
         it('does not promote the user record in the database', async () => {
@@ -1143,11 +917,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the user\'s updated record', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.id).to.equal(user.id)
           expect(res.body.name).to.equal(user.name)
           expect(res.body.admin).to.equal(false)
@@ -1168,11 +939,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the user\'s updated record', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.id).to.equal(user.id)
           expect(res.body.name).to.equal(user.name)
           expect(res.body.admin).to.equal(false)
@@ -1193,8 +961,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('does not demote the user record in the database', async () => {
@@ -1210,8 +978,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/admin`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
 
         it('does not demote the user record in the database', async () => {
@@ -1224,6 +992,11 @@ describe('Users API', () => {
 
   describe('/users/:uid/active', () => {
     const user = new User()
+    const allow = 'OPTIONS, HEAD, GET, POST, DELETE'
+    const headers = {
+      allow,
+      'access-control-allow-methods': allow
+    }
 
     beforeEach(async () => {
       await user.save()
@@ -1234,40 +1007,24 @@ describe('Users API', () => {
         res = await request(api).options(`${base}/users/${user.id ?? ''}/active`)
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns Allow header', () => {
-        expect(res.headers.allow).to.equal('OPTIONS, HEAD, GET, POST, DELETE')
-      })
-
-      it('returns Access-Control-Allow-Methods header', () => {
-        expect(res.headers['access-control-allow-methods']).to.equal('OPTIONS, HEAD, GET, POST, DELETE')
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
     describe('GET /users/:uid/active', () => {
-      const results: { active?: any, inactive?: any } = {}
+      it('returns true if the user is active', async () => {
+        res = await request(api).get(`${base}/users/${user.id ?? ''}/active`)
+        hasStatusAndHeaders(res, 200, headers)
+        expect(res.body).to.equal(true)
+      })
 
-      beforeEach(async () => {
-        const inactive = new User({ name: 'Admin', active: false })
+      it('returns false if the user is not active', async () => {
+        const inactive = new User({ name: 'Inactive', active: false })
         await inactive.save()
-        results.active = await request(api).get(`${base}/users/${user.id ?? ''}/active`)
-        results.inactive = await request(api).get(`${base}/users/${inactive.id ?? ''}/active`)
-      })
-
-      it('returns 200', () => {
-        expect(results.active.status).to.equal(200)
-        expect(results.inactive.status).to.equal(200)
-      })
-
-      it('returns true if the user is active', () => {
-        expect(results.active.body).to.equal(true)
-      })
-
-      it('returns false if the user is not active', () => {
-        expect(results.inactive.body).to.equal(false)
+        res = await request(api).get(`${base}/users/${inactive.id ?? ''}/active`)
+        hasStatusAndHeaders(res, 200, headers)
+        expect(res.body).to.equal(false)
       })
     })
 
@@ -1276,12 +1033,8 @@ describe('Users API', () => {
         res = await request(api).head(`${base}/users/${user.id ?? ''}/active`)
       })
 
-      it('returns 204', () => {
-        expect(res.status).to.equal(204)
-      })
-
-      it('returns no content', () => {
-        expect(JSON.stringify(res.body)).to.equal('{}')
+      it('returns status and headers', () => {
+        hasStatusAndHeaders(res, 204, headers)
       })
     })
 
@@ -1298,8 +1051,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('does not activate the user record in the database', async () => {
@@ -1315,11 +1068,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the user\'s updated record', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.id).to.equal(user.id)
           expect(res.body.name).to.equal(user.name)
           expect(res.body.active).to.equal(true)
@@ -1338,8 +1088,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
 
-        it('returns 403', () => {
-          expect(res.status).to.equal(403)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('does not activate the user record in the database', async () => {
@@ -1353,8 +1103,8 @@ describe('Users API', () => {
           res = await request(api).post(`${base}/users/${user.id ?? ''}/active`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
 
         it('does not activate the user record in the database', async () => {
@@ -1378,7 +1128,7 @@ describe('Users API', () => {
         })
 
         it('returns 403', () => {
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('does not deactivate the user record in the database', async () => {
@@ -1394,11 +1144,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`).set(auth)
         })
 
-        it('returns 200', () => {
-          expect(res.status).to.equal(200)
-        })
-
         it('returns the user\'s updated record', () => {
+          hasStatusAndHeaders(res, 200, headers)
           expect(res.body.id).to.equal(user.id)
           expect(res.body.name).to.equal(user.name)
           expect(res.body.active).to.equal(false)
@@ -1418,7 +1165,7 @@ describe('Users API', () => {
         })
 
         it('returns 403', () => {
-          expect(res.status).to.equal(403)
+          hasStatusAndHeaders(res, 403, headers)
         })
 
         it('does not deactivate the user record in the database', async () => {
@@ -1432,8 +1179,8 @@ describe('Users API', () => {
           res = await request(api).delete(`${base}/users/${user.id ?? ''}/active`)
         })
 
-        it('returns 400', () => {
-          expect(res.status).to.equal(400)
+        it('returns status and headers', () => {
+          hasStatusAndHeaders(res, 400, headers)
         })
 
         it('does not deactivate the user record in the database', async () => {

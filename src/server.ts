@@ -44,11 +44,15 @@ for (const endpoint of Object.keys(endpoints)) {
 
 // HEAD /
 api.head(`${base}/`, (req, res) => {
+  res.set('Allow', 'OPTIONS, GET')
+  res.set('Access-Control-Allow-Methods', 'OPTIONS, GET')
   res.sendStatus(204)
 })
 
 // GET /
 api.get(`${base}/`, (req, res) => {
+  res.set('Allow', 'OPTIONS, GET')
+  res.set('Access-Control-Allow-Methods', 'OPTIONS, GET')
   res.status(200).send({
     endpoints: Object.keys(endpoints).map(endpoint => `${root}/${endpoint}`),
     documentation: `${root}/docs`
