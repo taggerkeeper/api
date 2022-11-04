@@ -1,2 +1,7 @@
 NODE_ENV=test
 MONGO_CONN_STR=mongodb://127.0.0.1:27017/taggerkeeper-test
+S3_ENDPOINT=https://s3.us-east-2.amazonaws.com
+S3_API_KEY=YOUR_API_KEY
+S3_API_SECRET=YOUR_API_SECRET
+S3_REGION=us-east-2
+S3_BUCKET=taggerkeeper-test
