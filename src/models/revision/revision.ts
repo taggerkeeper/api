@@ -52,7 +52,7 @@ class Revision {
       timestamp: this.timestamp
     }
     if (this.file !== undefined) obj.file = this.file.getObj()
-    if (this.thumbnail !== undefined) obj.file = this.thumbnail.getObj()
+    if (this.thumbnail !== undefined) obj.thumbnail = this.thumbnail.getObj()
     if (this.editor !== undefined) obj.editor = this.editor.getObj()
     return obj
   }
@@ -65,7 +65,7 @@ class Revision {
       timestamp: this.timestamp
     }
     if (this.file !== undefined) obj.file = this.file.getObj()
-    if (this.thumbnail !== undefined) obj.file = this.thumbnail.getObj()
+    if (this.thumbnail !== undefined) obj.thumbnail = this.thumbnail.getObj()
     if (this.editor !== undefined) obj.editor = this.editor.getPublicObj()
     return obj
   }
