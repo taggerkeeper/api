@@ -1,6 +1,7 @@
 import { expect } from 'chai'
 import { Response } from 'superagent'
 import hasStatusAndHeaders from './has-status-and-headers.js'
+import isFile, { FileExpectations } from './is-file.js'
 import RevisionData from '../../../models/revision/data.js'
 import PageModel from '../../../models/page/model.js'
 import { PermissionLevel } from '../../../models/permissions/data.js'
@@ -8,6 +9,8 @@ import { PermissionLevel } from '../../../models/permissions/data.js'
 interface ExpectedPage {
   headers: { [key: string]: string | RegExp }
   revision?: RevisionData
+  file?: FileExpectations
+  thumbnail?: FileExpectations
 }
 
 const isPage = async (res: Response, expected?: ExpectedPage): Promise<void> => {
@@ -22,6 +25,9 @@ const isPage = async (res: Response, expected?: ExpectedPage): Promise<void> => 
   expect(res.headers.location).not.to.equal(undefined)
   expect(page).not.to.equal(null)
   expect(curr).to.containSubset({ content, permissions })
+
+  if (expected?.file !== undefined) await isFile(curr?.file, expected.file)
+  if (expected?.thumbnail !== undefined) await isFile(curr?.thumbnail, expected.thumbnail)
 }
 
 export default isPage

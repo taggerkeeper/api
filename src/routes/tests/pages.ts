@@ -318,24 +318,10 @@ describe('Pages API', () => {
         })
 
         it('creates a page with a file and a thumbnail', async () => {
-          const elems = res.headers.location.split('/')
-          const id = elems[elems.length - 1]
-          const page = await PageModel.findById(id)
-          const content = { title: data.title, path: '/new-page', body: data.body }
-          const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-          const curr = page?.revisions[0]
-
-          hasStatusAndHeaders(res, 201, headers)
-          expect(res.headers.location).not.to.equal(undefined)
-          expect(page).not.to.equal(null)
-          expect(curr).to.containSubset({ content, permissions })
-          expect(curr?.editor).to.equal(undefined)
-          expect(curr?.file?.key).to.match(/icon\.\d+\.png/)
-          expect(curr?.file?.size).to.equal(57018)
-          expect(curr?.file?.mime).to.equal('image/png')
-          expect(curr?.thumbnail?.key).to.match(/icon.thumbnail\.\d+\.png/)
-          expect(curr?.thumbnail?.size).to.equal(26164)
-          expect(curr?.thumbnail?.mime).to.equal('image/png')
+          const testHeaders = Object.assign({}, headers, { location: /\/pages\/[0-9a-f]*?$/ })
+          const file = { key: /icon\.\d+\.png/, size: 57018, value: 'image/png' }
+          const thumbnail = { key: /icon\.thumbnail\.\d+\.png/, size: 26164, value: 'image/png' }
+          await isPage(res, { headers: testHeaders, file, thumbnail })
         })
       })
     })
