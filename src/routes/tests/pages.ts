@@ -22,7 +22,7 @@ import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
 import hasLinkHeader from './expecters/has-link-header.js'
 import doesDiff from './expecters/does-diff.js'
 
-const __dirname = dirname(fileURLToPath(import.meta.url))
+const dir = dirname(fileURLToPath(import.meta.url))
 
 chai.use(chaiSubset)
 
@@ -322,8 +322,8 @@ describe('Pages API', () => {
           res = await request(api).post(`${base}/pages`)
             .field('title', data.title)
             .field('body', data.body)
-            .attach('file', `${__dirname}/files/icon.png`)
-            .attach('thumbnail', `${__dirname}/files/icon.thumbnail.png`)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
         })
 
         it('creates a page with a file and a thumbnail', async () => {
