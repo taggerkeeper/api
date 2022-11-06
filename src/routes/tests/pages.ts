@@ -20,6 +20,7 @@ import createTestSearchPages from './initializers/create-test-search-pages.js'
 import getTokens from './initializers/get-tokens.js'
 import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
 import hasLinkHeader from './expecters/has-link-header.js'
+import isPage from './expecters/is-page.js'
 import doesDiff from './expecters/does-diff.js'
 
 const dir = dirname(fileURLToPath(import.meta.url))
@@ -302,18 +303,8 @@ describe('Pages API', () => {
         })
 
         it('creates a page', async () => {
-          const elems = res.headers.location.split('/')
-          const id = elems[elems.length - 1]
-          const page = await PageModel.findById(id)
-          const content = { title: data.title, path: '/new-page', body: data.body }
-          const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-          const curr = page?.revisions[0]
-
-          hasStatusAndHeaders(res, 201, headers)
-          expect(res.headers.location).not.to.equal(undefined)
-          expect(page).not.to.equal(null)
-          expect(curr).to.containSubset({ content, permissions })
-          expect(curr?.editor).to.equal(undefined)
+          const testHeaders = Object.assign({}, headers, { location: /\/pages\/[0-9a-f]*?$/ })
+          await isPage(res, { headers: testHeaders })
         })
       })
 
