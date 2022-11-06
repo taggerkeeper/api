@@ -321,7 +321,12 @@ describe('Pages API', () => {
           const testHeaders = Object.assign({}, headers, { location: /\/pages\/[0-9a-f]*?$/ })
           const file = { key: /icon\.\d+\.png/, size: 57018, value: 'image/png' }
           const thumbnail = { key: /icon\.thumbnail\.\d+\.png/, size: 26164, value: 'image/png' }
-          await isPage(res, { headers: testHeaders, file, thumbnail })
+          const page = await isPage(res, { headers: testHeaders, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
         })
       })
     })

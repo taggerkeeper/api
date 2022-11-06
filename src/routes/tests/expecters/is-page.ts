@@ -3,7 +3,8 @@ import { Response } from 'superagent'
 import hasStatusAndHeaders from './has-status-and-headers.js'
 import isFile, { FileExpectations } from './is-file.js'
 import RevisionData from '../../../models/revision/data.js'
-import PageModel from '../../../models/page/model.js'
+import loadPageById from '../../../models/page/loaders/by-id.js'
+import Page from '../../../models/page/page.js'
 import { PermissionLevel } from '../../../models/permissions/data.js'
 
 interface ExpectedPage {
@@ -13,10 +14,9 @@ interface ExpectedPage {
   thumbnail?: FileExpectations
 }
 
-const isPage = async (res: Response, expected?: ExpectedPage): Promise<void> => {
+const isPage = async (res: Response, expected?: ExpectedPage): Promise<Page | null> => {
   const elems = res.headers.location.split('/')
-  const id = elems[elems.length - 1]
-  const page = await PageModel.findById(id)
+  const page = await loadPageById(elems[elems.length - 1])
   const content = expected?.revision?.content ?? { title: 'New Page', path: '/new-page', body: 'This is a new page.' }
   const permissions = expected?.revision?.permissions ?? { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
   const curr = page?.revisions[0]
@@ -28,6 +28,8 @@ const isPage = async (res: Response, expected?: ExpectedPage): Promise<void> => 
 
   if (expected?.file !== undefined) await isFile(curr?.file, expected.file)
   if (expected?.thumbnail !== undefined) await isFile(curr?.thumbnail, expected.thumbnail)
+
+  return page
 }
 
 export default isPage
