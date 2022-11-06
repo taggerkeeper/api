@@ -1,3 +1,5 @@
+import { dirname } from 'path'
+import { fileURLToPath } from 'url'
 import chai, { expect } from 'chai'
 import chaiSubset from 'chai-subset'
 import request from 'supertest'
@@ -19,6 +21,8 @@ import getTokens from './initializers/get-tokens.js'
 import hasStatusAndHeaders from './expecters/has-status-and-headers.js'
 import hasLinkHeader from './expecters/has-link-header.js'
 import doesDiff from './expecters/does-diff.js'
+
+const __dirname = dirname(fileURLToPath(import.meta.url))
 
 chai.use(chaiSubset)
 
@@ -292,24 +296,56 @@ describe('Pages API', () => {
         body: 'This is a new page.'
       }
 
-      beforeEach(async () => {
-        res = await request(api).post(`${base}/pages`).send(data)
+      describe('application/x-www-form-urlencoded', () => {
+        beforeEach(async () => {
+          res = await request(api).post(`${base}/pages`).send(data)
+        })
+
+        it('creates a page', async () => {
+          const elems = res.headers.location.split('/')
+          const id = elems[elems.length - 1]
+          const page = await PageModel.findById(id)
+          const content = { title: data.title, path: '/new-page', body: data.body }
+          const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+          const curr = page?.revisions[0]
+
+          hasStatusAndHeaders(res, 201, headers)
+          expect(res.headers.location).not.to.equal(undefined)
+          expect(page).not.to.equal(null)
+          expect(curr).to.containSubset({ content, permissions })
+          expect(curr?.editor).to.equal(undefined)
+        })
       })
 
-      it('returns correct status and headers', () => {
-        hasStatusAndHeaders(res, 201, headers)
-        expect(res.headers.location).not.to.equal(undefined)
-      })
+      describe('Multipart form with file upload', () => {
+        beforeEach(async () => {
+          res = await request(api).post(`${base}/pages`)
+            .field('title', data.title)
+            .field('body', data.body)
+            .attach('file', `${__dirname}/files/icon.png`)
+            .attach('thumbnail', `${__dirname}/files/icon.thumbnail.png`)
+        })
 
-      it('creates a new page', async () => {
-        const elems = res.headers.location.split('/')
-        const id = elems[elems.length - 1]
-        const page = await PageModel.findById(id)
-        const content = { title: data.title, path: '/new-page', body: data.body }
-        const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
-        expect(page).not.to.equal(null)
-        expect(page?.revisions[0]).to.containSubset({ content, permissions })
-        expect(page?.revisions[0]?.editor).to.equal(undefined)
+        it('creates a page with a file and a thumbnail', async () => {
+          const elems = res.headers.location.split('/')
+          const id = elems[elems.length - 1]
+          const page = await PageModel.findById(id)
+          const content = { title: data.title, path: '/new-page', body: data.body }
+          const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
+          const curr = page?.revisions[0]
+
+          hasStatusAndHeaders(res, 201, headers)
+          expect(res.headers.location).not.to.equal(undefined)
+          expect(page).not.to.equal(null)
+          expect(curr).to.containSubset({ content, permissions })
+          expect(curr?.editor).to.equal(undefined)
+          expect(curr?.file?.key).to.match(/icon\.\d+\.png/)
+          expect(curr?.file?.size).to.equal(57018)
+          expect(curr?.file?.mime).to.equal('image/png')
+          expect(curr?.thumbnail?.key).to.match(/icon.thumbnail\.\d+\.png/)
+          expect(curr?.thumbnail?.size).to.equal(26164)
+          expect(curr?.thumbnail?.mime).to.equal('image/png')
+        })
       })
     })
 

@@ -6,6 +6,7 @@ import PageModel from '../models/page/model.js'
 import loadPackage from '../utils/load-package.js'
 import getAPIInfo from '../utils/get-api-info.js'
 
+import addFilesToRevision from '../middlewares/add-files-to-revision.js'
 import addSearchPagination from '../middlewares/add-search-pagination.js'
 import allow from '../middlewares/allow.js'
 import createPage from '../middlewares/create-page.js'
@@ -26,6 +27,7 @@ import savePage from '../middlewares/save-page.js'
 import searchPages from '../middlewares/search-pages.js'
 import trashPage from '../middlewares/trash-page.js'
 import updatePage from '../middlewares/update-page.js'
+import uploadFile from '../middlewares/upload-file.js'
 
 const router = Router()
 
@@ -87,6 +89,10 @@ const router = Router()
  *       properties:
  *         content:
  *           $ref: "#/components/schemas/RevisionContent"
+ *         file:
+ *           $ref: "#/components/schemas/File"
+ *         thumbnail:
+ *           $ref: "#/components/schemas/File"
  *         permissions:
  *           $ref: "#/components/schemas/RevisionPermissions"
  *         editor:
@@ -134,6 +140,12 @@ const router = Router()
  *       properties:
  *         content:
  *           $ref: "#/components/schemas/RevisionContent"
+ *         file:
+ *           type: string
+ *           format: binary
+ *         thumbnail:
+ *           type: string
+ *           format: binary
  *         permissions:
  *           $ref: "#/components/schemas/RevisionPermissions"
  *         msg:
@@ -507,7 +519,7 @@ router.get('/', loadUserFromAccessToken, searchPages, addSearchPagination, colle
  *             description: "Link to the newly created page."
  */
 
-router.post('/', loadUserFromAccessToken, getRevisionFromBody, createPage, requirePage, savePage, collection.post)
+router.post('/', loadUserFromAccessToken, uploadFile, getRevisionFromBody, addFilesToRevision, createPage, requirePage, savePage, collection.post)
 
 /**
  * @openapi

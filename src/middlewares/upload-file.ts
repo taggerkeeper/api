@@ -10,6 +10,7 @@ const uploadFile = multer({
   storage: multerS3({
     s3,
     bucket: getEnvVar('S3_BUCKET') as string,
+    contentType: multerS3.AUTO_CONTENT_TYPE,
     acl: getEnvVar('S3_ACL') as string,
     key: (req: Express.Request, file: Express.Multer.File, callback: Function) => {
       const { base, ext } = getFilename(file.originalname)

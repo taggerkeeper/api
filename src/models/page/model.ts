@@ -1,12 +1,11 @@
 import mongoose from 'mongoose'
-import { PermissionLevel } from '../permissions/data.js'
 import PageData from './data.js'
-import getFirstVal from '../../utils/get-first-val.js'
+import FileSchema from '../file/model.js'
+import getEnvVar from '../../utils/get-env-var.js'
 const { Schema, model } = mongoose
-const { DEFAULT_READ_PERMISSIONS, DEFAULT_WRITE_PERMISSIONS } = process.env
 
-const defaultRead = getFirstVal(DEFAULT_READ_PERMISSIONS, PermissionLevel.anyone)
-const defaultWrite = getFirstVal(DEFAULT_WRITE_PERMISSIONS, PermissionLevel.anyone)
+const defaultRead = getEnvVar('DEFAULT_READ_PERMISSIONS')
+const defaultWrite = getEnvVar('DEFAULT_WRITE_PERMISSIONS')
 
 const schema = new Schema<PageData>({
   path: { type: String, required: true, unique: true },
@@ -16,6 +15,8 @@ const schema = new Schema<PageData>({
       path: String,
       body: String
     },
+    file: FileSchema,
+    thumbnail: FileSchema,
     editor: { type: Schema.Types.ObjectId, ref: 'User' },
     permissions: {
       read: { type: String, required: true, default: defaultRead },
