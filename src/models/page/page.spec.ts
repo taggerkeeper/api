@@ -295,6 +295,45 @@ describe('Page', () => {
         expect(stub.args[0][1].$unset.trashed).to.equal(1)
       })
     })
+
+    describe('delete', () => {
+      const pid = 'abcdef0123456789abcdef01'
+      let stub: sinon.SinonStub
+      let spy: sinon.SinonSpy
+      let page: Page
+      const revisions = [
+        { content: { title: 'No File', path: '/test', body: 'File removed.' } },
+        {
+          content: { title: 'Updated File', path: '/test', body: 'File updated.' },
+          file: { location: '/path/to/updated.txt', key: 'updated.txt', mime: 'plain/text', size: 23456 },
+          thumbnail: { location: '/path/to/thumb.jpg', key: 'thumb.jpg', mime: 'image/jpeg', size: 65432 }
+        },
+        {
+          content: { title: 'Original File', path: '/test', body: 'File uploaded.' },
+          file: { location: '/path/to/test.txt', key: 'test.txt', mime: 'plain/text', size: 12345 },
+          thumbnail: { location: '/path/to/thumbnail.png', key: 'thumbnail.png', mime: 'image/png', size: 54321 }
+        }
+      ]
+
+      beforeEach(() => {
+        stub = sinon.stub(PageModel, 'findByIdAndDelete')
+        spy = sinon.spy()
+        page = new Page({ id: pid, revisions })
+      })
+
+      afterEach(() => sinon.restore())
+
+      it('deletes all of the files in the page\'s history', async () => {
+        await page.delete(spy)
+        expect(spy.callCount).to.equal(4)
+        expect(spy.args.map(call => call[0].Key).join(' ')).to.equal('updated.txt test.txt thumb.jpg thumbnail.png')
+      })
+
+      it('deletes the page', async () => {
+        await page.delete(spy)
+        expect(stub.args[0][0]).to.equal(pid)
+      })
+    })
   })
 
   describe('Static methods', () => {

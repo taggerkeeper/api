@@ -110,6 +110,13 @@ class Page {
     }
   }
 
+  async delete (send?: Function): Promise<void> {
+    const files = this.revisions.map(revision => revision.file)
+    const thumbnails = this.revisions.map(revision => revision.thumbnail)
+    await Promise.all([...files, ...thumbnails].filter(file => file !== undefined).map(file => file?.delete(send)))
+    await PageModel.findByIdAndDelete(this.id)
+  }
+
   static async render (text: string): Promise<string> {
     const markup = await renderMarkdown(text)
     return markup
