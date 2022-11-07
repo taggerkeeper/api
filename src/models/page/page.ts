@@ -83,7 +83,7 @@ class Page {
       msg: revision.msg.length > 0 ? `Rolling back to ${desc}: ${revision.msg}` : `Rolling back to ${desc}`,
       timestamp: new Date()
     }))
-    this.addRevision(rollback)
+    this.addRevision(rollback, false)
     return true
   }
 

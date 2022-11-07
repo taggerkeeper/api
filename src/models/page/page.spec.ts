@@ -237,6 +237,22 @@ describe('Page', () => {
       it('sets a message indicating that it is a rollback', () => {
         expect(actual.revisions[0].msg).to.equal('Rolling back to revision #1: Initial text')
       })
+
+      it('doesn\'t inherit file or thumbnail', () => {
+        const file = { location: '/path/to/test.txt', key: 'test.txt', mime: 'plain/text', size: 12345 }
+        const withFile = new Revision(Object.assign({}, update, { file }))
+        actual.addRevision(withFile)
+        actual.rollback(actual.getRevision(1) as Revision, editor)
+        expect(actual.revisions[0].file).to.equal(undefined)
+      })
+
+      it('doesn\'t inherit thumbnail', () => {
+        const thumbnail = { location: '/path/to/thumb.jpg', key: 'thumb.jpg', mime: 'image/jpeg', size: 12345 }
+        const withThumbnail = new Revision(Object.assign({}, update, { thumbnail }))
+        actual.addRevision(withThumbnail)
+        actual.rollback(actual.getRevision(1) as Revision, editor)
+        expect(actual.revisions[0].thumbnail).to.equal(undefined)
+      })
     })
 
     describe('save', () => {
