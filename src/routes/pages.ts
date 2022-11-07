@@ -1,6 +1,7 @@
 import { Request, Response, Router } from 'express'
 import expressAsyncHandler from 'express-async-handler'
 
+import Page from '../models/page/page.js'
 import PageModel from '../models/page/model.js'
 
 import loadPackage from '../utils/load-package.js'
@@ -228,7 +229,8 @@ const collection = {
     res.status(201).send(req.page?.getPublicObj())
   }),
   delete: expressAsyncHandler(async (req: Request, res: Response) => {
-    await PageModel.deleteMany({ trashed: { $exists: true, $ne: null } })
+    const records = await PageModel.find({ trashed: { $exists: true, $ne: null } })
+    await Promise.all(records.map(record => new Page(record)).map(async (page) => await page.delete()))
     res.sendStatus(204)
   })
 }
