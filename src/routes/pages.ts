@@ -640,7 +640,7 @@ const item = {
     res.status(200).send(req.page?.getPublicObj())
   },
   delete: expressAsyncHandler(async (req: Request, res: Response) => {
-    if (req.user?.admin === true && req.query.hard !== undefined) await PageModel.findByIdAndRemove(req.params.pid)
+    if (req.user?.admin === true && req.query.hard !== undefined) await req.page?.delete()
     res.status(200).send(req.page?.getPublicObj())
   })
 }
