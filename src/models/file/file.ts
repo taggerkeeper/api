@@ -45,13 +45,17 @@ class File {
     return { location, key, mime, size }
   }
 
-  async delete (): Promise<void> {
-    const client = File.getS3Client()
+  async delete (send?: Function): Promise<void> {
     const Bucket = getEnvVar('S3_BUCKET') as string
-    const command = new DeleteObjectCommand({ Bucket, Key: this.key })
 
     try {
-      await client.send(command)
+      if (send !== undefined) {
+        send({ Bucket, Key: this.key })
+      } else {
+        const client = File.getS3Client()
+        const command = new DeleteObjectCommand({ Bucket, Key: this.key })
+        await client.send(command)
+      }
     } catch (err) {
       console.error(err)
     }
