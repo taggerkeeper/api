@@ -1,5 +1,4 @@
 import { expect } from 'chai'
-import { Response } from 'superagent'
 import hasStatusAndHeaders from './has-status-and-headers.js'
 import isFile, { FileExpectations } from './is-file.js'
 import RevisionData from '../../../models/revision/data.js'
@@ -14,15 +13,18 @@ interface ExpectedPage {
   thumbnail?: FileExpectations
 }
 
-const isPage = async (res: Response, expected?: ExpectedPage): Promise<Page | null> => {
-  const elems = res.headers.location.split('/')
+const isPage = async (res: any, expected?: ExpectedPage): Promise<Page | null> => {
+  const created = res.headers?.location !== undefined
+  const path = created ? res.headers.location : res.req.path
+  const elems = path.split('/')
   const page = await loadPageById(elems[elems.length - 1])
   const content = expected?.revision?.content ?? { title: 'New Page', path: '/new-page', body: 'This is a new page.' }
   const permissions = expected?.revision?.permissions ?? { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
   const curr = page?.revisions[0]
+  const status = created ? 201 : 200
 
-  hasStatusAndHeaders(res, 201, expected?.headers ?? {})
-  expect(res.headers.location).not.to.equal(undefined)
+  hasStatusAndHeaders(res, status, expected?.headers ?? {})
+  if (created) expect(res.headers.location).not.to.equal(undefined)
   expect(page).not.to.equal(null)
   expect(curr).to.containSubset({ content, permissions })
 

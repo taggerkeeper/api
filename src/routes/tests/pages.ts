@@ -1635,6 +1635,8 @@ describe('Pages API', () => {
       const body = 'This is the revised body.'
       const permissions = { read: PermissionLevel.anyone, write: PermissionLevel.anyone }
       const update = { title, body, permissions, msg: 'New revision' }
+      const file = { key: /icon\.\d*\.png/, size: 57018, mime: 'image/png' }
+      const thumbnail = { key: /icon\.thumbnail\.\d*\.png/, size: 26164, mime: 'image/png' }
 
       describe('An anonymous user', () => {
         it('can update a page anyone can edit', async () => {
@@ -1643,6 +1645,22 @@ describe('Pages API', () => {
           const after = await loadPageById(pid, admin)
           hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
+        })
+
+        it('can add files to a page anyone can edit', async () => {
+          const { pid } = await createTestPage([revisions.anyone])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
         })
 
         it('won\'t update a page that only users can edit', async () => {
@@ -1695,6 +1713,23 @@ describe('Pages API', () => {
           expect(mostRecentEditorId).to.equal(user.id?.toString())
         })
 
+        it('can add files to a page anyone can edit', async () => {
+          const { pid } = await createTestPage([revisions.anyone])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
+        })
+
         it('can update a page that only users can edit', async () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
@@ -1703,6 +1738,23 @@ describe('Pages API', () => {
           hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(user.id?.toString())
+        })
+
+        it('can add files to a page only users can edit', async () => {
+          const { pid } = await createTestPage([revisions.authWrite])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
         })
 
         it('can\'t update a page that only editors can edit', async () => {
@@ -1745,6 +1797,23 @@ describe('Pages API', () => {
           expect(mostRecentEditorId).to.equal(editor.id?.toString())
         })
 
+        it('can add files to a page anyone can edit', async () => {
+          const { pid } = await createTestPage([revisions.anyone])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
+        })
+
         it('can update a page that only users can edit', async () => {
           const { pid } = await createTestPage([revisions.authWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
@@ -1755,6 +1824,23 @@ describe('Pages API', () => {
           expect(mostRecentEditorId).to.equal(editor.id?.toString())
         })
 
+        it('can add files to a page only users can edit', async () => {
+          const { pid } = await createTestPage([revisions.authWrite])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
+        })
+
         it('can update a page that only editors can edit', async () => {
           const { pid } = await createTestPage([revisions.editorWrite])
           res = await request(api).put(`${base}/pages/${pid}`).set(auth).send(update)
@@ -1763,6 +1849,23 @@ describe('Pages API', () => {
           hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(editor.id?.toString())
+        })
+
+        it('can add files to a page only editors can edit', async () => {
+          const { pid } = await createTestPage([revisions.editorWrite])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
         })
 
         it('can\'t update a page that only admins can edit', async () => {
@@ -1797,6 +1900,23 @@ describe('Pages API', () => {
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
 
+        it('can add files to a page anyone can edit', async () => {
+          const { pid } = await createTestPage([revisions.anyone])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
+        })
+
         it('can untrash a page anyone can edit', async () => {
           const { pid } = await createTestPage([revisions.anyone], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
@@ -1813,6 +1933,23 @@ describe('Pages API', () => {
           hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
+        })
+
+        it('can add files to a page only users can edit', async () => {
+          const { pid } = await createTestPage([revisions.authWrite])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
         })
 
         it('can untrash a page only users can edit', async () => {
@@ -1833,6 +1970,23 @@ describe('Pages API', () => {
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
         })
 
+        it('can add files to a page only editors can edit', async () => {
+          const { pid } = await createTestPage([revisions.editorWrite])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
+        })
+
         it('can untrash a page only editors can edit', async () => {
           const { pid } = await createTestPage([revisions.editorWrite], true)
           res = await request(api).put(`${base}/pages/${pid}`).set(auth)
@@ -1849,6 +2003,23 @@ describe('Pages API', () => {
           hasStatusAndHeaders(res, 200, headers)
           expect(after?.revisions).to.have.lengthOf(2)
           expect(mostRecentEditorId).to.equal(admin.id?.toString())
+        })
+
+        it('can add files to a page only admins can edit', async () => {
+          const { pid } = await createTestPage([revisions.adminWrite])
+          res = await request(api).put(`${base}/pages/${pid}`)
+            .set(auth)
+            .field('title', title)
+            .field('body', body)
+            .attach('file', `${dir}/files/icon.png`)
+            .attach('thumbnail', `${dir}/files/icon.thumbnail.png`)
+          const revision = { content: { title, path: '/new-revision', body } }
+          const page = await isPage(res, { headers, revision, file, thumbnail })
+
+          if (page !== null) {
+            await page.revisions[0].file?.delete()
+            await page.revisions[0].thumbnail?.delete()
+          }
         })
 
         it('can untrash a page only admins can edit', async () => {

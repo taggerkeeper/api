@@ -1002,7 +1002,7 @@ router.get('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, require
  *                   example: "You do not have permission to view this page."
  */
 
-router.put('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageWrite, getRevisionFromBody, updatePage, savePage, item.put)
+router.put('/:pid', loadUserFromAccessToken, requireValidPath, loadPage, requirePageWrite, uploadFile, getRevisionFromBody, addFilesToRevision, updatePage, requirePage, savePage, item.put)
 
 /**
  * @openapi
